@@ -13,9 +13,7 @@ class canvas extends JFrame implements MouseListener, MouseMotionListener {
 
 		// create a empty canvas
 		c = new Canvas() {
-			public void paint(Graphics g) {
-      
-			}
+		    public void paint(Graphics g) {}
 		};
 
 		// set background
@@ -27,6 +25,13 @@ class canvas extends JFrame implements MouseListener, MouseMotionListener {
 
 		add(c);
 		setSize(400, 300);
+
+                // add windows closer
+                addWindowListener (new WindowAdapter() {    
+                    public void windowClosing (WindowEvent e) {    
+                        dispose();    
+                    }    
+                });  
 
                 show();
 		
