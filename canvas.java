@@ -27,6 +27,8 @@ class canvas extends JFrame implements MouseListener, MouseMotionListener {
 
 		add(c);
 		setSize(400, 300);
+
+                show();
 		
 	}
 
