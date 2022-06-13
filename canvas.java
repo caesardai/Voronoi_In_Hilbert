@@ -9,7 +9,7 @@ class canvas extends JFrame implements MouseListener, MouseMotionListener {
 
 	// constructor
 	canvas() {
-		super("canvas");
+		super("Voronoi in Hilbert");
 
 		// create a empty canvas
 		c = new Canvas() {
@@ -17,14 +17,14 @@ class canvas extends JFrame implements MouseListener, MouseMotionListener {
 		};
 
 		// set background
-		c.setBackground(Color.black);
+		c.setBackground(Color.white);
 
 		// add mouse listener
 		c.addMouseListener(this);
 		c.addMouseMotionListener(this);
 
 		add(c);
-		setSize(400, 300);
+		setSize(800, 500);
 
                 // add windows closer
                 addWindowListener (new WindowAdapter() {    
@@ -41,7 +41,7 @@ class canvas extends JFrame implements MouseListener, MouseMotionListener {
 	public void mouseClicked(MouseEvent e) {
 		Graphics g = c.getGraphics();
 
-		g.setColor(Color.red);
+		g.setColor(Color.black);
 
 		// get X and y position
 		int x, y;
@@ -59,7 +59,7 @@ class canvas extends JFrame implements MouseListener, MouseMotionListener {
 	public void mouseDragged(MouseEvent e) {
 		Graphics g = c.getGraphics();
 
-		g.setColor(Color.red);
+		g.setColor(Color.blue);
 
 		// get X and y position
 		int x, y;
