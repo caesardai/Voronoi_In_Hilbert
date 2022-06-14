@@ -2,7 +2,7 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-class canvas extends JFrame implements MouseListener, MouseMotionListener {
+public class canvas extends JFrame implements MouseListener, MouseMotionListener {
 
 	// create a canvas
 	Canvas c;
