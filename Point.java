@@ -8,20 +8,20 @@ import java.awt.*;
 import javax.swing.*;
 import java.awt.event.*;
 
-public class Points {
+public class Point {
     // fields of the Points class; can add more fields if needed
     private double x;
     private double y;
     private Color color;
 
     // constructors
-    public Points(double x, double y) {
+    public Point(double x, double y) {
         this.x = x;
         this.y = y;
         this.color = null;
     }
 
-    public Points(double x, double y, Color c) {
+    public Point(double x, double y, Color c) {
         this.x = x;
         this.y = y;
         this.color = c;
