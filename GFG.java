@@ -14,7 +14,7 @@ public class GFG {
 	public static int orientation(Point p1, Point p2, Point p3) {
 		// See 10th slides from following link
 		// for derivation of the formula
-		int val = (p2.getY() - p1.getY()) * (p3.getX() - p2.getX()) -
+		double val = (p2.getY() - p1.getY()) * (p3.getX() - p2.getX()) -
 				(p2.getX() - p1.getX()) * (p3.getY() - p2.getY());
 	
 		if (val == 0) return 0; // collinear
@@ -25,18 +25,34 @@ public class GFG {
 	
 	/* Driver program to test above function */
 	public static void main(String[] args) {
-			Point p1 = new Point(0, 0);
-			Point p2 = new Point(4, 4);
-			Point p3 = new Point(1, 2);
+                        if(args.length < 6) {
+                            System.out.println("need 6 arguments");
+                            return;
+                        }
+
+                        for(int i = 0; i < args.length; i++)
+                            System.out.print(args[i] + ", ");
+                        System.out.println();
+
+                        int a = Integer.parseInt(args[0]);
+                        int b = Integer.parseInt(args[1]);
+                        int c = Integer.parseInt(args[2]);
+                        int d = Integer.parseInt(args[3]);
+                        int e = Integer.parseInt(args[4]);
+                        int f = Integer.parseInt(args[5]);
+
+			Point p1 = new Point(a, b);
+			Point p2 = new Point(c, d);
+			Point p3 = new Point(e, f);
 			
 			int o = orientation(p1, p2, p3);
 			
 			if (o==0)	
-			System.out.print("Linear");
+			System.out.println("Linear");
 			else if (o == 1)
-			System.out.print("Clockwise");
+			System.out.println("Clockwise");
 			else			
-			System.out.print("CounterClockwise");
+			System.out.println("CounterClockwise");
 		
 	}
 }
