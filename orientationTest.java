@@ -10,16 +10,17 @@ class Point
 
 class GFG {
 	
-	// To find orientation of ordered triplet
-	// (p1, p2, p3). The function returns
-	// following values
-	// 0 --> p, q and r are collinear
+	// To find orientation of ordered tripletp1, p2, p3). 
+	// The function returns following values:
+	// 0 --> colinear
 	// 1 --> Clockwise
 	// 2 --> Counterclockwise
+
 	public static int orientation(Point p1, Point p2, Point p3) {
 		// See 10th slides from following link
 		// for derivation of the formula
-		int val = (p2.y - p1.y) * (p3.x - p2.x) - (p2.x - p1.x) * (p3.y - p2.y);
+		int val = (p2.getY() - p1.getY()) * (p3.getX() - p2.getX()) - 
+			(p2.getX() - p1.getX()) * (p3.getY() - p2.getY());
 	
 		if (val == 0) {
 			return 0; 
