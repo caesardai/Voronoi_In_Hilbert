@@ -1,29 +1,24 @@
-// C# program to find convex hull of a set of points. Refer
+// Java program to find convex hull of a set of points. Refer
 // https://www.geeksforgeeks.org/orientation-3-ordered-points/
 // for explanation of orientation()
-using System;
-using System.Collections.Generic;
-	
-public class Point
-{
-	public int x, y;
-	public Point(int x, int y)
-	{
-		this.x = x;
-		this.y = y;
+import java.util.*;
+
+class Point {
+	int x, y;
+	Point(int x, int y){
+		this.x=x;
+		this.y=y;
 	}
 }
 
-public class GFG
-{
+class GFG {
 	
 	// To find orientation of ordered triplet (p, q, r).
 	// The function returns following values
 	// 0 --> p, q and r are collinear
 	// 1 --> Clockwise
 	// 2 --> Counterclockwise
-	public static int orientation(Point p, Point q, Point r)
-	{
+	public static int orientation(Point p, Point q, Point r) {
 		int val = (q.y - p.y) * (r.x - q.x) -
 				(q.x - p.x) * (r.y - q.y);
 	
@@ -32,13 +27,12 @@ public class GFG
 	}
 	
 	// Prints convex hull of a set of n points.
-	public static void convexHull(Point []points, int n)
-	{
+	public static void convexHull(Point points[], int n) {
 		// There must be at least 3 points
 		if (n < 3) return;
 	
 		// Initialize Result
-		List<Point> hull = new List<Point>();
+		Vector<Point> hull = new Vector<Point>();
 	
 		// Find the leftmost point
 		int l = 0;
@@ -54,7 +48,7 @@ public class GFG
 		do
 		{
 			// Add current point to result
-			hull.Add(points[p]);
+			hull.add(points[p]);
 	
 			// Search for a point 'q' such that
 			// orientation(p, q, x) is counterclockwise
@@ -82,16 +76,15 @@ public class GFG
 						// point
 	
 		// Print Result
-		foreach (Point temp in hull)
-			Console.WriteLine("(" + temp.x + ", " +
+		for (Point temp : hull)
+			System.out.println("(" + temp.x + ", " +
 								temp.y + ")");
 	}
 	
-	/* Driver code */
-	public static void Main(String[] args)
-	{
+	/* Driver program to test above function */
+	public static void main(String[] args) {
 
-		Point []points = new Point[7];
+		Point points[] = new Point[7];
 		points[0]=new Point(0, 3);
 		points[1]=new Point(2, 3);
 		points[2]=new Point(1, 1);
@@ -100,12 +93,12 @@ public class GFG
 		points[5]=new Point(0, 0);
 		points[6]=new Point(3, 3);
 		
-		int n = points.Length;
+		int n = points.length;
 		convexHull(points, n);
 		
 	}
 }
 
-// This code is contributed by Princi Singh
+// This code is contributed by Arnav Kr. Mandal.
 
 
