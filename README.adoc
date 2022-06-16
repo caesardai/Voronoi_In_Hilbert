@@ -1,2 +1,5 @@
-= Voronoi Diagrams in the Hilbert Metrics
-REU-CAAR: Visualization tool for Voronoi Diagrams in the Hilbert Metrics
+= REU-CAAR  Voronoi Diagrams in the Hilbert Metrics
+
+ Visualization tool for Voronoi Diagrams in the Hilbert Metrics
+
+
