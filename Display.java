@@ -117,84 +117,94 @@ public class Display extends JFrame implements MouseListener {
             }
 
             // draw the spokes
-			if (hull.size() >= 3 && sites.size() >= 1) {
-				drawSpokes(g);
-			}
+            if (hull.size() >= 3 && sites.size() >= 1) {
+                    drawSpokes(g);
+            }
         }
 
-		private void drawSpokes(Graphics g) {
-			System.out.println("Drawing Spokes\n");
-			// computes line euqations between hull vertex and sites
-			for (int s = 0; s < sites.size(); s++) {
-				for (int h = 0; h < hull.size() - 1; h++) {
-					int b;
-					double a1, a2, c1, c2;
+        private void drawSpokes(Graphics g) {
+            System.out.println("Drawing Spokes");
+            // computes line euqations between hull vertex and sites
+            for (int s = 0; s < sites.size(); s++) {
+                for (int h = 0; h < hull.size() - 1; h++) {
+                    int b;
+                    double a1, a2, c1, c2;
 
-					// a1 hull to hull
-					a1 = (hull.get(h).y - hull.get((h + 1) % hull.size()).y) / (hull.get(h).x - hull.get((h + 1) % hull.size()).x);
-					
-					// a2 hull edge to site
-					a2 = (hull.get(h).y - sites.get(s).y) / (hull.get(h).x - sites.get(s).x);
-					
-					b = -1;
-					c1 = a1 * hull.get(h).x - hull.get(h).y;
-					c2 = a2 * hull.get(h).x - hull.get(h).y;
+                    // site we are looking at
+                    Point sitePoint = this.sites.get(s);
 
-					double[] sol = computeLine(a1, a2, b, c1, c2); // returns sol double[]
+                    // a1 hull edge to site
+                    Point hullPoint = this.hull.get(h);
+                    a1 = (sitePoint.y - hullPoint.y) / (sitePoint.x - hullPoint.x);
+                    b = -1;
+                    c1 = a1 * hullPoint.x - hullPoint.y;
+                    
+                    // loop through all hull line segements
+                    for(int index = 0; index < this.hull.size() - 1; index++) {
+                        // get line segment line equation
+                        Point h1 = hull.get(index);
+                        Point h2 = hull.get(index + 1);
+                        a2 = (h2.y - h1.y) / (h2.x - h1.x);
 
-					if (sol == null) {
-						continue;
-					}
+                        c2 = a2 * h1.x - h1.y;
 
-					for (int i = 0; i < this.hull.size(); i++) {
-						Point p1 = this.hull.get(i);
-						Point p2 = this.hull.get( (i+1) % this.hull.size() );
+                        double[] sol = computeLine(a1, a2, b, c1, c2); // returns sol double[]
 
-						// determine how the points are positioned
-						int x1, x2, y1, y2;
-						if(p1.x < p2.x) {
-							x1 = p1.x;
-							x2 = p2.x;
-						} else {
-							x2 = p1.x;
-							x1 = p2.x;
-						}
+                        if (sol == null) {
+                                continue;
+                        }
 
-						if(p1.y < p2.y) {
-							y1 = p1.y;
-							y2 = p2.y;
-						} else {
-							y2 = p1.y;
-							y1 = p2.y;
-						}
+                        System.out.println("(" + sol[0] + ", " + sol[1] + ")");
 
-						// check if solution is inside the rectangle
-						if( (sol[0] > x1 && sol[0] < x2) && (sol[1] > y1 && sol[1] < y2) ) {
-							g.drawLine(this.hull.get(h).x, this.hull.get(h).y, (int) sol[0], (int) sol[1]);
-						}	
-					}
-				}
-			}
-		}
+                        for (int i = 0; i < this.hull.size(); i++) {
+                            Point p1 = this.hull.get(i);
+                            Point p2 = this.hull.get( (i+1) % this.hull.size() );
 
-		private double[] computeLine(double a1, double a2, int b, double c1, double c2) {
-			double x, y, k;
+                            // determine how the points are positioned
+                            int x1, x2, y1, y2;
+                            if(p1.x < p2.x) {
+                                x1 = p1.x;
+                                x2 = p2.x;
+                            } else {
+                                x2 = p1.x;
+                                x1 = p2.x;
+                            }
 
-			if (a1 == a2) {
-				return null;
-			}
-			
-			k = a1 / a2;
-			y = (c2 - k * c1) / (b - k * b);
-			x = (c1 - b * y) / a1;
+                            if(p1.y < p2.y) {
+                                y1 = p1.y;
+                                y2 = p2.y;
+                            } else {
+                                y2 = p1.y;
+                                y1 = p2.y;
+                            }
 
-			double[] sol = {x, y};
-			return sol;
-		}
+                            // check if solution is inside the rectangle
+                            if( (sol[0] > x1 && sol[0] < x2) && (sol[1] > y1 && sol[1] < y2) ) {
+                                g.drawLine(this.hull.get(h).x, this.hull.get(h).y, (int) sol[0], (int) sol[1]);
+                            }	
+                        }
+                    }
+                }
+            }
+            System.out.println("Finished drawing spokes");
+        }
+
+        private double[] computeLine(double a1, double a2, int b, double c1, double c2) {
+            double x, y, k;
+
+            if (a1 == a2)
+                return null;
+            
+            k = a1 / a2;
+            y = (c2 - k * c1) / (k - 1);
+            x = (c1 - b * y) / a1;
+
+            double[] sol = {x, y};
+            return sol;
+        }
   
 	// main
 	public static void main(String args[]) {
 		Display d = new Display();
-
 	}
 }
