@@ -30,7 +30,7 @@ public class Display extends JFrame implements MouseListener {
 		c.addMouseListener(this);
 
 		add(c);
-		setSize(800, 500);
+		setSize(1400, 900);
 
         // add windows closer
         addWindowListener (new WindowAdapter() { 
@@ -66,8 +66,6 @@ public class Display extends JFrame implements MouseListener {
 			}
 		}
 	}
-
-
 
 	public void mouseMoved(MouseEvent e) {
 	}
