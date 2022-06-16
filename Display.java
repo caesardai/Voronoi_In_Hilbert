@@ -25,7 +25,7 @@ public class Display extends JFrame implements MouseListener {
 
                 // initialize fields
 		this.sites = new ArrayList<Point>();
-                this.hull = null;
+                this.hull = new ArrayList<Point>();
 
 		// set background
 		c.setBackground(Color.white);
@@ -56,11 +56,13 @@ public class Display extends JFrame implements MouseListener {
 		int x, y;
 		x = e.getX();
 		y = e.getY();
-		sites.add(new Point(x, y));
+                Point newPoint = new Point(x, y);
+		this.sites.add(newPoint);
+		this.hull.add(newPoint);
 
                 // compute convex hull on sites
-		if (this.sites.size() >= 3) {
-			List<Point> convexHull = cg.GrahamScan.getConvexHull(sites);
+		if (this.hull.size() >= 3) {
+			List<Point> convexHull = cg.GrahamScan.getConvexHull(this.hull);
                         this.hull = new ArrayList<Point>(convexHull);
 			for(java.awt.Point p : this.hull) {
 				System.out.println(p);
