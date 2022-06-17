@@ -75,8 +75,13 @@ public class Display extends JFrame implements MouseListener {
 		x = e.getX();
 		y = e.getY();
 
-        Point newPoint = new Point(x, y);
+                Point newPoint = new Point(x, y);
 		this.hull.add(newPoint);
+                // copy elements in old hull
+                ArrayList<Point> oldHull = new ArrayList<Point>(this.hull.size());
+                for(Point p : this.hull) {
+                    oldHull.add(new Point(p.x, p.y));
+                }
 
                 // compute convex hull on sites
 		if (this.hull.size() >= 3) {
@@ -87,8 +92,15 @@ public class Display extends JFrame implements MouseListener {
 			}
 		}
 
+                // check if the new point is in the hull
 		if(!this.hull.contains(newPoint))
 			this.sites.add(newPoint);
+
+                // place former hull points into the sites list
+                for(Point p : oldHull) {
+                    if(!this.hull.contains(p))
+                        this.sites.add(new Point(p.x, p.y));
+                }
 
                 // draw on canvas
                 this.draw(g);
