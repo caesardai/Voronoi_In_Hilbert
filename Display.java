@@ -137,8 +137,7 @@ public class Display extends JFrame implements MouseListener {
             // computes line euqations between hull vertex and sites
             for (int s = 0; s < sites.size(); s++) {
                 for (int h = 0; h < hull.size() - 1; h++) {
-                    int b;
-                    double a1, a2, c1, c2;
+                    double m1, m2, c1, c2;
 
                     // site we are looking at
                     Point sitePoint = this.sites.get(s);
@@ -147,9 +146,15 @@ public class Display extends JFrame implements MouseListener {
                     Point hullPoint = this.hull.get(h);
                     System.out.println("\nHull vertex (" + hullPoint.x + ", " + hullPoint.y + ")");
 
-                    a1 = ((double) (sitePoint.y - hullPoint.y)) / ((double) (sitePoint.x - hullPoint.x));
-                    b = -1;
-                    c1 = a1 * hullPoint.x - hullPoint.y;
+                    // check if our line is vertical
+                    if(sitePoint.x == hullPoint.x) {
+                        // loop through all line segements and find the one whose x-coordinates include sitePoint.x
+                        System.out.println("vertical site-hull spoke");
+                        return;
+                    } else { // if line is not vertical
+                        m1 = ((double) (sitePoint.y - hullPoint.y)) / ((double) (sitePoint.x - hullPoint.x));
+                        c1 = m1 * hullPoint.x - hullPoint.y;
+                    }
                     
                     // loop through all hull line segements
                     for(int index = 0; index < this.hull.size() - 1; index++) {
@@ -160,41 +165,20 @@ public class Display extends JFrame implements MouseListener {
                         // store solution
                         double[] sol = new double[2];
 
-                        // if we have a vertical line
-                        if(h1.x == h2.x) {
-                            sol[0] = h1.x;
-                            sol[1] = a1 * h1.x - c1;
+                        m2 = ((double) (h2.y - h1.y)) / ((double) (h2.x - h1.x));
+
+                        c2 = m2 * h1.x - h1.y;
+
+                        // System.out.println("slope for hull-site: " + m1);
+                        // System.out.println("slope for hull-hull: " + m2);
+
+                        // if we have parallel lines
+                        if(m1 == m2) {
+                            System.out.println("parallel lines");
+                            continue;
                         }
-                        // otherwise
-                        else {
-                            a2 = ((double) (h2.y - h1.y)) / ((double) (h2.x - h1.x));
 
-                            c2 = a2 * h1.x - h1.y;
-
-                            System.out.println("slope for hull-site: " + a1);
-                            System.out.println("slope for hull-hull: " + a2);
-
-                            // if we have parallel lines
-                            if(a1 == a2) {
-                                System.out.println("parallel lines");
-                                continue;
-                            }
-                            // if we have horizontal line segement
-                            if(a2 == 0) {
-                                // if spoke-hull line is also horizontal, then the segements do not intersect
-                                if(a1 == 0) {
-                                    System.out.println("parallel lines");
-                                    continue;
-                                } // otherwise
-                                sol[0] = ((double) c1 + h1.y) / ((double) a1);
-                                sol[1] = h1.y;
-                            } else { // standard case
-                                sol = computeLine(a1, a2, b, c1, c2); // returns solution to system of equations
-
-                                if (sol == null)
-                                        continue;
-                            }
-                        }
+                        sol = computeLine(m1, m2, c1, c2); // returns solution to system of equations
 
                         System.out.println("(" + sol[0] + ", " + sol[1] + ") for line (" + h1.x + ", " + h1.y + ")-(" + h2.x + ", " + h2.y +  ")");
 
@@ -231,16 +215,11 @@ public class Display extends JFrame implements MouseListener {
             System.out.println("Finished drawing spokes");
         }
 
-        private double[] computeLine(double a1, double a2, int b, double c1, double c2) {
-            double x, y, k;
-
-            if (a1 == a2)
-                return null;
+        private double[] computeLine(double m1, double m2, double c1, double c2) {
+            double x, y;
             
-            k = a1 / a2;
-            System.out.println("value of k: " + k);
-            y = (c1 - k * c2) / (k - 1);
-            x = (c1 + y) / a1;
+            x = (c1 - c2) / (m1 - m2);
+            y = m1 * x - c1;
 
             double[] sol = {x, y};
             return sol;
