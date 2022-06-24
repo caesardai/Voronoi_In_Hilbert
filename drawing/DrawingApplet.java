@@ -1,4 +1,9 @@
 package drawing;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
 import processing.core.PApplet;
 
 import java.awt.Button;
@@ -16,12 +21,14 @@ public class DrawingApplet extends PApplet implements ActionListener {
   private final static String SWITCH_MODE = "Change to mode: ";
   static String FILENAME;
   /* Buttons */ 
-  private Button newConvex, plusButton, minusButton, toggleMode;
+  private Button button1, button2, button3;
   
   /* Geometric objects */ 
   public HilbertGeometryDraw geometry;
   public VoronoiDraw voronoi;
   final static double epsilon=4.;
+  // VoronoiDraw.frame.add(button1);
+	/
   static double radius = 1;
   final static double RADIUS_STEP = 0.1;
   
@@ -40,51 +47,60 @@ public class DrawingApplet extends PApplet implements ActionListener {
   }
   
   public void settings() {
-	size(1280, 720);
+	  size(1280, 720);
   }
   
   public void windowSize(int width, int height) {
 	  size(width, height);
   }
   
-    public void setup() {
-      initButton();
-      this.geometry = new HilbertGeometryDraw(this, FILENAME);
-      this.voronoi = new VoronoiDraw(geometry, this);
+  public void setup() {
+	initButton();
+    this.geometry = new HilbertGeometryDraw(this, FILENAME);
+    this.voronoi = new VoronoiDraw(geometry, this);
 
-      // if points in Convex is not on the hull, add it to the HilbertGeometry object
-      if(this.geometry.convex.points.length > 0) {
-    	  // make sure there are no balls in geometry object
-    	  if(this.geometry.ballCount() > 0) {
-    		  for(int index = 0; index < this.geometry.ballCount(); index++ )
-    			  this.geometry.removeBall(index);
-    	  }
-    	  for(Point2D.Double p : this.geometry.convex.points) {
-    		  if(this.geometry.convex.findPoint(p) == -1) { 
-				  double r = 2;
-				  this.geometry.addCenterPoint(p, r);;
-    		  }
-    	  }
-      }
+    // if points in Convex is not on the hull, add it to the HilbertGeometry object
+    if(this.geometry.convex.points.length > 0) {
+    	// make sure there are no balls in geometry object
+    	if(this.geometry.ballCount() > 0) {
+    		for(int index = 0; index < this.geometry.ballCount(); index++ )
+    			this.geometry.removeBall(index);
+    	}
+    	for(Point2D.Double p : this.geometry.convex.points) {
+    		if(this.geometry.convex.findPoint(p) == -1) { 
+				double r = 2;
+				this.geometry.addCenterPoint(p, r);;
+    		}
+    	}
     }
+  }
     
-    public void initButton() {
-      toggleMode = new Button(SWITCH_MODE + MODES[(currentMode + 1) % NUMBER_MODES].toString());
-      add(toggleMode);
-      toggleMode.addActionListener(this);
-      
-      newConvex = new Button("New object");
-      add(newConvex);
-      newConvex.addActionListener(this);
-      
-      plusButton = new Button("+");
-      add(plusButton);
-      plusButton.addActionListener(this);
-      
-      minusButton = new Button("-");
-      add(minusButton);
-      minusButton.addActionListener(this);
-    }
+  public void initButton() {
+    	
+	  button1 = new Button("Insert Hull");
+	  button2 = new Button("Insert SItes");
+	  button3 = new Button("CLear");
+    	
+	  // VoronoiDraw.frame.add(button1);
+	  // VoronoiDraw.frame.add(button2);
+	  // VoronoiDraw.frame.add(button3);
+    	
+	  button1.addActionListener(new ActionListener() {
+		  public void actionPerformed (ActionEvent e) {
+    		// insert Hull Points
+    	}
+	  });	
+	  button2.addActionListener(new ActionListener() {
+		  public void actionPerformed (ActionEvent e) {
+    			// insert Sites
+    		}
+    	});	
+	  button3.addActionListener(new ActionListener() {
+		  public void actionPerformed (ActionEvent e) {
+    			// Clear
+		  }
+	  });	
+   }
     
     private void add(Button b) {
     	// unsure what this is suppose to do
