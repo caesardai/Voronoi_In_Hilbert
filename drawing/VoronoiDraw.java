@@ -7,6 +7,9 @@ import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
+import java.util.Scanner;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 
 
 public class VoronoiDraw {
@@ -19,6 +22,20 @@ public class VoronoiDraw {
   public VoronoiDraw(HilbertGeometryDraw g, DrawingApplet frame) {
     this.voronoi = new Voronoi(g);
     this.frame = frame;
+  }
+  /*
+   * Constructs convex from file.
+   */
+  public VoronoiDraw(HilbertGeometryDraw g, String filename, DrawingApplet frame) {
+    this.voronoi = new Voronoi(g);
+    this.frame = frame;
+
+    Point2D.Double[] newPoints = load(filename);
+    for(int index = 0; index < newPoints.length; index++) {
+    	this.addPoint(newPoints[index]);
+    	g.addCenterPoint(newPoints[index], 1);
+    }
+    this.voronoi.computeVoronoi();
   }
   
   public void addPoint(Point2D.Double p) {
@@ -90,4 +107,32 @@ public class VoronoiDraw {
     this.voronoi.voronoiPoints.put(p, nearestPoint);
   }
   
+  /* Loads Voronoi points from input file */ 
+  public Point2D.Double[] load(String filename) {
+    Scanner in;
+    try {
+      in = new Scanner(new FileReader(filename));
+    } catch (FileNotFoundException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+      return null;
+    }
+    // Retrieving number of control points 
+    int N = 0;
+    try {N = in.nextInt();} catch(Exception e) {
+      System.out.println(e.getCause());
+    }
+    Point2D.Double[] controlPoints = new Point2D.Double[N];
+    
+    //Retrieving control points coordinates.
+    double X, Y;
+    for (int i = 0; i < N; i++) {
+      X = in.nextDouble();
+      Y = in.nextDouble();
+      controlPoints[i] = new Point2D.Double(X, Y);
+      }
+    
+    in.close();
+    return controlPoints;
+  }
 }

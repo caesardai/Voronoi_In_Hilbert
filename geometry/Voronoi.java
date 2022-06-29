@@ -1,5 +1,6 @@
 package geometry;
 import java.awt.geom.Point2D;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -23,7 +24,6 @@ public class Voronoi {
   /*
    * Adds a new center point.
    */
-
   public void addPoint(Point2D.Double p) {
     this.centerPoints.add(p);;
   }
@@ -94,4 +94,5 @@ public class Voronoi {
         }
       }
   }
+  
 }

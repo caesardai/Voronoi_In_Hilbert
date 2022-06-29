@@ -24,10 +24,10 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		DRAW_CONVEX, INCONVEXTEST, UNIT_BALL, VORONOI_DEF, VORONOI_FIND
 	};
 
-	private final static Mode[] MODES = { Mode.DRAW_CONVEX, /* Mode.INCONVEXTEST, */ Mode.UNIT_BALL,
+	private final static Mode[] MODES = { Mode.DRAW_CONVEX, /* Mode.INCONVEXTEST, */ /*Mode.UNIT_BALL*/,
 			Mode.VORONOI_DEF, /* Mode.VORONOI_FIND */ };
 	private int currentMode = 0;
-	private final static int NUMBER_MODES = 3;
+	private final static int NUMBER_MODES = 2;
 	private final static String SWITCH_MODE = "Change to mode: ";
 	static String FILENAME;
 	/* Buttons */
@@ -68,26 +68,31 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		size(800, 600);
 		initButton();
 
-		this.geometry = new HilbertGeometryDraw(this, FILENAME);
-		this.voronoi = new VoronoiDraw(geometry, this);
+                this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
+                if(FILENAME_VORONOI != null)
+                    this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
+                else
+                    this.voronoi = new VoronoiDraw(geometry, this);
 
 		// set starting mode
 		this.currentMode = 0;
 
-		// if points in Convex is not on the hull, add it to the HilbertGeometry object
-		if (this.geometry.convex.points.length > 0) {
-			// make sure there are no balls in geometry object
-			if (this.geometry.ballCount() > 0) {
-				for (int index = 0; index < this.geometry.ballCount(); index++)
-					this.geometry.removeBall(index);
-			}
-			for (Point2D.Double p : this.geometry.convex.points) {
-				if (this.geometry.convex.findPoint(p) == -1) {
-					double r = 2;
-					this.geometry.addCenterPoint(p, r);
-					;
-				}
-			}
+                // if points in Convex is not on the hull, add it to the HilbertGeometry object
+                if(this.geometry.convex.points.length > 0) {
+                    /* make sure there are no balls in geometry object
+                    if(this.geometry.ballCount() > 0) {
+                            for(int index = 0; index < this.geometry.ballCount(); index++ )
+                                    this.geometry.removeBall(index);
+                    }
+                    */
+                    /* Inserted non-hull points into HilbertGeometry object; no longer desired
+                    for(Point2D.Double p : this.geometry.convex.points) {
+                            if(this.geometry.convex.findPoint(p) == -1) { 
+                                            double r = 2;
+                                            this.geometry.addCenterPoint(p, r);;
+                            }
+                    }
+                    */
 		}
 	}
 
@@ -174,8 +179,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			return; // no convex Hull to display.
 		else
 			this.geometry.draw(false, -1);
-		for (this.indexOfSelectedPoint = 0; this.indexOfSelectedPoint < this.geometry
-				.ballCount(); this.indexOfSelectedPoint++)
+		for (this.indexOfSelectedPoint = 0; this.indexOfSelectedPoint < this.geometry.ballCount(); this.indexOfSelectedPoint++)
 			geometry.draw(true, this.indexOfSelectedPoint);
 		this.indexOfSelectedPoint = -1;
 		// if (MODES[currentMode].toString().contains("VORONOI"))
@@ -205,41 +209,57 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			return -1;
 	}
 
-	public void mouseClicked() {
-		Point2D.Double p = new Point2D.Double(mouseX, mouseY);
-
-		if (MODES[currentMode] == Mode.DRAW_CONVEX && mouseButton == LEFT) {
-			this.geometry.convex.addPoint(p);
-			this.voronoi.hasChanged = true;
-			System.out.println("Point added to convex: (" + mouseX + ", " + mouseY + ")");
-		} else if (MODES[currentMode] == Mode.UNIT_BALL && mouseButton == LEFT) {
-			this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
-			if (this.indexOfSelectedPoint == -1) {
-				this.geometry.addCenterPoint(p, radius);
-				this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
-			}
-		} else if (MODES[currentMode] == Mode.UNIT_BALL && mouseButton == RIGHT) {
-			int removedPoint = this.geometry.findCenterPoint(p);
-			if (removedPoint == this.indexOfSelectedPoint) {
-				this.indexOfSelectedPoint = -1;
-			}
-			this.geometry.convex.removePoint(p);
-		} else if (MODES[currentMode] == Mode.INCONVEXTEST && mouseButton == LEFT) {
-			if (this.geometry.isInConvex(p)) {
-				System.out.println("Is in convex.");
-			} else {
-				System.out.println("Not in convex.");
-			}
-		} else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == LEFT) {
-			this.voronoi.addPoint(p);
-			this.voronoi.computeVoronoi();
-		} else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == RIGHT) {
-			this.voronoi.removePoint(p);
-			this.voronoi.computeVoronoi();
-		} else if (MODES[currentMode] == Mode.VORONOI_FIND && mouseButton == LEFT) {
-			this.voronoi.colorPoint(p);
-		}
-	}
+        public void mouseClicked() {
+          Point2D.Double p=new Point2D.Double(mouseX, mouseY);
+          
+          if(MODES[currentMode] == Mode.DRAW_CONVEX && mouseButton==LEFT) {
+            this.geometry.convex.addPoint(p);
+            this.voronoi.hasChanged = true;
+            System.out.println("Point added to convex: ("+mouseX+", "+mouseY+")");
+          }
+          else if (MODES[currentMode] == Mode.UNIT_BALL && mouseButton == LEFT) {
+            this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+            if (this.indexOfSelectedPoint == - 1) {
+              this.geometry.addCenterPoint(p, radius); 
+              this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+            }
+          } else if (MODES[currentMode] == Mode.UNIT_BALL && mouseButton == RIGHT) {
+            int removedPoint = this.geometry.findCenterPoint(p);
+            if (removedPoint == this.indexOfSelectedPoint) {
+              this.indexOfSelectedPoint = -1;
+            }
+            this.geometry.convex.removePoint(p);
+          } else if (MODES[currentMode] == Mode.INCONVEXTEST && mouseButton == LEFT) {
+            if (this.geometry.isInConvex(p)) {
+              System.out.println("Is in convex.");
+            } else {
+              System.out.println("Not in convex.");
+            }
+          } else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == LEFT) {
+            // add to HilbertGeometry Object
+            this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+            if (this.indexOfSelectedPoint == - 1) {
+              this.geometry.addCenterPoint(p, radius); 
+              this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+            }
+              
+            // add to Voronoi Object
+            this.voronoi.addPoint(p);
+            this.voronoi.computeVoronoi();
+          } else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == RIGHT) {
+            // remove point from HilbertGeometry object
+            int removedPoint = this.geometry.findCenterPoint(p);
+            if (removedPoint == this.indexOfSelectedPoint) {
+              this.indexOfSelectedPoint = -1;
+            }
+              
+            // remove point from Voronoi object
+            this.voronoi.removePoint(p);
+            this.voronoi.computeVoronoi();
+          } else if (MODES[currentMode] == Mode.VORONOI_FIND && mouseButton == LEFT) {
+              this.voronoi.colorPoint(p);
+          }
+        }
 
 	public void mousePressed() {
 		Point2D.Double p = new Point2D.Double();
@@ -291,7 +311,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 
 	// will be commented out after implement ActionListener
 	public void keyPressed() {
-		System.out.println("keys: " + this.key);
 		if (this.key == 'q') {
 			this.currentMode = (this.currentMode + 1) % 3;
 			if (this.currentMode == 0)
