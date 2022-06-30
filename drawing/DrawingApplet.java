@@ -24,12 +24,13 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		DRAW_CONVEX, INCONVEXTEST, UNIT_BALL, VORONOI_DEF, VORONOI_FIND
 	};
 
-	private final static Mode[] MODES = { Mode.DRAW_CONVEX, /* Mode.INCONVEXTEST, */ /*Mode.UNIT_BALL*/,
+	private final static Mode[] MODES = { Mode.DRAW_CONVEX, /* Mode.INCONVEXTEST, */ /*Mode.UNIT_BALL,*/
 			Mode.VORONOI_DEF, /* Mode.VORONOI_FIND */ };
 	private int currentMode = 0;
 	private final static int NUMBER_MODES = 2;
 	private final static String SWITCH_MODE = "Change to mode: ";
-	static String FILENAME;
+	static String FILENAME_CONVEX;
+	static String FILENAME_VORONOI;
 	/* Buttons */
 	private Button button1, button2, button3;
 
@@ -41,6 +42,8 @@ public class DrawingApplet extends PApplet implements ActionListener {
 
 	static double radius = 1;
 	final static double RADIUS_STEP = 0.1;
+	
+	/* Variables to optimize perform of application */
 
 	/* Variables for moving points */
 	private float xOffset = 0.0f;
@@ -58,8 +61,11 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	private Panel convexPanel;
 
 	public static void main(String[] args) {
-		if (args != null && args.length > 0) {
-			FILENAME = args[0];
+		if (args != null) {
+			if(args.length > 0)
+				FILENAME_CONVEX = args[0];
+			if(args.length > 1)
+				FILENAME_VORONOI = args[1];
 		}
 		PApplet.main(new String[] { "drawing.DrawingApplet" });
 	}
@@ -101,13 +107,13 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		this.drawConvex = new Checkbox("Insert Convex", this.drawMode, true);
 		// this.drawConvex.setBackground(DrawUtil.WHITE);
 		// this.drawSpokes.setBackground(DrawUtil.WHITE);
-		this.drawSpokes = new Checkbox("Insert Sites", this.drawMode, false);
+		// this.drawSpokes = new Checkbox("Insert Sites", this.drawMode, false);
 		this.drawVoronoi = new Checkbox("Draw Voronoi", this.drawMode, false);
 		this.reinit = new Button("Reinitialize");
 		// this.reinit.setBackground(DrawUtil.WHITE);
 		this.convexPanel = new Panel();
 		this.convexPanel.add(this.drawConvex);
-		this.convexPanel.add(this.drawSpokes);
+		// this.convexPanel.add(this.drawSpokes);
 		this.convexPanel.add(this.drawVoronoi);
 		this.convexPanel.add(this.reinit);
 		// this.convexPanel.setBackground(DrawUtil.WHITE);
@@ -126,6 +132,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			}
 		});
 
+		/*
 		drawSpokes.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
@@ -133,11 +140,12 @@ public class DrawingApplet extends PApplet implements ActionListener {
 				voronoi.computeVoronoi();
 			}
 		});
+		*/
 
 		drawVoronoi.addItemListener(new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
-				currentMode = 2;
+				currentMode = 1;
 			}
 		});
 
@@ -167,10 +175,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		 */
 	}
 
-	private void add(Button b) {
-		// unsure what this is suppose to do
-	}
-
 	public void draw() {
 		background(220);
 		textFont(createFont("Arial", 12, true), 12); // STEP 4 Specify font to be used
@@ -182,9 +186,10 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		for (this.indexOfSelectedPoint = 0; this.indexOfSelectedPoint < this.geometry.ballCount(); this.indexOfSelectedPoint++)
 			geometry.draw(true, this.indexOfSelectedPoint);
 		this.indexOfSelectedPoint = -1;
-		// if (MODES[currentMode].toString().contains("VORONOI"))
-		voronoi.computeVoronoi();
-		voronoi.drawPoints();
+		if (/*MODES[currentMode].toString().contains("VORONOI")*/ true) {
+			voronoi.drawPoints();
+			this.voronoi.hasChanged = false;
+		}
 	}
 
 	/*
@@ -216,6 +221,8 @@ public class DrawingApplet extends PApplet implements ActionListener {
             this.geometry.convex.addPoint(p);
             this.voronoi.hasChanged = true;
             System.out.println("Point added to convex: ("+mouseX+", "+mouseY+")");
+            if(this.voronoi.numPoints() > 0)
+            	this.voronoi.computeVoronoi();
           }
           else if (MODES[currentMode] == Mode.UNIT_BALL && mouseButton == LEFT) {
             this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
@@ -246,6 +253,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
             // add to Voronoi Object
             this.voronoi.addPoint(p);
             this.voronoi.computeVoronoi();
+            this.voronoi.hasChanged = true;
           } else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == RIGHT) {
             // remove point from HilbertGeometry object
             int removedPoint = this.geometry.findCenterPoint(p);
@@ -301,16 +309,20 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			Point2D.Double q = new Point2D.Double(mouseX - xOffset, mouseY - yOffset);
 			if (MODES[currentMode] == Mode.DRAW_CONVEX) {
 				this.geometry.movePoint(indexOfMovingPoint, q);
+				this.voronoi.hasChanged = true;
 			} else if (MODES[currentMode] == Mode.UNIT_BALL) {
 				this.geometry.moveCenterPoint(indexOfMovingPoint, q);
 			} else if (MODES[currentMode] == Mode.VORONOI_DEF) {
-				this.voronoi.movePoint(indexOfMovingPoint, q);
+			    this.geometry.moveCenterPoint(indexOfMovingPoint, q);
+			    this.voronoi.movePoint(indexOfMovingPoint, q);
+				this.voronoi.hasChanged = true;
 			}
 		}
 	}
 
 	// will be commented out after implement ActionListener
 	public void keyPressed() {
+		/* 
 		if (this.key == 'q') {
 			this.currentMode = (this.currentMode + 1) % 3;
 			if (this.currentMode == 0)
@@ -321,6 +333,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 				System.out.println("in drawing voronoi diagram mode");
 
 		}
+		*/
 	}
 
 	@Override

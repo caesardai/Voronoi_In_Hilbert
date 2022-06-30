@@ -69,14 +69,20 @@ public class Voronoi {
    * Gives the index of the center point nearest to p. 
    */
   public int nearestPoint(Point2D.Double p) {
+	if (centerPoints.size() == 0) {return -1;}
     if (centerPoints.size() == 1) {return 0;}
     int nearestPoint = 0;
     double nearestDistance = geometry.distance(p, centerPoints.get(0));
     for (int i = 1; i < centerPoints.size(); i++) {
       double tempDist = geometry.distance(p, centerPoints.get(i));
+      if(Double.isInfinite(tempDist)) continue;
       if (tempDist < nearestDistance) {
         nearestDistance = tempDist; 
         nearestPoint = i;
+      } else if(tempDist == nearestDistance) { // if p is equidistant from two voronoi sites (may not be shortest distance between all sites in the diagram
+    	  // System.out.println("Distance from p from site 1: " + geometry.distance(p, this.centerPoints.get(nearestPoint)));
+    	  // System.out.println("Distance from p from site 2: " + geometry.distance(p, this.centerPoints.get(i)) + "\n");
+    	  nearestPoint = this.centerPoints.size();
       }
     }
     return nearestPoint;

@@ -17,7 +17,7 @@ public class VoronoiDraw {
   private Voronoi voronoi;
   private LinkedList<Point3d> colors = new LinkedList<Point3d>();
   private final static Random RANDOM_INT = new Random();
-  protected boolean hasChanged = true;
+  protected boolean hasChanged = false;
   
   public VoronoiDraw(HilbertGeometryDraw g, DrawingApplet frame) {
     this.voronoi = new Voronoi(g);
@@ -46,6 +46,10 @@ public class VoronoiDraw {
   
   public int findPoint(Point2D.Double p) {
     return this.voronoi.findPoint(p);
+  }
+  
+  public int numPoints() {
+	  return this.voronoi.centerPoints.size();
   }
 
   public Point2D.Double getPoint(int index) {
@@ -83,11 +87,24 @@ public class VoronoiDraw {
   public void drawPoints() {
     synchronized(this) {
       int N = this.voronoi.centerPoints.size();
+      if(N == 0) return;
       for (Point2D.Double p : this.voronoi.voronoiPoints.keySet()) {
-        Point3d color = this.colors.get(this.voronoi.voronoiPoints.get(p));
-        this.frame.fill((float)color.x, (float)color.y, (float)color.z);
-        this.frame.stroke((float)color.x, (float)color.y, (float)color.z);
-        this.frame.ellipse((float)p.x, (float)p.y, 1, 1);
+    	int siteIndex = this.voronoi.voronoiPoints.get(p);
+    	Point3d color;
+        // if our selected point is equidistant between two sites
+    	if(siteIndex == this.voronoi.centerPoints.size()) {
+    		color = new Point3d(0, 0, 0);
+    		// System.out.println("Found equidistant points");
+			this.frame.fill((float)color.x, (float)color.y, (float)color.z);
+			this.frame.stroke((float)color.x, (float)color.y, (float)color.z);
+			this.frame.ellipse((float)p.x, (float)p.y, 1, 1);
+    	} else {
+    		color = this.colors.get(siteIndex);
+			this.frame.fill((float)color.x, (float)color.y, (float)color.z);
+			this.frame.stroke((float)color.x, (float)color.y, (float)color.z);
+			this.frame.ellipse((float)p.x, (float)p.y, 1, 1);
+    	}
+    	  
       }
       
       for (int i = 0; i < N; i++) {
