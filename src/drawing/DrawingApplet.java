@@ -71,7 +71,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	}
 
 	public void setup() {
-		size(800, 600);
+		size(1400, 900);
 		initButton();
 
                 this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
@@ -183,13 +183,13 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			return; // no convex Hull to display.
 		else
 			this.geometry.draw(false, -1);
-		for (this.indexOfSelectedPoint = 0; this.indexOfSelectedPoint < this.geometry.ballCount(); this.indexOfSelectedPoint++)
-			geometry.draw(true, this.indexOfSelectedPoint);
-		this.indexOfSelectedPoint = -1;
 		if (/*MODES[currentMode].toString().contains("VORONOI")*/ true) {
 			voronoi.drawPoints();
 			this.voronoi.hasChanged = false;
 		}
+		for (this.indexOfSelectedPoint = 0; this.indexOfSelectedPoint < this.geometry.ballCount(); this.indexOfSelectedPoint++)
+			geometry.draw(true, this.indexOfSelectedPoint);
+		this.indexOfSelectedPoint = -1;
 	}
 
 	/*

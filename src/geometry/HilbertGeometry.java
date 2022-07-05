@@ -261,11 +261,11 @@ public class HilbertGeometry {
     return result;
   }
   
-  private static Point3d toHomogeneous(Point2D.Double p) {
+  protected static Point3d toHomogeneous(Point2D.Double p) {
     return new Point3d(p.x, p.y, 1);
   }
   
-  private static Point2D.Double toCartesian(Point3d p) {
+  protected static Point2D.Double toCartesian(Point3d p) {
     if (p.z == 0) return null;
     return new Point2D.Double(p.x / p.z, p.y / p.z);
   }

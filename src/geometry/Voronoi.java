@@ -1,8 +1,10 @@
 package geometry;
 import java.awt.geom.Point2D;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.lang.Math;
 
 public class Voronoi {
   /* HG where we compute voronoi diagram */
@@ -101,4 +103,45 @@ public class Voronoi {
       }
   }
   
+  // rotates point p by some angle theta
+  private static Point2D.Double rotationMatrix(Point2D.Double p, double theta) {
+	  Double[][] R = new Double[2][2];
+	  R[0][0] = Math.cos(theta);
+	  R[1][1] = R[0][0];
+	  R[1][0] = Math.sin(theta);
+	  R[0][1] = - R[1][0];
+	  
+	  return new Point2D.Double(R[0][0] * p.x + R[0][1] * p.y, R[1][0] * p.x + R[1][1] * p.y);
+  }
+  
+  // return coefficients of all lines that intersect the Voronoi site and rotated point for site s
+  public static Double[][] thetaRays(Point2D.Double s, int n) {
+	  // ensure that angular division is a valid number
+	  if(n < 1) return null;
+	  
+	  Point2D.Double p = new Point2D.Double(1, 0);
+	  Double[][] lines = new Double[n][3];
+	  for(int k = 0; k < n; k++) {
+		  // determine rotated point
+		  Point2D.Double r = rotationMatrix(p, k * Math.toRadians(360 / n));
+		  r.x += s.x;
+		  r.y += s.y;
+		  
+		  // convert points to homogeneous coordinates and compute line between the two lines
+		  Point3d hr = HilbertGeometry.toHomogeneous(r);
+		  Point3d hs = HilbertGeometry.toHomogeneous(s);
+		  Point3d rsLine = hr.crossProduct(hs);
+		  lines[k][0] = rsLine.x;
+		  lines[k][1] = rsLine.y;
+		  lines[k][2] = rsLine.z;
+		  // System.out.println( k + ": " + (rsLine.x * s.x + rsLine.y * s.y + rsLine.z) + " : " + (rsLine.x * r.x + rsLine.y * r.y + rsLine.z) );
+	  }
+	  
+	  return lines;
+  }
+  
+  public static void main(String[] args) {
+	 Point2D.Double point = new Point2D.Double(0, 0); 
+	 Double[][] results = Voronoi.thetaRays(point, 200);
+  }
 }

@@ -113,6 +113,7 @@ public class VoronoiDraw {
         this.frame.fill((float)color.x, (float)color.y, (float)color.z);
         this.frame.stroke(255, 255, 255);
         this.frame.ellipse((float)p.x, (float)p.y, 10, 10);
+        // System.out.println("Site: (" + (float) p.x + ", " + (float) p.y + ")");
       }
     }
     this.frame.fill(0, 0, 0);
