@@ -139,6 +139,58 @@ public class Voronoi {
 	  
 	  return lines;
   }
+	
+  public void thetaRayTrace(double[][] lines) {
+	int rayIndex = 1;
+	int x0 = 0;
+	double y0;
+	double y;
+	double y_ver;
+		
+	Point2D.Double currentPoint = new Point2D.Double(0, 0);
+	Point2D.Double nextPoint = new Point2D.Double(0, 0);
+	int currentColor;
+	int nextColor;
+	
+	// Initialize ray tracing
+	y0 = -(lines[x0][0] + lines[x0][2]) / lines[x0][1];
+	currentPoint.setLocation(x0, y0);
+
+	for (int x = 1; x < 300; x++) {
+		rayIndex++;
+		nextPoint = currentPoint;
+
+		// If the point is vertical then increment y
+		if (lines[x][1] == 0) {
+			for (int x_ver = 0; x_ver < 300; x++) {
+				rayIndex++;
+				nextPoint = currentPoint;
+		
+				y_ver = lines[x_ver][0] + lines[x_ver][2];
+					
+				currentPoint.setLocation(x_ver, y_ver);
+				currentColor = voronoiPoints.get(currentPoint);
+				nextColor = voronoiPoints.get(nextPoint);
+
+				if (currentColor != nextColor) {
+					System.out.println("The intersection point of thetaRay" + rayIndex + ": " +  nextPoint);
+				}
+			}
+		}
+
+		// trace until Voronoi points color change
+		y = -(lines[x][0] + lines[x][2]) / lines[x][1];
+		currentPoint.setLocation(x, y);
+		currentColor = voronoiPoints.get(currentPoint);
+		nextColor = voronoiPoints.get(nextPoint);
+
+		if (currentColor != nextColor) {
+			System.out.println("The intersection point of thetaRay" + rayIndex + ": "+  nextPoint);
+		}
+	}
+
+	System.out.println("The intersection point of thetaRay" + rayIndex + ": "+  nextPoint);
+  }
   
   public static void main(String[] args) {
 	 Point2D.Double point = new Point2D.Double(0, 0); 
