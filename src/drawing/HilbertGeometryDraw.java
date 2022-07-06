@@ -128,17 +128,40 @@ public class HilbertGeometryDraw extends HilbertGeometry {
    * Draws the ray from a centerPoint
    */
   private void drawRays(Point2D.Double p) {
-    DrawUtil.changeColor(this.frame, DrawUtil.GREY);
-    for (Point2D.Double q: this.convex.convexHull) {
-      Point2D.Double[] r = this.intersectionPoints(p,  q);
-      if (r.length == 2 && r[0]!= null && r[1] != null) {
-        if (Util.samePoints(r[0], q)) {
-          DrawUtil.drawSegment(q, r[1], this.frame);
-        } else {
-          DrawUtil.drawSegment(q, r[0], this.frame); 
-        } 
-      }
-    }
-    DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
-  }
+		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
+		for (Point2D.Double q : this.convex.convexHull) {
+			
+			int n = 10;
+			Double[][] results = Voronoi.thetaRays(q, n);
+			Double[][] bisectorPoints = this.frame.voronoi.thetaRayTrace(results);
+			
+			Double theta = Voronoi.spokeAngle(p, q);
+			int unit = (int) (theta / (2 * Math.PI / n));
+			
+			// find intersection between lines PQ and bp[unit]-bp[unit+1]
+			Point3d pqLine = this.toHomogeneous(p).crossProduct(this.toHomogeneous(q));
+			Point2D.Double bp1 = new Point2D.Double(bisectorPoints[unit][0], bisectorPoints[unit][1]);
+			Point2D.Double bp2 = new Point2D.Double(bisectorPoints[unit+1][0], bisectorPoints[unit+1][1]);
+			Point3d bisectorLine = this.toHomogeneous(bp1).crossProduct(this.toHomogeneous(bp2));
+			
+			Point2D.Double intersection = this.toCartesian(pqLine.crossProduct(bisectorLine));
+			
+			// draw line between hull and intersection point
+			DrawUtil.drawSegment(q, intersection, this.frame);
+			
+			
+			
+			/*
+			Point2D.Double[] r = this.intersectionPoints(p, q);
+			if (r.length == 2 && r[0] != null && r[1] != null) {
+				if (Util.samePoints(r[0], q)) {
+					DrawUtil.drawSegment(q, r[1], this.frame);
+				} else {
+					DrawUtil.drawSegment(q, r[0], this.frame);
+				}
+			}
+			*/
+		}
+		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
+	}
 }
