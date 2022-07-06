@@ -102,6 +102,13 @@ public class Voronoi {
         }
       }
   }
+	
+  public static double spokeAngle(Point2D.Double p, Point2D.Double q) {
+	double deltaX = q.getX() - p.getX();
+	double deltaY = q.getY() - p.getY();
+	double angle = Math.tan(Math.abs(deltaY) / Math.abs(deltaX));
+	return angle;
+  }
   
   // rotates point p by some angle theta
   private static Point2D.Double rotationMatrix(Point2D.Double p, double theta) {
