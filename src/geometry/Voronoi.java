@@ -140,7 +140,7 @@ public class Voronoi {
 	  return lines;
   }
 	
-  public void thetaRayTrace(double[][] lines) {
+  public void thetaRayTrace(Double[][] lines) {
 	int rayIndex = 1;
 	int x0 = 0;
 	double y0;
