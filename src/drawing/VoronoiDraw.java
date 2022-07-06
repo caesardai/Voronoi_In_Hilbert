@@ -51,6 +51,10 @@ public class VoronoiDraw {
   public int numPoints() {
 	  return this.voronoi.centerPoints.size();
   }
+  
+  public Double[][] thetaRayTrace(Double[][] lines) {
+	  return this.voronoi.thetaRayTrace(lines);
+  }
 
   public Point2D.Double getPoint(int index) {
     return this.voronoi.getPoint(index);
@@ -113,7 +117,6 @@ public class VoronoiDraw {
         this.frame.fill((float)color.x, (float)color.y, (float)color.z);
         this.frame.stroke(255, 255, 255);
         this.frame.ellipse((float)p.x, (float)p.y, 10, 10);
-        // System.out.println("Site: (" + (float) p.x + ", " + (float) p.y + ")");
       }
     }
     this.frame.fill(0, 0, 0);
@@ -124,6 +127,7 @@ public class VoronoiDraw {
     int nearestPoint = this.voronoi.nearestPoint(p);
     this.voronoi.voronoiPoints.put(p, nearestPoint);
   }
+
   
   /* Loads Voronoi points from input file */ 
   public Point2D.Double[] load(String filename) {
@@ -154,3 +158,4 @@ public class VoronoiDraw {
     return controlPoints;
   }
 }
+
