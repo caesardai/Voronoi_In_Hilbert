@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Set;
 
 public class Voronoi {
 	/* HG where we compute voronoi diagram */
@@ -188,10 +189,10 @@ public class Voronoi {
 		return lines;
 	}
 
-	public Double[][] thetaRayTrace(Double[][] lines) {
+	public Double[][] thetaRayTrace(Double[][] lines, Point2D.Double site) {
 		int rayIndex = 0;
-		int x0 = 0;
-		double y0;
+		int x0 = (int) site.x;
+		double y0 = (int) site.y;
 		double y;
 		double y_ver;
 		Double[][] bisectorPoints = new Double[lines.length][2];
@@ -205,7 +206,6 @@ public class Voronoi {
 		// Initialize 1st point ray tracing
 		y0 = -(lines[x0][0] + lines[x0][2]) / lines[x0][1];
 		currentPoint.setLocation(x0, y0);
-		System.out.println("We got here1!");
 
 		for (int x = 1; x < 300; x++) {
 			rayIndex++;
@@ -233,9 +233,31 @@ public class Voronoi {
 			}
 
 			else {
+				Set<Point2D.Double> keys = voronoiPoints.keySet();
+				System.out.println("key set size: " + keys.size());
+				
 				// trace until Voronoi points color change
 				y = -(lines[x][0] + lines[x][2]) / lines[x][1];
-				currentPoint.setLocation(x, y);
+				currentPoint.setLocation((int) x, (int) y);
+
+				for(int i = 0; i < 9; i++) {
+					if(i == 1 || i == 7)
+						currentPoint.x += 1;
+					else if(i == 2 || i == 5 || i == 6)
+						currentPoint.y += 1;
+					else if(i == 3)
+						currentPoint.y -= 2;
+					else if(i == 4)
+						currentPoint.x -= 2;
+					else if(i == 8)
+						currentPoint.y += 2;
+
+					if(!voronoiPoints.containsKey(currentPoint))
+						System.out.println("(" + currentPoint.x + ", " + currentPoint.y +  "): is not in keyset");
+					else
+						System.out.println("(" + currentPoint.x + ", " + currentPoint.y +  "): is not in keyset");
+				}
+
 				currentColor = voronoiPoints.get(currentPoint);
 				nextColor = voronoiPoints.get(nextPoint);
 

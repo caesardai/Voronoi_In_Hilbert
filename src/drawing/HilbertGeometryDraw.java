@@ -3,6 +3,8 @@ package drawing;
 import geometry.Convex;
 import geometry.HilbertGeometry;
 import geometry.Util;
+import geometry.Voronoi;
+import geometry.Point3d;
 
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
@@ -133,6 +135,9 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			
 			int n = 10;
 			Double[][] results = Voronoi.thetaRays(q, n);
+			if(this.frame.voronoi == null)
+				System.out.println("voronoi draw is null");
+			// loop through all voronoi sites
 			Double[][] bisectorPoints = this.frame.voronoi.thetaRayTrace(results);
 			
 			Double theta = Voronoi.spokeAngle(p, q);
