@@ -138,7 +138,7 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			if(this.frame.voronoi == null)
 				System.out.println("voronoi draw is null");
 			// loop through all voronoi sites
-			Double[][] bisectorPoints = this.frame.voronoi.thetaRayTrace(results);
+			Double[][] bisectorPoints = this.frame.voronoi.thetaRayTrace(results, p);
 			
 			Double theta = Voronoi.spokeAngle(p, q);
 			int unit = (int) (theta / (2 * Math.PI / n));

@@ -189,6 +189,36 @@ public class Voronoi {
 		return lines;
 	}
 
+	private Point2D.Double closestPoint(Point2D.Double p) {
+		// check if given point is already in the hashmap
+		if(this.voronoiPoints.containsKey(p)) return p;
+		
+		// otherwise, look at surrounding eight points
+		Point2D.Double testPoint = new Point2D.Double(p.x-1, p.y-1);
+		for (int i = 0; i < 9; i++) {
+			// don't check center point again
+			if(i == 4) {
+				testPoint.x += 1;
+				continue;
+			}
+			
+			// check if given point is in hashmap
+			if (voronoiPoints.containsKey(testPoint))
+				return testPoint;
+			
+			System.out.println("tested point (" + testPoint.x + ", " + testPoint.y + ")");
+
+			// otherwise, change point to the next point
+			if(i % 3 != 2) 
+				testPoint.x += 1;
+			else {
+				testPoint.x -= 2;
+				testPoint.y += 1;
+			}
+		}
+		return null;
+	}
+	
 	public Double[][] thetaRayTrace(Double[][] lines, Point2D.Double site) {
 		int rayIndex = 0;
 		int x0 = (int) site.x;
@@ -238,29 +268,18 @@ public class Voronoi {
 
 				// trace until Voronoi points color change
 				y = -(lines[rayIndex][0] * x + lines[rayIndex][2]) / lines[rayIndex][1];
-				System.out.println("x: " + (int) x + " y: " + (int) y);
+				System.out.println("site location: " + site.x + ", " + site.y);
+				System.out.println("Point - x: " + (int) x + " y: " + (int) y);
+				System.out.println("Line: " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
 				currentPoint.setLocation((int) x, (int) y);
 
-//				for (int i = 0; i < 9; i++) {
-//					if (i == 1 || i == 7)
-//						currentPoint.x += 1;
-//					else if (i == 2 || i == 5 || i == 6)
-//						currentPoint.y += 1;
-//					else if (i == 3)
-//						currentPoint.y -= 2;
-//					else if (i == 4)
-//						currentPoint.x -= 2;
-//					else if (i == 8)
-//						currentPoint.y += 2;
-//
-//					if (!voronoiPoints.containsKey(currentPoint))
-//						System.out.println("(" + currentPoint.x + ", " + currentPoint.y + "): is not in keyset");
-//					else
-//						System.out.println("(" + currentPoint.x + ", " + currentPoint.y + "): is not in keyset");
-//				}
 
-				currentColor = voronoiPoints.get(currentPoint);
-				nextColor = voronoiPoints.get(nextPoint);
+				Point2D cc = closestPoint(currentPoint);
+				Point2D nc = closestPoint(nextPoint);
+				currentColor = voronoiPoints.get(cc);
+				nextColor = voronoiPoints.get(nc);
+				System.out.println("closest point to currentPoint: " + cc);
+				System.out.println("closest point to nextPoint: " + nc);
 				
 				
 
