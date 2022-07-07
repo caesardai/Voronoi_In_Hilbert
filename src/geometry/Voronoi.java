@@ -160,7 +160,7 @@ public class Voronoi {
 
 	// return coefficients of all lines that intersect the Voronoi site and rotated
 	// point for site s
-	public static Double[][] thetaRays(Point2D.Double s, int n) { // deleted static
+	public static Double[][] thetaRays(Point2D.Double s, int n) {
 		System.out.println("thetaRays starting.");
 		// ensure that angular division is a valid number
 		if (n < 1)
@@ -194,25 +194,25 @@ public class Voronoi {
 		int x0 = (int) site.x;
 		double y0 = (int) site.y;
 		double y;
-		double y_ver;
+		double y_ver; // vertical
 		Double[][] bisectorPoints = new Double[lines.length][2];
 		System.out.println("thetaRayTracing starting.");
 
 		int currentColor;
 		int nextColor;
-		Point2D.Double currentPoint = new Point2D.Double(0, 0);
+		Point2D.Double currentPoint = new Point2D.Double(x0, y0);
 		Point2D.Double nextPoint = new Point2D.Double(0, 0);
 
 		// Initialize 1st point ray tracing
-		y0 = -(lines[x0][0] + lines[x0][2]) / lines[x0][1];
-		currentPoint.setLocation(x0, y0);
+		// y0 = -(lines[rayIndex][0] + lines[rayIndex][2]) / lines[rayIndex][1];
+		// currentPoint.setLocation(x0, y0);
 
-		for (int x = 1; x < 300; x++) {
+		for (int x = x0 + 1; x < x0 + 300; x++) {
 			rayIndex++;
-			nextPoint = currentPoint;
+			nextPoint.setLocation(currentPoint);
 
 			// If the point is vertical then increment y
-			if (lines[x][1] == 0) {
+			if (lines[rayIndex][1] == 0) {
 				for (int x_ver = 0; x_ver < 300; x++) {
 					rayIndex++;
 					nextPoint = currentPoint;
@@ -233,33 +233,36 @@ public class Voronoi {
 			}
 
 			else {
-				Set<Point2D.Double> keys = voronoiPoints.keySet();
-				System.out.println("key set size: " + keys.size());
-				
+//				Set<Point2D.Double> keys = voronoiPoints.keySet();
+//				System.out.println("key set size: " + keys.size());
+
 				// trace until Voronoi points color change
-				y = -(lines[x][0] + lines[x][2]) / lines[x][1];
+				y = -(lines[rayIndex][0] * x + lines[rayIndex][2]) / lines[rayIndex][1];
+				System.out.println("x: " + (int) x + " y: " + (int) y);
 				currentPoint.setLocation((int) x, (int) y);
 
-				for(int i = 0; i < 9; i++) {
-					if(i == 1 || i == 7)
-						currentPoint.x += 1;
-					else if(i == 2 || i == 5 || i == 6)
-						currentPoint.y += 1;
-					else if(i == 3)
-						currentPoint.y -= 2;
-					else if(i == 4)
-						currentPoint.x -= 2;
-					else if(i == 8)
-						currentPoint.y += 2;
-
-					if(!voronoiPoints.containsKey(currentPoint))
-						System.out.println("(" + currentPoint.x + ", " + currentPoint.y +  "): is not in keyset");
-					else
-						System.out.println("(" + currentPoint.x + ", " + currentPoint.y +  "): is not in keyset");
-				}
+//				for (int i = 0; i < 9; i++) {
+//					if (i == 1 || i == 7)
+//						currentPoint.x += 1;
+//					else if (i == 2 || i == 5 || i == 6)
+//						currentPoint.y += 1;
+//					else if (i == 3)
+//						currentPoint.y -= 2;
+//					else if (i == 4)
+//						currentPoint.x -= 2;
+//					else if (i == 8)
+//						currentPoint.y += 2;
+//
+//					if (!voronoiPoints.containsKey(currentPoint))
+//						System.out.println("(" + currentPoint.x + ", " + currentPoint.y + "): is not in keyset");
+//					else
+//						System.out.println("(" + currentPoint.x + ", " + currentPoint.y + "): is not in keyset");
+//				}
 
 				currentColor = voronoiPoints.get(currentPoint);
 				nextColor = voronoiPoints.get(nextPoint);
+				
+				
 
 				if (currentColor != nextColor) {
 					System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
@@ -271,4 +274,5 @@ public class Voronoi {
 
 		return bisectorPoints;
 	}
+	
 }
