@@ -130,13 +130,26 @@ public class HilbertGeometryDraw extends HilbertGeometry {
    * Draws the ray from a centerPoint
    */
   private void drawRays(Point2D.Double p) {
+	  	/*
 		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
 		for (Point2D.Double q : this.convex.convexHull) {
-			
+			Point2D.Double[] r = this.intersectionPoints(p, q);
+			if (r.length == 2 && r[0] != null && r[1] != null) {
+				if (Util.samePoints(r[0], q)) {
+					DrawUtil.drawSegment(q, r[1], this.frame);
+				} else {
+					DrawUtil.drawSegment(q, r[0], this.frame);
+				}
+			}
+		}
+		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
+		*/
+
+	  	// to be placed in VoronoiDraw later
+		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
+		for (Point2D.Double q : this.convex.convexHull) {
 			int n = 10;
-			Double[][] results = Voronoi.thetaRays(q, n);
-			if(this.frame.voronoi == null)
-				System.out.println("voronoi draw is null");
+			Double[][] results = Voronoi.thetaRays(p, n);
 			// loop through all voronoi sites
 			Double[][] bisectorPoints = this.frame.voronoi.thetaRayTrace(results, p);
 			
@@ -153,19 +166,7 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			
 			// draw line between hull and intersection point
 			DrawUtil.drawSegment(q, intersection, this.frame);
-			
-			
-			
-			/*
-			Point2D.Double[] r = this.intersectionPoints(p, q);
-			if (r.length == 2 && r[0] != null && r[1] != null) {
-				if (Util.samePoints(r[0], q)) {
-					DrawUtil.drawSegment(q, r[1], this.frame);
-				} else {
-					DrawUtil.drawSegment(q, r[0], this.frame);
-				}
-			}
-			*/
+
 		}
 		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
 	}

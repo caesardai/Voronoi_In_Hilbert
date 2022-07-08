@@ -127,6 +127,10 @@ public class VoronoiDraw {
     int nearestPoint = this.voronoi.nearestPoint(p);
     this.voronoi.voronoiPoints.put(p, nearestPoint);
   }
+  
+  public void drawRays(Point2D.Double p) {
+	  
+  }
 
   
   /* Loads Voronoi points from input file */ 

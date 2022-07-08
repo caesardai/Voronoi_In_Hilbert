@@ -21,4 +21,8 @@ public class Util {
     }
     return false;
   }
+  
+  public static String printCoordinate(Point2D.Double p) {
+	  return "(" + p.x + ", " + p.y + ")";
+  }
 }

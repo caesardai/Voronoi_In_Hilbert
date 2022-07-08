@@ -182,8 +182,7 @@ public class Voronoi {
 			lines[k][0] = rsLine.x;
 			lines[k][1] = rsLine.y;
 			lines[k][2] = rsLine.z;
-			// System.out.println( k + ": " + (rsLine.x * s.x + rsLine.y * s.y + rsLine.z) +
-			// " : " + (rsLine.x * r.x + rsLine.y * r.y + rsLine.z) );
+			// System.out.println("Line between (" + r.x + ", " + r.y + ") and (" + s.x + ", " + s.y + "): " + rsLine.x + "x + " + rsLine.y + "y + " + rsLine.z + " = 0");
 		}
 
 		return lines;
@@ -191,7 +190,10 @@ public class Voronoi {
 
 	private Point2D.Double closestPoint(Point2D.Double p) {
 		// check if given point is already in the hashmap
-		if(this.voronoiPoints.containsKey(p)) return p;
+		if(this.voronoiPoints.containsKey(p)) {
+			System.out.println("valid point: " + Util.printCoordinate(p) + "\n");
+			return p;
+		}
 		
 		// otherwise, look at surrounding eight points
 		Point2D.Double testPoint = new Point2D.Double(p.x-1, p.y-1);
@@ -203,10 +205,12 @@ public class Voronoi {
 			}
 			
 			// check if given point is in hashmap
-			if (voronoiPoints.containsKey(testPoint))
+			if (voronoiPoints.containsKey(testPoint)) {
+				System.out.println("valid point: " + Util.printCoordinate(testPoint) + "\n");
 				return testPoint;
+			}
 			
-			System.out.println("tested point (" + testPoint.x + ", " + testPoint.y + ")");
+			System.out.println("tested point " + Util.printCoordinate(testPoint));
 
 			// otherwise, change point to the next point
 			if(i % 3 != 2) 
@@ -216,11 +220,11 @@ public class Voronoi {
 				testPoint.y += 1;
 			}
 		}
+		System.out.println("no points were found");
 		return null;
 	}
 	
 	public Double[][] thetaRayTrace(Double[][] lines, Point2D.Double site) {
-		int rayIndex = 0;
 		int x0 = (int) site.x;
 		double y0 = (int) site.y;
 		double y;
@@ -237,56 +241,66 @@ public class Voronoi {
 		// y0 = -(lines[rayIndex][0] + lines[rayIndex][2]) / lines[rayIndex][1];
 		// currentPoint.setLocation(x0, y0);
 
-		for (int x = x0 + 1; x < x0 + 300; x++) {
-			rayIndex++;
-			nextPoint.setLocation(currentPoint);
+		for(int rayIndex = 0; rayIndex < lines.length; rayIndex++) {
+			for (int x = x0 + 1; x < x0 + 300; x++) {
+				nextPoint.setLocation(currentPoint);
 
-			// If the point is vertical then increment y
-			if (lines[rayIndex][1] == 0) {
-				for (int x_ver = 0; x_ver < 300; x++) {
-					rayIndex++;
-					nextPoint = currentPoint;
+				// If the point is vertical then increment y
+				if (lines[rayIndex][1] == 0) {
+					for (int x_ver = 0; x_ver < 300; x++) {
+						nextPoint = currentPoint;
 
-					y_ver = lines[x_ver][0] + lines[x_ver][2];
+						y_ver = lines[x_ver][0] + lines[x_ver][2];
 
-					currentPoint.setLocation(x_ver, y_ver);
-					currentColor = voronoiPoints.get(currentPoint);
-					nextColor = voronoiPoints.get(nextPoint);
+						currentPoint.setLocation(x_ver, y_ver);
+						currentColor = voronoiPoints.get(currentPoint);
+						nextColor = voronoiPoints.get(nextPoint);
+
+						if (currentColor != nextColor) {
+							System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
+							bisectorPoints[rayIndex][0] = nextPoint.x;
+							bisectorPoints[rayIndex][1] = nextPoint.y;
+
+						}
+					}
+				}
+
+				else {
+	//				Set<Point2D.Double> keys = voronoiPoints.keySet();
+	//				System.out.println("key set size: " + keys.size());
+
+					// trace until Voronoi points color change
+					y = -(lines[rayIndex][0] * x + lines[rayIndex][2]) / lines[rayIndex][1];
+					currentPoint.setLocation((int) x, (int) y);
+
+					Point2D.Double cc = closestPoint(currentPoint);
+					Point2D.Double nc = closestPoint(nextPoint);
+					
+					if(cc == null || nc == null) {
+						if(cc == null) System.out.println("cc: null");
+						if(nc == null) System.out.println("nc: null");
+
+						System.out.println("site: " + site.x + ", " + site.y);
+						System.out.println("currentPoint: " + currentPoint.x + " y: " + currentPoint.y);
+						System.out.println("nextPoint: " + nextPoint.x + " y: " + nextPoint.y);
+						System.out.println("Line: " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
+						this.geometry.extremePoints();
+						System.out.print("minX: " + this.geometry.min_X);
+						System.out.print(", maxX: " + this.geometry.max_X);
+						System.out.print(", minY: " + this.geometry.min_Y);
+						System.out.println(", maxY: " + this.geometry.max_Y);
+					}
+					currentColor = voronoiPoints.get(cc);
+					nextColor = voronoiPoints.get(nc);
+					
+					
+					
 
 					if (currentColor != nextColor) {
 						System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
 						bisectorPoints[rayIndex][0] = nextPoint.x;
 						bisectorPoints[rayIndex][1] = nextPoint.y;
-
 					}
-				}
-			}
-
-			else {
-//				Set<Point2D.Double> keys = voronoiPoints.keySet();
-//				System.out.println("key set size: " + keys.size());
-
-				// trace until Voronoi points color change
-				y = -(lines[rayIndex][0] * x + lines[rayIndex][2]) / lines[rayIndex][1];
-				System.out.println("site location: " + site.x + ", " + site.y);
-				System.out.println("Point - x: " + (int) x + " y: " + (int) y);
-				System.out.println("Line: " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
-				currentPoint.setLocation((int) x, (int) y);
-
-
-				Point2D cc = closestPoint(currentPoint);
-				Point2D nc = closestPoint(nextPoint);
-				currentColor = voronoiPoints.get(cc);
-				nextColor = voronoiPoints.get(nc);
-				System.out.println("closest point to currentPoint: " + cc);
-				System.out.println("closest point to nextPoint: " + nc);
-				
-				
-
-				if (currentColor != nextColor) {
-					System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
-					bisectorPoints[rayIndex][0] = nextPoint.x;
-					bisectorPoints[rayIndex][1] = nextPoint.y;
 				}
 			}
 		}
@@ -294,4 +308,11 @@ public class Voronoi {
 		return bisectorPoints;
 	}
 	
+	/*
+	public static void main(String[] argv) {
+		Point2D.Double site = new Point2D.Double(10, 10);
+		int n = 12;
+		Voronoi.thetaRays(site, n);
+	}
+	*/
 }
