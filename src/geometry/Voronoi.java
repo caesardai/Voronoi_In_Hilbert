@@ -236,7 +236,7 @@ public class Voronoi {
 		int x0 = (int) site.x;
 		double y0 = (int) site.y;
 		double y;
-		double y_ver; // vertical
+		double y_ver = 0.0; // vertical
 		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
 		// System.out.println("thetaRayTracing starting.");
 
@@ -260,7 +260,7 @@ public class Voronoi {
 					for (int x_ver = 0; x_ver < 300; x++) {
 						nextPoint.setLocation(currentPoint);
 
-						y_ver = - lines[x_ver][2] / lines[x_ver][1];
+						y_ver += 1.0;
 						currentPoint.setLocation((int) x_ver, (int) y_ver);
 
 						if(!this.geometry.convex.isInConvex(currentPoint)) 
@@ -312,8 +312,8 @@ public class Voronoi {
 					for (int x_ver = 0 - 1; x_ver < lowerBound; x--) {
 						nextPoint.setLocation(currentPoint);
 						
-						y_ver = - lines[x_ver][2] / lines[x_ver][1];
-						System.out.println("x_ver:" + x_ver + "y_ver:" + y_ver);
+						y_ver -= 1.0;
+						// System.out.println("x_ver:" + x_ver + "y_ver:" + y_ver);
 						currentPoint.setLocation((int) x_ver, (int) y_ver);
 
 						if(!this.geometry.convex.isInConvex(currentPoint)) 
