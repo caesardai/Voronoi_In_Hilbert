@@ -6,14 +6,14 @@ import java.awt.geom.Point2D;
 import processing.core.PApplet;
 
 public class DrawUtil {
-  final static Color DEFAULT;
-  final static Color RED;
-  final static Color BLUE;
-  final static Color GREEN;
-  final static Color PURPLE;
-  final static Color BLACK;
-  final static Color GREY;
-  final static Color WHITE;
+  public final static Color DEFAULT;
+  public final static Color RED;
+  public final static Color BLUE;
+  public final static Color GREEN;
+  public final static Color PURPLE;
+  public final static Color BLACK;
+  public final static Color GREY;
+  public final static Color WHITE;
   
   static {
 	 DEFAULT = new Color(255, 255, 255); 

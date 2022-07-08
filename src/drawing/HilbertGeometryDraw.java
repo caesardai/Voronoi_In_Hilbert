@@ -6,6 +6,7 @@ import geometry.Util;
 import geometry.Voronoi;
 import geometry.Point3d;
 
+import java.awt.Color;
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
 /*
@@ -148,16 +149,20 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 	  	// to be placed in VoronoiDraw later
 		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
 		for (Point2D.Double q : this.convex.convexHull) {
-			int n = 5;
+			int n = 10;
 			Double[][] results = Voronoi.thetaRays(p, n);
+			/*
+			for(int index = 0; index < results.length; index++)
+				System.out.println("line: " + index + " : " + results[index][0] + "x + " + results[index][1] + "y + " + results[index][2] + " = 0");
+			*/
 			// loop through all voronoi sites
-			LinkedList<Point2D.Double> bisectorPoints = this.frame.voronoi.thetaRayTrace(results, p);
+			LinkedList<Point2D.Double> bisectorPoints = this.frame.voronoi.thetaRayTrace(this.frame, results, p);
 			
 			Double theta = Voronoi.spokeAngle(p, q);
 			int unit = (int) (theta / (2 * Math.PI / n));
 			
 			for(Point2D.Double bisect : bisectorPoints) {
-				DrawUtil.changeColor(this.frame, DrawUtil.BLACK);
+				DrawUtil.changeColor(this.frame, new Color(255, 192, 203));
 				DrawUtil.drawPoint(bisect, this.frame);
 				System.out.println("bisector: " + Util.printCoordinate(bisect));
 			}

@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Set;
 
+import drawing.DrawingApplet;
+import drawing.DrawUtil;
+
 public class Voronoi {
 	/* HG where we compute voronoi diagram */
 	private HilbertGeometry geometry;
@@ -85,12 +88,16 @@ public class Voronoi {
 		double nearestDistance = geometry.distance(p, centerPoints.get(0));
 		for (int i = 1; i < centerPoints.size(); i++) {
 			double tempDist = geometry.distance(p, centerPoints.get(i));
+			/*
 			if (Double.isInfinite(tempDist))
 				continue;
+			*/
 			if (tempDist < nearestDistance) {
 				nearestDistance = tempDist;
 				nearestPoint = i;
-			} else if (tempDist == nearestDistance) {
+			} 
+			/*
+			else if (tempDist == nearestDistance) {
 				// if p is equidistant from two voronoi sites (may not be shortest
 				// distance between all sites in the diagram
 				// System.out.println("Distance from p from site 1: " + geometry.distance(p,
@@ -99,6 +106,7 @@ public class Voronoi {
 				// this.centerPoints.get(i)) + "\n");
 				nearestPoint = this.centerPoints.size();
 			}
+			*/
 		}
 		return nearestPoint;
 	}
@@ -161,7 +169,7 @@ public class Voronoi {
 	// return coefficients of all lines that intersect the Voronoi site and rotated
 	// point for site s
 	public static Double[][] thetaRays(Point2D.Double s, int n) {
-		System.out.println("thetaRays starting.");
+		// System.out.println("thetaRays starting.");
 		// ensure that angular division is a valid number
 		if (n < 1)
 			return null;
@@ -191,7 +199,7 @@ public class Voronoi {
 	private Point2D.Double closestPoint(Point2D.Double p) {
 		// check if given point is already in the hashmap
 		if(this.voronoiPoints.containsKey(p)) {
-			System.out.println("valid point: " + Util.printCoordinate(p) + "\n");
+			// System.out.println("valid point: " + Util.printCoordinate(p) + "\n");
 			return p;
 		}
 		
@@ -224,13 +232,13 @@ public class Voronoi {
 		return null;
 	}
 	
-	public LinkedList<Point2D.Double> thetaRayTrace(Double[][] lines, Point2D.Double site) {
+	public LinkedList<Point2D.Double> thetaRayTrace(DrawingApplet frame, Double[][] lines, Point2D.Double site) {
 		int x0 = (int) site.x;
 		double y0 = (int) site.y;
 		double y;
 		double y_ver; // vertical
 		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
-		System.out.println("thetaRayTracing starting.");
+		// System.out.println("thetaRayTracing starting.");
 
 		int currentColor;
 		int nextColor;
@@ -243,6 +251,7 @@ public class Voronoi {
 
 		for(int rayIndex = 0; rayIndex < lines.length; rayIndex++) {
 			currentPoint.setLocation(x0, y0);
+			// System.out.println("site: " + Util.printCoordinate(site) +  ", line: " + (rayIndex+1) + " : " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
 			for (int x = x0 + 1; x < x0 + 300; x++) {
 				// System.out.println("updated nextPoint: " + Util.printCoordinate(currentPoint) + "-" + Util.printCoordinate(nextPoint));
 				nextPoint.setLocation(currentPoint);
@@ -281,6 +290,11 @@ public class Voronoi {
 					Point2D.Double cc = closestPoint(currentPoint);
 					Point2D.Double nc = closestPoint(nextPoint);
 					
+					// draw these points DEBUGGING
+					DrawUtil.changeColor(frame, DrawUtil.BLACK);
+					DrawUtil.drawPoint(cc, frame);
+					DrawUtil.drawPoint(nc, frame);
+					
 					if(cc == null || nc == null) {
 						if(cc == null) System.out.println("cc: null");
 						if(nc == null) System.out.println("nc: null");
@@ -299,12 +313,88 @@ public class Voronoi {
 					currentColor = voronoiPoints.get(cc);
 					nextColor = voronoiPoints.get(nc);
 					
-					
-					
+					// System.out.println("currentPoint: " + Util.printCoordinate(currentPoint) + ";" + currentColor + "\tnextPoint: " + Util.printCoordinate(nextPoint) + ";" + nextColor);
 
 					if (currentColor != nextColor) {
 						// System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
+						System.out.println("currentPoint: " + Util.printCoordinate(currentPoint) + "currentColor: " + currentColor);
+						System.out.println("nextPoint: " + Util.printCoordinate(nextPoint) + "nextColor: " + nextColor);
 						bisectorPoints.add(nextPoint);
+						break;
+					}
+				}
+			}
+			currentPoint.setLocation(x0, y0);
+			int lowerBound = x0 - 300;
+			for (int x = x0 - 1; x > lowerBound; x--) {
+				// System.out.println("updated nextPoint: " + Util.printCoordinate(currentPoint) + "-" + Util.printCoordinate(nextPoint));
+				nextPoint.setLocation(currentPoint);
+
+				// If the point is vertical then increment y
+				if (lines[rayIndex][1] == 0) {
+					for (int x_ver = 0; x_ver < 300; x++) {
+						nextPoint = currentPoint;
+
+						y_ver = lines[x_ver][0] + lines[x_ver][2];
+
+						currentPoint.setLocation(x_ver, y_ver);
+						currentColor = voronoiPoints.get(currentPoint);
+						nextColor = voronoiPoints.get(nextPoint);
+
+						if (currentColor != nextColor) {
+							System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
+							// bisectorPoints[rayIndex][0] = nextPoint.x;
+							// bisectorPoints[rayIndex][1] = nextPoint.y;
+
+						}
+					}
+				}
+
+				else {
+					// System.out.println("not vertical");
+
+					// trace until Voronoi points color change
+					y = -(lines[rayIndex][0] * x + lines[rayIndex][2]) / lines[rayIndex][1];
+					currentPoint.setLocation((int) x, (int) y);
+
+					// check if bisector hits boundary of the convex hull; if so, then move on to the next ray
+					if(!this.geometry.convex.isInConvex(currentPoint)) 
+						break;
+
+					Point2D.Double cc = closestPoint(currentPoint);
+					Point2D.Double nc = closestPoint(nextPoint);
+					
+					// draw these points DEBUGGING
+					DrawUtil.changeColor(frame, DrawUtil.BLACK);
+					DrawUtil.drawPoint(cc, frame);
+					DrawUtil.drawPoint(nc, frame);
+					
+					if(cc == null || nc == null) {
+						if(cc == null) System.out.println("cc: null");
+						if(nc == null) System.out.println("nc: null");
+
+						System.out.println("site: " + site.x + ", " + site.y);
+						System.out.println("currentPoint: " + currentPoint.x + " y: " + currentPoint.y);
+						System.out.println("nextPoint: " + nextPoint.x + " y: " + nextPoint.y);
+						System.out.println("Line: " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
+						this.geometry.extremePoints();
+						System.out.print("minX: " + this.geometry.min_X);
+						System.out.print(", maxX: " + this.geometry.max_X);
+						System.out.print(", minY: " + this.geometry.min_Y);
+						System.out.println(", maxY: " + this.geometry.max_Y);
+					}
+					
+					currentColor = voronoiPoints.get(cc);
+					nextColor = voronoiPoints.get(nc);
+					
+					// System.out.println("currentPoint: " + Util.printCoordinate(currentPoint) + ";" + currentColor + "\tnextPoint: " + Util.printCoordinate(nextPoint) + ";" + nextColor);
+
+					if (currentColor != nextColor) {
+						// System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
+						System.out.println("currentPoint: " + Util.printCoordinate(currentPoint) + "currentColor: " + currentColor);
+						System.out.println("nextPoint: " + Util.printCoordinate(nextPoint) + "nextColor: " + nextColor);
+						bisectorPoints.add(nextPoint);
+						break;
 					}
 				}
 			}
