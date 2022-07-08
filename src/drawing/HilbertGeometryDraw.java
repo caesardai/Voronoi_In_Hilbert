@@ -148,24 +148,34 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 	  	// to be placed in VoronoiDraw later
 		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
 		for (Point2D.Double q : this.convex.convexHull) {
-			int n = 10;
+			int n = 5;
 			Double[][] results = Voronoi.thetaRays(p, n);
 			// loop through all voronoi sites
-			Double[][] bisectorPoints = this.frame.voronoi.thetaRayTrace(results, p);
+			LinkedList<Point2D.Double> bisectorPoints = this.frame.voronoi.thetaRayTrace(results, p);
 			
 			Double theta = Voronoi.spokeAngle(p, q);
 			int unit = (int) (theta / (2 * Math.PI / n));
 			
+			for(Point2D.Double bisect : bisectorPoints) {
+				DrawUtil.changeColor(this.frame, DrawUtil.BLACK);
+				DrawUtil.drawPoint(bisect, this.frame);
+				System.out.println("bisector: " + Util.printCoordinate(bisect));
+			}
+			
+			/*
 			// find intersection between lines PQ and bp[unit]-bp[unit+1]
 			Point3d pqLine = this.toHomogeneous(p).crossProduct(this.toHomogeneous(q));
-			Point2D.Double bp1 = new Point2D.Double(bisectorPoints[unit][0], bisectorPoints[unit][1]);
-			Point2D.Double bp2 = new Point2D.Double(bisectorPoints[unit+1][0], bisectorPoints[unit+1][1]);
+			Point2D.Double endPoint1 = bisectorPoints.get(unit);
+			Point2D.Double bp1 = new Point2D.Double(endPoint1.x, endPoint1.y);
+			Point2D.Double endPoint2 = bisectorPoints.get(unit + 1);
+			Point2D.Double bp2 = new Point2D.Double(endPoint2.x, endPoint2.y);
 			Point3d bisectorLine = this.toHomogeneous(bp1).crossProduct(this.toHomogeneous(bp2));
 			
 			Point2D.Double intersection = this.toCartesian(pqLine.crossProduct(bisectorLine));
 			
 			// draw line between hull and intersection point
 			DrawUtil.drawSegment(q, intersection, this.frame);
+			*/
 
 		}
 		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);

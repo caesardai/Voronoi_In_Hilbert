@@ -52,9 +52,10 @@ public class QuadTree {
     ***************************************************************************/
 
     public void query2D(Point2D.Double p) {
-        query2D(root, p);
+        // query2D(root, p);
     }
 
+    /*
     private void query2D(Node h, Point2D.Double p) {
         if (h == null) return;
         if (rect.contains(h.x, h.y))
@@ -64,6 +65,7 @@ public class QuadTree {
         if (!less(xmax, h.x) &&  less(ymin, h.y)) query2D(h.SE, rect);
         if (!less(xmax, h.x) && !less(ymax, h.y)) query2D(h.NE, rect);
     }
+    */
 
 
    /***************************************************************************
