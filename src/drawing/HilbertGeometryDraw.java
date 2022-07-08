@@ -149,7 +149,7 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 	  	// to be placed in VoronoiDraw later
 		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
 		for (Point2D.Double q : this.convex.convexHull) {
-			int n = 10;
+			int n = 360;
 			Double[][] results = Voronoi.thetaRays(p, n);
 			/*
 			for(int index = 0; index < results.length; index++)
@@ -162,9 +162,9 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			int unit = (int) (theta / (2 * Math.PI / n));
 			
 			for(Point2D.Double bisect : bisectorPoints) {
-				DrawUtil.changeColor(this.frame, new Color(255, 192, 203));
+				DrawUtil.changeColor(this.frame, DrawUtil.BLACK);
 				DrawUtil.drawPoint(bisect, this.frame);
-				System.out.println("bisector: " + Util.printCoordinate(bisect));
+				// System.out.println("bisector: " + Util.printCoordinate(bisect));
 			}
 			
 			/*
