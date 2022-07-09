@@ -148,24 +148,32 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 
 	  	// to be placed in VoronoiDraw later
 		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
+		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
+		
 		for (Point2D.Double q : this.convex.convexHull) {
-			int n = 360;
+			int n = 180;
 			Double[][] results = Voronoi.thetaRays(p, n);
-			/*
-			for(int index = 0; index < results.length; index++)
-				System.out.println("line: " + index + " : " + results[index][0] + "x + " + results[index][1] + "y + " + results[index][2] + " = 0");
-			*/
-			// loop through all voronoi sites
-			LinkedList<Point2D.Double> bisectorPoints = this.frame.voronoi.thetaRayTrace(this.frame, results, p);
-			
-			Double theta = Voronoi.spokeAngle(p, q);
-			int unit = (int) (theta / (2 * Math.PI / n));
-			
-			for(Point2D.Double bisect : bisectorPoints) {
-				DrawUtil.changeColor(this.frame, DrawUtil.BLACK);
-				DrawUtil.drawPoint(bisect, this.frame);
-				// System.out.println("bisector: " + Util.printCoordinate(bisect));
+			for(int row = 0; row < results.length; row++) {
+				LinkedList<Point2D.Double> newPoints = this.frame.voronoi.thetaRayTrace(this.frame, results[row], p);
+				for(Point2D.Double pi : newPoints) {
+					if(!bisectorPoints.contains(pi))
+						bisectorPoints.add((Point2D.Double) pi.clone());
+				}
 			}
+
+			// Double theta = Voronoi.spokeAngle(p, q);
+			// int unit = (int) (theta / (2 * Math.PI / n));
+			
+			// System.out.println("bisector size: " + bisectorPoints.size());
+			for(Point2D.Double bisect : bisectorPoints) {
+				DrawUtil.changeColor(this.frame, DrawUtil.GREEN);
+				DrawUtil.drawPoint(bisect, this.frame);
+				// System.out.print(Util.printCoordinate(bisect) + ", ");
+			}
+			// System.out.println();
+			
+			
+			
 			
 			/*
 			// find intersection between lines PQ and bp[unit]-bp[unit+1]

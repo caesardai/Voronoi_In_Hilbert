@@ -25,4 +25,8 @@ public class Util {
   public static String printCoordinate(Point2D.Double p) {
 	  return "(" + p.x + ", " + p.y + ")";
   }
+
+  public static String printLineEq(Double[] line) {
+	  return line[0] + "x + " + line[1] + "y + " + line[2] + " = 0";
+  }
 }

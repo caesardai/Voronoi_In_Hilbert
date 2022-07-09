@@ -52,7 +52,7 @@ public class VoronoiDraw {
 	  return this.voronoi.centerPoints.size();
   }
   
-  public LinkedList<Point2D.Double> thetaRayTrace(DrawingApplet frame, Double[][] lines, Point2D.Double site) {
+  public LinkedList<Point2D.Double> thetaRayTrace(DrawingApplet frame, Double[] lines, Point2D.Double site) {
 	  return this.voronoi.thetaRayTrace(this.frame, lines, site);
   }
 

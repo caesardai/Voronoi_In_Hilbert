@@ -232,198 +232,151 @@ public class Voronoi {
 		return null;
 	}
 	
-	public LinkedList<Point2D.Double> thetaRayTrace(DrawingApplet frame, Double[][] lines, Point2D.Double site) {
-		int x0 = (int) site.x;
-		double y0 = (int) site.y;
-		double y;
-		double y_ver = 0.0; // vertical
+	public LinkedList<Point2D.Double> thetaRayTrace(DrawingApplet frame, Double[] line, Point2D.Double site) {
+		// create variables need to implement this method
 		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
-		// System.out.println("thetaRayTracing starting.");
-
-		int currentColor;
-		int nextColor;
-		Point2D.Double currentPoint = new Point2D.Double(0, 0);
-		Point2D.Double nextPoint = new Point2D.Double(0, 0);
-
-		for(int rayIndex = 0; rayIndex < lines.length; rayIndex++) {
-			currentPoint.setLocation(x0, y0);
-			// System.out.println("site: " + Util.printCoordinate(site) +  ", line: " + (rayIndex+1) + " : " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
-			for (int x = x0 + 1; x < x0 + 300; x++) {
-				nextPoint.setLocation(currentPoint);
-
-				// If the point is vertical then increment y
-				if (lines[rayIndex][1] == 0) {
-					for (int x_ver = 0; x_ver < 300; x++) {
-						nextPoint.setLocation(currentPoint);
-
-						y_ver += 1.0;
-						currentPoint.setLocation((int) x_ver, (int) y_ver);
-
-						if(!this.geometry.convex.isInConvex(currentPoint)) 
-							break;
-
-						Point2D.Double cc = closestPoint(currentPoint);
-						Point2D.Double nc = closestPoint(nextPoint);
-						
-						currentColor = voronoiPoints.get(cc);
-						nextColor = voronoiPoints.get(nc);
-
-						if (currentColor != nextColor) {
-							bisectorPoints.add((Point2D.Double) nextPoint.clone());
-							break;
-						}
-					}
-				}
-
-				else {
-					// trace until Voronoi points color change
-					y = -(lines[rayIndex][0] * x + lines[rayIndex][2]) / lines[rayIndex][1];
-					currentPoint.setLocation((int) x, (int) y);
-
-					// check if bisector hits boundary of the convex hull; if so, then move on to the next ray
-					if(!this.geometry.convex.isInConvex(currentPoint)) 
-						break;
-
-					Point2D.Double cc = closestPoint(currentPoint);
-					Point2D.Double nc = closestPoint(nextPoint);
-
-					// draw these points DEBUGGING
-					DrawUtil.changeColor(frame, DrawUtil.BLACK);
-					// DrawUtil.drawPoint(cc, frame);
-					// DrawUtil.drawPoint(nc, frame);
-					
-					if(cc == null || nc == null) {
-						if(cc == null) System.out.println("cc: null");
-						if(nc == null) System.out.println("nc: null");
-
-						System.out.println("site: " + site.x + ", " + site.y);
-						System.out.println("currentPoint: " + currentPoint.x + " y: " + currentPoint.y);
-						System.out.println("nextPoint: " + nextPoint.x + " y: " + nextPoint.y);
-						System.out.println("Line: " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
-						this.geometry.extremePoints();
-						System.out.print("minX: " + this.geometry.min_X);
-						System.out.print(", maxX: " + this.geometry.max_X);
-						System.out.print(", minY: " + this.geometry.min_Y);
-						System.out.println(", maxY: " + this.geometry.max_Y);
-					}
-					
-					currentColor = voronoiPoints.get(cc);
-					nextColor = voronoiPoints.get(nc);
+		Point2D.Double p1 = new Point2D.Double((int) site.x, (int) site.y);
+		Point2D.Double p2 = new Point2D.Double((int) site.x, (int) site.y);
+		boolean traversePositive = true;
+		boolean loop = true;
+		
+		// System.out.println("site: " + Util.printCoordinate(site) + "; line: " + Util.printLineEq(line));
+		// System.out.println("moving positive");
+		
+		// find bisector point if it exists
+		while(loop) {
+			// determine if the line given is a vertical line
+			if(line[1] == 0) {
+				if(traversePositive) p2.y += 1;
+				else p2.y -= 1;
+			}
+			// otherwise, line is not a vertical line
+			else {
+				// determine position p2. check traversePosition to determine which direction to travel across the line
+				if(traversePositive) p2.x += 1;
+				else p2.x -= 1;
+				p2.y = (int) (-(line[0] * p2.x + line[2]) / line[1]);
+			}
+			// check if p2 is in the convex body; if so, find color of point and compare color
+			if(this.geometry.convex.isInConvex(p1) && this.geometry.convex.isInConvex(p2)) {
+				// DEBUG: Draw these points
+				// DrawUtil.changeColor(frame, DrawUtil.BLACK);
+				// DrawUtil.drawPoint(p1, frame);
+				// DrawUtil.drawPoint(p2, frame);
 				
-					if (currentColor != nextColor) {
-						// System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
-						// System.out.print("currentPoint: " + Util.printCoordinate(currentPoint) + ";" + currentColor);
-						// System.out.println("\tnextPoint: " + Util.printCoordinate(nextPoint) + ";" + nextColor);
-						boolean success = bisectorPoints.add((Point2D.Double) nextPoint.clone());
-						if(success) {
-							System.out.println("STOPPED");
-							break;
-						}
-						else {
-							System.out.println("ERROR: point not added to bisectorPoints");
-							return null;
-						}
+				// find the closest points p1 and p2
+				Point2D.Double closestP1 = this.closestPoint(p1);
+				// System.out.println(Util.printCoordinate(p1));
+				Point2D.Double closestP2 = this.closestPoint(p2);
+				// System.out.println(Util.printCoordinate(p2));
+				
+				// DEBUGGING: display information about missing points
+				if(closestP1 == null || closestP2 == null) {
+					if(closestP1 == null) System.out.println("closestP1: null");
+					if(closestP2 == null) System.out.println("closestP2: null");
+
+					System.out.println("site: " + Util.printCoordinate(site));
+					System.out.println("p1: " + Util.printCoordinate(p1));
+					System.out.println("p2: " + Util.printCoordinate(p2));
+					System.out.println("Line: " + line[0] + "x + " + line[1] + "y + " + line[2] + " = 0");
+					System.out.print("hull points: ");
+					for(Point2D.Double hull : this.geometry.convex.convexHull)
+						System.out.print(Util.printCoordinate(hull) + ", ");
+					System.out.println();
+					this.geometry.extremePoints();
+					System.out.print("minX: " + this.geometry.min_X);
+					System.out.print(", maxX: " + this.geometry.max_X);
+					System.out.print(", minY: " + this.geometry.min_Y);
+					System.out.println(", maxY: " + this.geometry.max_Y);
+				}	
+				
+
+				// compare the colors between two closest point; if they are different, then p1 is on the bisector (roughly)
+				if( this.voronoiPoints.get(closestP1) != this.voronoiPoints.get(closestP2) ) {
+					bisectorPoints.add((Point2D.Double) p1.clone());
+					// System.out.println("added point: " + Util.printCoordinate(p1));
+					if(traversePositive) {
+						traversePositive = false;
+						p1.setLocation((int) site.x, (int) site.y);
+						p2.setLocation((int) site.x, (int) site.y);
+						// System.out.println("moving negative");
 					}
+					else 
+						loop = false;
 				}
+			}
+			// otherwise, update boolean correctly
+			else {
+				if(traversePositive) {
+					traversePositive = false;
+					p1.setLocation((int) site.x, (int) site.y);
+					p2.setLocation((int) site.x, (int) site.y);
+					// System.out.println("moving negative");
+				}
+				else 
+					loop = false;
 			}
 			
-			currentPoint.setLocation(x0, y0);
-			int lowerBound = x0 - 300;
-			if(lowerBound < 0) lowerBound = 0;
-			for (int x = x0 - 1; x > lowerBound; x--) {
-				// System.out.println("updated nextPoint: " + Util.printCoordinate(currentPoint) + "-" + Util.printCoordinate(nextPoint));
-				nextPoint.setLocation(currentPoint);
-
-				// If the point is vertical then decrement y
-				if (lines[rayIndex][1] == 0) {
-					for (int x_ver = 0 - 1; x_ver < lowerBound; x--) {
-						nextPoint.setLocation(currentPoint);
-						
-						y_ver -= 1.0;
-						// System.out.println("x_ver:" + x_ver + "y_ver:" + y_ver);
-						currentPoint.setLocation((int) x_ver, (int) y_ver);
-
-						if(!this.geometry.convex.isInConvex(currentPoint)) 
-							break;
-
-						Point2D.Double cc = closestPoint(currentPoint);
-						Point2D.Double nc = closestPoint(nextPoint);
-						
-						currentColor = voronoiPoints.get(cc);
-						nextColor = voronoiPoints.get(nc);
-
-						if (currentColor != nextColor) {
-							bisectorPoints.add((Point2D.Double) nextPoint.clone());
-							break;
-						}
-					}
-				}
-
-				else {
-					// trace until Voronoi points color change
-					y = -(lines[rayIndex][0] * x + lines[rayIndex][2]) / lines[rayIndex][1];
-					currentPoint.setLocation((int) x, (int) y);
-
-					// check if bisector hits boundary of the convex hull; if so, then move on to the next ray
-					if(!this.geometry.convex.isInConvex(currentPoint)) 
-						break;
-
-					Point2D.Double cc = closestPoint(currentPoint);
-					Point2D.Double nc = closestPoint(nextPoint);
-					
-					// draw these points DEBUGGING
-					// DrawUtil.changeColor(frame, DrawUtil.BLACK);
-					// DrawUtil.drawPoint(cc, frame);
-					// DrawUtil.drawPoint(nc, frame);
-					
-					if(cc == null || nc == null) {
-						if(cc == null) System.out.println("cc: null");
-						if(nc == null) System.out.println("nc: null");
-
-						System.out.println("site: " + site.x + ", " + site.y);
-						System.out.println("currentPoint: " + currentPoint.x + " y: " + currentPoint.y);
-						System.out.println("nextPoint: " + nextPoint.x + " y: " + nextPoint.y);
-						System.out.println("Line: " + lines[rayIndex][0] + "x + " + lines[rayIndex][1] + "y + " + lines[rayIndex][2] + " = 0");
-						this.geometry.extremePoints();
-						System.out.print("minX: " + this.geometry.min_X);
-						System.out.print(", maxX: " + this.geometry.max_X);
-						System.out.print(", minY: " + this.geometry.min_Y);
-						System.out.println(", maxY: " + this.geometry.max_Y);
-					}
-					
-					currentColor = voronoiPoints.get(cc);
-					nextColor = voronoiPoints.get(nc);
-					
-					if (currentColor != nextColor) {
-						// System.out.println("The intersection point of thetaRay" + rayIndex + ": " + nextPoint);
-						System.out.print("currentPoint: " + Util.printCoordinate(currentPoint) + ";" + currentColor);
-						System.out.println("\tnextPoint: " + Util.printCoordinate(nextPoint) + ";" + nextColor);
-						boolean success = bisectorPoints.add((Point2D.Double) nextPoint.clone());
-						if(success) {
-							System.out.println("STOPPED");
-							break;
-						}
-						else {
-							System.out.println("ERROR: point not added to bisectorPoints");
-							return null;
-						}
-					}
-				}
-			}
+			// update p1
+			p1 = (Point2D.Double) p2.clone();
 		}
-
-		for(Point2D.Double p : bisectorPoints)
-			System.out.print(Util.printCoordinate(p) + ",");
-		System.out.println("");
+		
+		// System.out.println("finished determining bisectors");
 		return bisectorPoints;
 	}
 	
-	/*
 	public static void main(String[] argv) {
-		Point2D.Double site = new Point2D.Double(10, 10);
-		int n = 12;
-		Voronoi.thetaRays(site, n);
+		Point2D.Double s1 = new Point2D.Double(150, 200);
+		Point2D.Double s2 = new Point2D.Double(300, 150);
+		HilbertGeometry g = new HilbertGeometry();
+		g.convex = new Convex();
+		Voronoi v = new Voronoi(g);
+		v.geometry.convex.addPoint(new Point2D.Double(100, 100));
+		v.geometry.convex.addPoint(new Point2D.Double(350, 700));
+		v.geometry.convex.addPoint(new Point2D.Double(430, 50));
+		v.addPoint(s1);
+		v.addPoint(s2);
+		v.computeVoronoi();
+		
+		int n = 4;
+		Double[][] lines = Voronoi.thetaRays(s1, n);
+		LinkedList<Point2D.Double> allBisectors = new LinkedList<Point2D.Double>();
+		for(int index = 0; index < lines.length; index++) {
+			LinkedList<Point2D.Double> l = v.thetaRayTrace(null, lines[index], s1);
+			/*
+			if(l.size() > 2) {
+				System.out.println("too many bisectors");
+				System.out.println("site: " + Util.printCoordinate(s1));
+				System.out.println("line " + (index+1) + " : " + lines[index][0] + "x + " + lines[index][1] + "y + " + lines[index][2] + " = 0");
+			}
+			*/
+			System.out.println("size: " + l.size());
+			for(Point2D.Double p : l) {
+				if(!allBisectors.contains(p))
+					allBisectors.add((Point2D.Double) p.clone());
+			}
+		}
+
+		lines = Voronoi.thetaRays(s2, n);
+		for(int index = 0; index < lines.length; index++) {
+			LinkedList<Point2D.Double> l = v.thetaRayTrace(null, lines[index], s2);
+			/*
+			if(l.size() > 2) {
+				System.out.println("too many bisectors");
+				System.out.println("site: " + Util.printCoordinate(s1));
+				System.out.println("line " + (index+1) + " : " + lines[index][0] + "x + " + lines[index][1] + "y + " + lines[index][2] + " = 0");
+			}
+			*/
+			System.out.println("size: " + l.size());
+			for(Point2D.Double p : l) {
+				if(!allBisectors.contains(p))
+					allBisectors.add((Point2D.Double) p.clone());
+			}
+		}
+		
+		for(Point2D.Double p : allBisectors)
+			System.out.print(Util.printCoordinate(p));
+		System.out.println("\nSize: " + allBisectors.size());
 	}
-	*/
 }
 
