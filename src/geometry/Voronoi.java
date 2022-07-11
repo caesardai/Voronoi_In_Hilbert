@@ -294,6 +294,7 @@ public class Voronoi {
 					if (closestP2 == null)
 						System.out.println("closestP2: null");
 
+					/*
 					System.out.println("site: " + Util.printCoordinate(site));
 					System.out.println("p1: " + Util.printCoordinate(p1));
 					System.out.println("p2: " + Util.printCoordinate(p2));
@@ -307,6 +308,8 @@ public class Voronoi {
 					System.out.print(", maxX: " + this.geometry.max_X);
 					System.out.print(", minY: " + this.geometry.min_Y);
 					System.out.println(", maxY: " + this.geometry.max_Y);
+					*/
+					continue;
 				}
 
 				// compare the colors between two closest point; if they are different, then p1
@@ -350,31 +353,36 @@ public class Voronoi {
 //		double x = 1;
 //		double y = 0;
 
+		/*
 		int currentColor;
 		int nextColor;
 		boolean traversePositive = true;
 		boolean bisectorDetected = true;
+		*/
 		
 		Double[] line = new Double[3];
-		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
+		// LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
 		// Point2D.Double[] bisectorPoints = new Point2D.Double[2];
-		Point2D.Double currentPoint = new Point2D.Double((int) site.x, (int) site.y); // set begin point as site
-		Point2D.Double nextPoint = new Point2D.Double((int) site.x, (int) site.y);
+		// Point2D.Double currentPoint = new Point2D.Double((int) site.x, (int) site.y); // set begin point as site
+		// Point2D.Double nextPoint = new Point2D.Double((int) site.x, (int) site.y);
 		
 
 		Point3d pProj = HilbertGeometry.toHomogeneous(hull); // hull point
 		Point3d qProj = HilbertGeometry.toHomogeneous(site); // site point
 		Point3d pqLine = pProj.crossProduct(qProj);
-		System.out.println("pqLine:" + pqLine);
+		// System.out.println("pqLine:" + pqLine);
 		
 		line[0] = pqLine.x;
 		line[1] = pqLine.y;
 		line[2] = pqLine.z;
+		
+		return thetaRayTrace(null, line, site);
 
 //		while (!bisectorDetected) {
 //			
 //		}
 		
+		/*
 		while (bisectorDetected) { // while bisector is not detected, repeat
 			// vertical
 			if (line[1] == 0) {
@@ -427,6 +435,7 @@ public class Voronoi {
 			currentPoint = (Point2D.Double) nextPoint.clone();
 		} 
 		return bisectorPoints;
+		*/
 	}
 	
 	/*

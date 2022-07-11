@@ -156,6 +156,8 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			LinkedList<Point2D.Double> r = this.frame.voronoi.augustAlgoWeak(q, p);
 			DrawUtil.changeColor(this.frame, DrawUtil.WHITE);
 			
+			System.out.println("bisector size: " + r.size());
+			
 			// bisector - bisector
 			if (r.size() == 2 && r.get(0) != null && r.get(1) != null) {
 				// System.out.println("Drawing 2 bisectors case");
@@ -164,10 +166,12 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			
 			// hull - hull
 			Point2D.Double[] edgePoints = intersectionPoints(p, q);
+			/*
 			System.out.print("site: " + Util.printCoordinate(p));
 			System.out.print("hull: " + Util.printCoordinate(q));
 			System.out.print("; edgePoint 1: " + Util.printCoordinate(edgePoints[0]));
 			System.out.println("; edgePoint 2: " + Util.printCoordinate(edgePoints[1]));
+			*/
 			if(Util.samePoints(edgePoints[0], edgePoints[1]))
 				System.out.println("are the same points");
 			
@@ -178,22 +182,30 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			// hull vertex - bisector
 			if (r.size() == 1) {
 				Point2D.Double leftPoint, rightPoint;
-				if(q.x < edgePoints[0].x) {
-					leftPoint = q;
-					rightPoint = edgePoints[0];
+				if(edgePoints[0].x < edgePoints[1].x) {
+					leftPoint = edgePoints[0];
+					rightPoint = edgePoints[1];
 				}
 				else {
-					leftPoint = edgePoints[0];
-					rightPoint = q;
+					leftPoint = edgePoints[1];
+					rightPoint = edgePoints[0];
 				}
 				
 				// hull vertex - bisector
 				if (p.x < r.get(0).x) {
 					DrawUtil.drawSegment(leftPoint, r.get(0), this.frame);
+					System.out.print("left: " + Util.printCoordinate(leftPoint) + "; ");
+					System.out.print("site: " + Util.printCoordinate(p) + "; ");
+					System.out.print("bisector: " + Util.printCoordinate(r.get(0)) + "; ");
+					System.out.println("right: " + Util.printCoordinate(rightPoint));
 				}
 				// hull - bisector
 				else {
-					DrawUtil.drawSegment(rightPoint, edgePoints[0], this.frame);
+					DrawUtil.drawSegment(rightPoint, r.get(0), this.frame);
+					System.out.print("left: " + Util.printCoordinate(leftPoint) + "; ");
+					System.out.print("bisector: " + Util.printCoordinate(r.get(0)) + "; ");
+					System.out.print("site: " + Util.printCoordinate(p) + "; ");
+					System.out.println("right: " + Util.printCoordinate(rightPoint));
 				}
 				
 			}
