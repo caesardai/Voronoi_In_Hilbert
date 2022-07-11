@@ -145,6 +145,24 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 		}
 		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
 		*/
+		
+		System.out.println("Start drawing");
+	    	DrawUtil.changeColor(this.frame, DrawUtil.GREY);
+		for (Point2D.Double q : this.convex.convexHull) {
+			System.out.println("hull:" + q);
+			System.out.println("site:" + p);
+			LinkedList<Point2D.Double> r = this.frame.voronoi.augustAlgoWeak(p, q);
+			
+			// System.out.println("r0:" + r.get(0) + "r1:" + r.get(1));
+			
+			if (r.size() == 2 && r.get(0) != null && r.get(1) != null) {
+				if (Util.samePoints(r.get(0), q)) {
+					DrawUtil.drawSegment(q, r.get(1), this.frame);
+				} else {
+					DrawUtil.drawSegment(q, r.get(1), this.frame);
+				}
+			}
+		}
 
 	  	// to be placed in VoronoiDraw later
 		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
