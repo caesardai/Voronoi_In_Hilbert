@@ -145,70 +145,108 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 		}
 		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
 		*/
-		
-		System.out.println("Start drawing");
-	    	DrawUtil.changeColor(this.frame, DrawUtil.GREY);
-		for (Point2D.Double q : this.convex.convexHull) {
-			System.out.println("hull:" + q);
-			System.out.println("site:" + p);
-			LinkedList<Point2D.Double> r = this.frame.voronoi.augustAlgoWeak(p, q);
+	  
+	  
+	  	// System.out.println("Start drawing");
+	    DrawUtil.changeColor(this.frame, DrawUtil.GREY);
+		for (int index = 0; index < this.convex.convexHull.length - 1; index++) {
+			Point2D.Double q = this.convex.convexHull[index];
+//			System.out.println("hull:" + q);
+//			System.out.println("site:" + p);
+			LinkedList<Point2D.Double> r = this.frame.voronoi.augustAlgoWeak(q, p);
+			DrawUtil.changeColor(this.frame, DrawUtil.WHITE);
 			
-			// System.out.println("r0:" + r.get(0) + "r1:" + r.get(1));
-			
+			// bisector - bisector
 			if (r.size() == 2 && r.get(0) != null && r.get(1) != null) {
-				if (Util.samePoints(r.get(0), q)) {
-					DrawUtil.drawSegment(q, r.get(1), this.frame);
-				} else {
-					DrawUtil.drawSegment(q, r.get(1), this.frame);
+				// System.out.println("Drawing 2 bisectors case");
+				DrawUtil.drawSegment(r.get(0), r.get(1), this.frame);
+			}
+			
+			// hull - hull
+			Point2D.Double[] edgePoints = intersectionPoints(p, q);
+			System.out.print("site: " + Util.printCoordinate(p));
+			System.out.print("hull: " + Util.printCoordinate(q));
+			System.out.print("; edgePoint 1: " + Util.printCoordinate(edgePoints[0]));
+			System.out.println("; edgePoint 2: " + Util.printCoordinate(edgePoints[1]));
+			if(Util.samePoints(edgePoints[0], edgePoints[1]))
+				System.out.println("are the same points");
+			
+			if (r.size() == 0) {
+				DrawUtil.drawSegment(edgePoints[0], edgePoints[1], this.frame);
+			}
+			
+			// hull vertex - bisector
+			if (r.size() == 1) {
+				Point2D.Double leftPoint, rightPoint;
+				if(q.x < edgePoints[0].x) {
+					leftPoint = q;
+					rightPoint = edgePoints[0];
 				}
+				else {
+					leftPoint = edgePoints[0];
+					rightPoint = q;
+				}
+				
+				// hull vertex - bisector
+				if (p.x < r.get(0).x) {
+					DrawUtil.drawSegment(leftPoint, r.get(0), this.frame);
+				}
+				// hull - bisector
+				else {
+					DrawUtil.drawSegment(rightPoint, edgePoints[0], this.frame);
+				}
+				
 			}
 		}
-
-	  	// to be placed in VoronoiDraw later
-		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
-		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
 		
-		for (Point2D.Double q : this.convex.convexHull) {
-			int n = 180;
-			Double[][] results = Voronoi.thetaRays(p, n);
-			for(int row = 0; row < results.length; row++) {
-				LinkedList<Point2D.Double> newPoints = this.frame.voronoi.thetaRayTrace(this.frame, results[row], p);
-				for(Point2D.Double pi : newPoints) {
-					if(!bisectorPoints.contains(pi))
-						bisectorPoints.add((Point2D.Double) pi.clone());
-				}
-			}
-
-			// Double theta = Voronoi.spokeAngle(p, q);
-			// int unit = (int) (theta / (2 * Math.PI / n));
-			
-			// System.out.println("bisector size: " + bisectorPoints.size());
-			for(Point2D.Double bisect : bisectorPoints) {
-				DrawUtil.changeColor(this.frame, DrawUtil.GREEN);
-				DrawUtil.drawPoint(bisect, this.frame);
-				// System.out.print(Util.printCoordinate(bisect) + ", ");
-			}
-			// System.out.println();
-			
-			
-			
-			
-			/*
-			// find intersection between lines PQ and bp[unit]-bp[unit+1]
-			Point3d pqLine = this.toHomogeneous(p).crossProduct(this.toHomogeneous(q));
-			Point2D.Double endPoint1 = bisectorPoints.get(unit);
-			Point2D.Double bp1 = new Point2D.Double(endPoint1.x, endPoint1.y);
-			Point2D.Double endPoint2 = bisectorPoints.get(unit + 1);
-			Point2D.Double bp2 = new Point2D.Double(endPoint2.x, endPoint2.y);
-			Point3d bisectorLine = this.toHomogeneous(bp1).crossProduct(this.toHomogeneous(bp2));
-			
-			Point2D.Double intersection = this.toCartesian(pqLine.crossProduct(bisectorLine));
-			
-			// draw line between hull and intersection point
-			DrawUtil.drawSegment(q, intersection, this.frame);
-			*/
-
-		}
+		
+//	  	// to be placed in VoronoiDraw later
+//		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
+//		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
+//		
+//		for (Point2D.Double q : this.convex.convexHull) {
+//			int n = 180;
+//			Double[][] results = Voronoi.thetaRays(p, n);
+//			for(int row = 0; row < results.length; row++) {
+//				LinkedList<Point2D.Double> newPoints = this.frame.voronoi.thetaRayTrace(this.frame, results[row], p);
+//				for(Point2D.Double pi : newPoints) {
+//					if(!bisectorPoints.contains(pi))
+//						bisectorPoints.add((Point2D.Double) pi.clone());
+//				}
+//			}
+//
+//			// Double theta = Voronoi.spokeAngle(p, q);
+//			// int unit = (int) (theta / (2 * Math.PI / n));
+//			
+//			// System.out.println("bisector size: " + bisectorPoints.size());
+//			for(Point2D.Double bisect : bisectorPoints) {
+//				DrawUtil.changeColor(this.frame, DrawUtil.GREEN);
+//				DrawUtil.drawPoint(bisect, this.frame);
+//				// System.out.print(Util.printCoordinate(bisect) + ", ");
+//			}
+//			// System.out.println();
+//			
+//			
+//			
+//			
+//			/*
+//			// find intersection between lines PQ and bp[unit]-bp[unit+1]
+//			Point3d pqLine = this.toHomogeneous(p).crossProduct(this.toHomogeneous(q));
+//			Point2D.Double endPoint1 = bisectorPoints.get(unit);
+//			Point2D.Double bp1 = new Point2D.Double(endPoint1.x, endPoint1.y);
+//			Point2D.Double endPoint2 = bisectorPoints.get(unit + 1);
+//			Point2D.Double bp2 = new Point2D.Double(endPoint2.x, endPoint2.y);
+//			Point3d bisectorLine = this.toHomogeneous(bp1).crossProduct(this.toHomogeneous(bp2));
+//			
+//			Point2D.Double intersection = this.toCartesian(pqLine.crossProduct(bisectorLine));
+//			
+//			// draw line between hull and intersection point
+//			DrawUtil.drawSegment(q, intersection, this.frame);
+//			*/
+//
+//		}
+		
 		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
 	}
 }
+
