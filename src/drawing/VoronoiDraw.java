@@ -88,12 +88,12 @@ public class VoronoiDraw {
     this.voronoi.computeVoronoi();
   }
   
-  public LinkedList<Point2D.Double> augustAlgoWeak(Point2D.Double hull, Point2D.Double site) { 
-	LinkedList<Point2D.Double> bisectorPoint = new LinkedList<Point2D.Double>();
-	bisectorPoint = this.voronoi.augustAlgoWeak(hull, site);
-	return bisectorPoint;
-  }  
-	
+  public LinkedList<Point2D.Double> augustAlgoWeak(Point2D.Double hull, Point2D.Double site) {
+	  LinkedList<Point2D.Double> bisectorPoint = new LinkedList<Point2D.Double>();
+	  bisectorPoint = this.voronoi.augustAlgoWeak(hull, site);
+	  return bisectorPoint;
+  }
+  
   public void drawPoints() {
     synchronized(this) {
       int N = this.voronoi.centerPoints.size();
@@ -168,4 +168,5 @@ public class VoronoiDraw {
     return controlPoints;
   }
 }
+
 
