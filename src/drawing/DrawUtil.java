@@ -2,7 +2,6 @@ package drawing;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
-
 import processing.core.PApplet;
 
 public class DrawUtil {
@@ -38,5 +37,4 @@ public class DrawUtil {
   public static void drawSegment(Point2D.Double p, Point2D.Double q, PApplet frame) {
     frame.line((float)p.getX(), (float)p.getY(), (float)q.getX(), (float)q.getY());
   }
-  
 }
