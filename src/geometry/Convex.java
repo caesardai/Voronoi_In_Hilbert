@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
+import trapmap.Segment;
+import processing.core.PVector;
+
 /*
  * Class to handle operations on 2D Convex shapes.
  */
@@ -17,11 +20,14 @@ public class Convex {
 	public Point2D.Double[] points;
 	// Actual points defining the convex hull.
 	public Point2D.Double[] convexHull;
+	// Line segments for constructing the trapezoidal map
+	public Segment[] lineSegments;
 
 	// Default constructor
 	public Convex() {
 		points = new Point2D.Double[0];
 		convexHull = new Point2D.Double[0];
+		lineSegments = new Segment[0];
 	}
 
 	// Constructs convex from file.
@@ -30,6 +36,26 @@ public class Convex {
 		this.computeConvexHull();
 	}
 
+	/*
+	 * Convert convex hull points to line segments
+	 */
+	public void pointsToSegment(Point2D.Double[] convexHull) {
+		for (int i = 0; i < convexHull.length - 1; i++) {
+			// Convert 2D Point type to vector
+			double p1x = convexHull[i].x;
+			double p1y = convexHull[i].y;
+			double p2x = convexHull[i+1].x;
+			double p2y = convexHull[i+1].y;
+			
+			PVector v1 = new PVector();
+			PVector v2 = new PVector();
+			v1.set((float) p1x, (float) p1y);
+			v2.set((float) p2x, (float) p2y);
+			
+			lineSegments[i] = new Segment(v1, v2);
+		}
+	}
+	
 	/*
 	 * Constructs convex from a list of control points.
 	 */
