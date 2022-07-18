@@ -31,34 +31,31 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	private final static String SWITCH_MODE = "Change to mode: ";
 	static String FILENAME_CONVEX;
 	static String FILENAME_VORONOI;
-	/* Buttons */
+
+	// Buttons
 	private Button button1, button2, button3;
 
-	/* Geometric objects */
+	// Geometric objects
 	public HilbertGeometryDraw geometry;
 	public VoronoiDraw voronoi;
 	final static double epsilon = 4.0;
-	// VoronoiDraw.frame.add(button1);
-
 	static double radius = 1;
 	final static double RADIUS_STEP = 0.1;
-
-	/* Variables to optimize perform of application */
 
 	/* Variables for moving points */
 	private float xOffset = 0.0f;
 	private float yOffset = 0.0f;
+	private boolean locked = false;
 	private int indexOfMovingPoint = -1;
 	private int indexOfSelectedPoint = -1;
-	private boolean locked = false;
 
 	/* Panels and Buttons */
+	private Button reinit;
+	private Panel convexPanel;
 	private CheckboxGroup drawMode;
 	private Checkbox drawConvex;
 	private Checkbox drawSpokes;
 	private Checkbox drawVoronoi;
-	private Button reinit;
-	private Panel convexPanel;
 
 	public static void main(String[] args) {
 		if (args != null) {
@@ -70,10 +67,12 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		PApplet.main(new String[] { "drawing.DrawingApplet" });
 	}
 
+	/*
+	 * Setting up visualization interface
+	 */
 	public void setup() {
 		size(800, 600);
 		initButton();
-
 		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
 		if (FILENAME_VORONOI != null)
 			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
@@ -85,40 +84,42 @@ public class DrawingApplet extends PApplet implements ActionListener {
 
 		// if points in Convex is not on the hull, add it to the HilbertGeometry object
 		// if(this.geometry.convex.points.length > 0) {
-		/*
-		 * make sure there are no balls in geometry object if(this.geometry.ballCount()
-		 * > 0) { for(int index = 0; index < this.geometry.ballCount(); index++ )
-		 * this.geometry.removeBall(index); }
-		 */
-		/*
-		 * Inserted non-hull points into HilbertGeometry object; no longer desired
-		 * for(Point2D.Double p : this.geometry.convex.points) {
-		 * if(this.geometry.convex.findPoint(p) == -1) { double r = 2;
-		 * this.geometry.addCenterPoint(p, r);; } }
-		 */
-		// }
+
+//		// make sure there are no balls in geometry object
+//		if (this.geometry.ballCount() > 0) {
+//			for (int index = 0; index < this.geometry.ballCount(); index++) {
+//				this.geometry.removeBall(index);
+//			}
+//		}
+//
+//		// Inserted non-hull points into HilbertGeometry object; no longer desired
+//		for (Point2D.Double p : this.geometry.convex.points) {
+//			if (this.geometry.convex.findPoint(p) == -1) {
+//				double r = 2;
+//				this.geometry.addCenterPoint(p, r);
+//			}
+//		}
 	}
 
 	public void initButton() {
 		this.drawMode = new CheckboxGroup();
 		this.drawConvex = new Checkbox("Insert Convex", this.drawMode, true);
+		this.drawVoronoi = new Checkbox("Draw Voronoi", this.drawMode, false);
 		// this.drawConvex.setBackground(DrawUtil.WHITE);
 		// this.drawSpokes.setBackground(DrawUtil.WHITE);
 		// this.drawSpokes = new Checkbox("Insert Sites", this.drawMode, false);
-		this.drawVoronoi = new Checkbox("Draw Voronoi", this.drawMode, false);
 		this.reinit = new Button("Reinitialize");
 		// this.reinit.setBackground(DrawUtil.WHITE);
 		this.convexPanel = new Panel();
 		this.convexPanel.add(this.drawConvex);
-		// this.convexPanel.add(this.drawSpokes);
 		this.convexPanel.add(this.drawVoronoi);
 		this.convexPanel.add(this.reinit);
+		// this.convexPanel.add(this.drawSpokes);
 		// this.convexPanel.setBackground(DrawUtil.WHITE);
 		this.convexPanel.setName("Drawing mode");
-
 		this.add((Component) this.convexPanel);
-
 		this.frame.setTitle("Voronoi In Hilbert Metrics");
+
 		// System.out.println(this.frame.getTitle());
 
 		// Adding ActionListener to bottoms
@@ -128,13 +129,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 				currentMode = 0;
 			}
 		});
-
-		/*
-		 * drawSpokes.addItemListener(new ItemListener() {
-		 * 
-		 * @Override public void itemStateChanged(ItemEvent event) { currentMode = 1;
-		 * voronoi.computeVoronoi(); } });
-		 */
 
 		drawVoronoi.addItemListener(new ItemListener() {
 			@Override
@@ -153,38 +147,37 @@ public class DrawingApplet extends PApplet implements ActionListener {
 				}
 			}
 		});
-
 		/*
-		 * button1 = new Button("Insert Hull"); button2 = new Button("Insert SItes");
-		 * button3 = new Button("CLear");
+		 * drawSpokes.addItemListener(new ItemListener() {
 		 * 
-		 * // VoronoiDraw.frame.add(button1); // VoronoiDraw.frame.add(button2); //
-		 * VoronoiDraw.frame.add(button3);
-		 * 
-		 * button1.addActionListener(new ActionListener() { public void actionPerformed
-		 * (ActionEvent e) { // insert Hull Points } }); button2.addActionListener(new
-		 * ActionListener() { public void actionPerformed (ActionEvent e) { // insert
-		 * Sites } }); button3.addActionListener(new ActionListener() { public void
-		 * actionPerformed (ActionEvent e) { // Clear } });
+		 * @Override public void itemStateChanged(ItemEvent event) { currentMode = 1;
+		 * voronoi.computeVoronoi(); } });
 		 */
 	}
 
+	/*
+	 * Method for drawing convex hull
+	 */
 	public void draw() {
 		background(220);
-		textFont(createFont("Arial", 12, true), 12); // STEP 4 Specify font to be used
-		fill(0);// STEP 5 Specify font color
+		textFont(createFont("Arial", 12, true), 12); // font used
+		fill(0); // font color
+
 		if (this.geometry.convex.convexHull.length < 3)
 			return; // no convex Hull to display.
 		else {
 			this.geometry.draw(false, -1);
 		}
+
 		if (MODES[currentMode].toString().contains("VORONOI")) { // true
 			voronoi.drawPoints();
 			this.voronoi.hasChanged = false;
 		}
+
 		for (this.indexOfSelectedPoint = 0; this.indexOfSelectedPoint < this.geometry
-				.ballCount(); this.indexOfSelectedPoint++)
+				.ballCount(); this.indexOfSelectedPoint++) {
 			geometry.draw(true, this.indexOfSelectedPoint);
+		}
 		this.indexOfSelectedPoint = -1;
 	}
 
@@ -209,7 +202,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		else
 			return -1;
 	}
-	
 
 	public void mouseClicked() {
 		Point2D.Double p = new Point2D.Double(mouseX, mouseY);
@@ -316,18 +308,24 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		}
 	}
 
-	// will be commented out after implement ActionListener
-	public void keyPressed() {
-		/*
-		 * if (this.key == 'q') { this.currentMode = (this.currentMode + 1) % 3; if
-		 * (this.currentMode == 0) System.out.println("in drawing convex hull mode"); if
-		 * (this.currentMode == 1) System.out.println("in drawing ball mode"); if
-		 * (this.currentMode == 2)
-		 * System.out.println("in drawing voronoi diagram mode");
-		 * 
-		 * }
-		 */
-	}
+	/*
+	 * Switch modes with key board input
+	 */
+//	public void keyPressed() {
+//
+//		if (this.key == 'q') {
+//			this.currentMode = (this.currentMode + 1) % 3;
+//			if (this.currentMode == 0) {
+//				System.out.println("in drawing convex hull mode");
+//			}
+//		}
+//		if (this.currentMode == 1) {
+//			System.out.println("in drawing ball mode");
+//		}
+//		if (this.currentMode == 2) {
+//			System.out.println("in drawing voronoi diagram mode");
+//		}
+//	}
 
 	@Override
 	public void actionPerformed(ActionEvent event) {
@@ -336,20 +334,19 @@ public class DrawingApplet extends PApplet implements ActionListener {
 //         synchronized(this.voronoi) {
 //           this.voronoi.reset(); 
 //         } 
-		// radius = 1;
-		// } else if (event.getSource() == plusButton) {
-		// if (this.indexOfSelectedPoint != - 1) {
-		// this.geometry.updateRadius(indexOfSelectedPoint, RADIUS_STEP);
-		// }
-		// } else if (event.getSource() == minusButton) {
-		// if (this.indexOfSelectedPoint != -1) {
-		// this.geometry.updateRadius(indexOfSelectedPoint, -RADIUS_STEP);
-		// }
-		// } else if (event.getSource() == toggleMode) {
-		// currentMode = (currentMode + 1) % NUMBER_MODES;
-		// toggleMode.setLabel(SWITCH_MODE + MODES[(currentMode + 1) %
-		// NUMBER_MODES].toString());
-		// }
+//		 radius = 1;
+//		 } else if (event.getSource() == plusButton) {
+//		 if (this.indexOfSelectedPoint != - 1) {
+//		 this.geometry.updateRadius(indexOfSelectedPoint, RADIUS_STEP);
+//		 }
+//		 } else if (event.getSource() == minusButton) {
+//		 if (this.indexOfSelectedPoint != -1) {
+//		 this.geometry.updateRadius(indexOfSelectedPoint, -RADIUS_STEP);
+//		 }
+//		 } else if (event.getSource() == toggleMode) {
+//		 currentMode = (currentMode + 1) % NUMBER_MODES;
+//		 toggleMode.setLabel(SWITCH_MODE + MODES[(currentMode + 1) %
+//		 NUMBER_MODES].toString());
+//		 }
 	}
 }
-
