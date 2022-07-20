@@ -252,7 +252,7 @@ public final class Trapezoid {
 		final PVector br = bottom.intersect(right.x);
 		polyVertices = Arrays.asList(tl, tr, br, bl);
 
-		final PShape polygon = new PShape();
+		final PShape polygon = new PShape(PShape.PATH);
 		// polygon.setFamily(PShape.PATH);
 		polygon.setFill(true);
 		polygon.setFill(-255);
