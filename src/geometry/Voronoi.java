@@ -185,11 +185,17 @@ public class Voronoi {
 		Double[][] lines = new Double[n][3];
 		for (int k = 0; k < n; k++) {
 			// determine rotated point
-			Point2D.Double r = rotationMatrix(p, k * Math.toRadians(360 / n));
+			Double theta = k * (2 * Math.PI / n);
+			Point2D.Double r = rotationMatrix(p, theta);
 			r.x += s.x;
 			r.y += s.y;
-			if(k == 69)
+			/*
+			if(k == 1) {
 				System.out.println(Util.printCoordinate(r));
+				System.out.println(Util.printCoordinate(new Point2D.Double(s.x + Math.cos(theta), s.y + Math.sin(theta))));
+				System.out.println(theta);
+			}
+			*/
 
 			// convert points to homogeneous coordinates and compute line between the two
 			// lines
@@ -347,12 +353,6 @@ public class Voronoi {
 	 * Compute discriminant for x-solution for a ugly, but valid intersection point between a conic and a line
 	 */
 	private static Double computeDiscriminantX(Double A, Double B, Double C, Double D, Double E, Double F, Double a, Double b, Double c) {
-		// System.out.println("A: " + A);
-		// System.out.println("B: " + B);
-		// System.out.println("C: " + C);
-		// System.out.println("D: " + D);
-		// System.out.println("E: " + E);
-		// System.out.println("F: " + F);
 		// System.out.println("line: " + Util.printLineEq(new Double[] {a, b, c}));
 		Double first = Math.pow(- C * c * b + 2 * B * a * c +  D * Math.pow(b, 2) - E * a * b, 2);
 		Double second = A * Math.pow(b, 2) - C * a * b + B * Math.pow(a, 2);
@@ -462,14 +462,14 @@ public class Voronoi {
 		Double E = line3.z * line4.y + line3.y * line4.z - K * s * (line1.z * line2.y + line1.y * line2.z); 
 		Double F = line3.z * line4.z - K * s * (line1.z * line2.z); 
 		
-		System.out.println("line: " + Util.printLineEq(line));
+		// System.out.println("line: " + Util.printLineEq(line));
 
 		// determine intersection point
 		Double discriminantX = Voronoi.computeDiscriminantX(A, B, C, D, E, F, line[0], line[1], line[2]);
 		Double discriminantY = Voronoi.computeDiscriminantY(A, B, C, D, E, F, line[0], line[1], line[2]);
 		
 		if(discriminantX >= 0) {
-			System.out.println("discriminantX: " + discriminantX);
+			// System.out.println("discriminantX: " + discriminantX);
 			Double[] solutionX = Voronoi.computeSolutionX(A, B, C, D, E, F, line[0], line[1], line[2]);
 			for(int index = 0; index < solutionX.length; index++) {
 				Double y = -(line[0] / line[1]) * solutionX[index] - line[2] / line[1];
@@ -479,7 +479,7 @@ public class Voronoi {
 			}
 		}
 		if(discriminantY >= 0) {
-			System.out.println("discriminantY: " + discriminantY);
+			// System.out.println("discriminantY: " + discriminantY);
 			Double[] solutionY = Voronoi.computeSolutionY(A, B, C, D, E, F, line[0], line[1], line[2]);
 			for(int index = 0; index < solutionY.length; index++) {
 				Double x = -(line[1] / line[0]) * solutionY[index] - line[2] / line[0];
@@ -526,10 +526,10 @@ public class Voronoi {
 		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
 
-		int n = 200;
+		int n = 400;
 		Double[][] lines = Voronoi.thetaRays(s1, n);
 		// System.out.println(Util.printLineEq(lines[1]));
-		LinkedList<Point2D.Double> intersectionPoints = v.newthetaRayTrace(null, lines[69], s1, s2, e1, e2, e3, e4);
+		LinkedList<Point2D.Double> intersectionPoints = v.newthetaRayTrace(null, lines[198], s1, s2, e1, e2, e3, e4);
 		for(Point2D.Double p : intersectionPoints)
 			System.out.println("point: " + Util.printCoordinate(p));
 	}	
