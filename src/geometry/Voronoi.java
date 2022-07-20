@@ -188,6 +188,8 @@ public class Voronoi {
 			Point2D.Double r = rotationMatrix(p, k * Math.toRadians(360 / n));
 			r.x += s.x;
 			r.y += s.y;
+			if(k == 69)
+				System.out.println(Util.printCoordinate(r));
 
 			// convert points to homogeneous coordinates and compute line between the two
 			// lines
@@ -372,13 +374,6 @@ public class Voronoi {
 	 * Compute x solution for a ugly, but valid intersection point between a conic and a line
 	 */
 	private static Double[] computeSolutionX(Double A, Double B, Double C, Double D, Double E, Double F, Double a, Double b, Double c) {
-		// System.out.println("A: " + A);
-		// System.out.println("B: " + B);
-		// System.out.println("C: " + C);
-		// System.out.println("D: " + D);
-		// System.out.println("E: " + E);
-		// System.out.println("F: " + F);
-		// System.out.println("line: " + Util.printLineEq(new Double[] {a, b, c}));
 		Double[] solutions = new Double[2];
 		Double firstTerm = -(2 * B * a * c + D * Math.pow(b, 2) - E * a * b - C * c * b);
 		Double discriminant = Voronoi.computeDiscriminantX(A, B, C, D, E, F, a, b, c);
@@ -466,13 +461,9 @@ public class Voronoi {
 		Double D = line3.z * line4.x + line3.x * line4.z - K * s * (line1.z * line2.x + line1.x * line2.z); 
 		Double E = line3.z * line4.y + line3.y * line4.z - K * s * (line1.z * line2.y + line1.y * line2.z); 
 		Double F = line3.z * line4.z - K * s * (line1.z * line2.z); 
-		// System.out.println("A: " + A);
-		// System.out.println("B: " + B);
-		// System.out.println("C: " + C);
-		// System.out.println("D: " + D);
-		// System.out.println("E: " + E);
-		// System.out.println("F: " + F);
 		
+		System.out.println("line: " + Util.printLineEq(line));
+
 		// determine intersection point
 		Double discriminantX = Voronoi.computeDiscriminantX(A, B, C, D, E, F, line[0], line[1], line[2]);
 		Double discriminantY = Voronoi.computeDiscriminantY(A, B, C, D, E, F, line[0], line[1], line[2]);
@@ -535,10 +526,10 @@ public class Voronoi {
 		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
 
-		int n = 5;
+		int n = 200;
 		Double[][] lines = Voronoi.thetaRays(s1, n);
 		// System.out.println(Util.printLineEq(lines[1]));
-		LinkedList<Point2D.Double> intersectionPoints = v.newthetaRayTrace(null, lines[1], s1, s2, e1, e2, e3, e4);
+		LinkedList<Point2D.Double> intersectionPoints = v.newthetaRayTrace(null, lines[69], s1, s2, e1, e2, e3, e4);
 		for(Point2D.Double p : intersectionPoints)
 			System.out.println("point: " + Util.printCoordinate(p));
 	}	

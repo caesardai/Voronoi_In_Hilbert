@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-import trapmap.Segment;
+import micycle.trapmap.Segment;
 import processing.core.PVector;
 
 /*
