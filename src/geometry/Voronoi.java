@@ -9,6 +9,8 @@ import java.util.Set;
 import drawing.DrawingApplet;
 import drawing.DrawUtil;
 
+import micycle.trapmap.Segment;
+
 public class Voronoi {
 	/* HG where we compute voronoi diagram */
 	private HilbertGeometry geometry;
@@ -338,6 +340,168 @@ public class Voronoi {
 		}
 		return bisectorPoints;
 	}
+	
+	/*
+	 * Compute discriminant for x-solution for a ugly, but valid intersection point between a conic and a line
+	 */
+	private static Double computeDiscriminantX(Double A, Double B, Double C, Double D, Double E, Double F, Double a, Double b, Double c) {
+		// System.out.println("A: " + A);
+		// System.out.println("B: " + B);
+		// System.out.println("C: " + C);
+		// System.out.println("D: " + D);
+		// System.out.println("E: " + E);
+		// System.out.println("F: " + F);
+		// System.out.println("line: " + Util.printLineEq(new Double[] {a, b, c}));
+		Double first = Math.pow(- C * c * b + 2 * B * a * c +  D * Math.pow(b, 2) - E * a * b, 2);
+		Double second = A * Math.pow(b, 2) - C * a * b + B * Math.pow(a, 2);
+		Double third = B * Math.pow(c, 2) - E * c * b + F * Math.pow(b, 2);
+		return first - 4 * second * third; 
+	}
+
+	/*
+	 * Compute discriminant for x-solution for a ugly, but valid intersection point between a conic and a line
+	 */
+	private static Double computeDiscriminantY(Double A, Double B, Double C, Double D, Double E, Double F, Double a, Double b, Double c) {
+		Double first = Math.pow(2 * A * b * c - C * c * a - D * b * a + E * Math.pow(a, 2), 2);
+		Double second = A * Math.pow(b, 2) - C * b * a + B * Math.pow(a, 2);
+		Double third = A * Math.pow(c, 2) - D * c * a + F * Math.pow(a, 2);
+		return first - 4 * second * third; 
+	}
+	
+	/*
+	 * Compute x solution for a ugly, but valid intersection point between a conic and a line
+	 */
+	private static Double[] computeSolutionX(Double A, Double B, Double C, Double D, Double E, Double F, Double a, Double b, Double c) {
+		// System.out.println("A: " + A);
+		// System.out.println("B: " + B);
+		// System.out.println("C: " + C);
+		// System.out.println("D: " + D);
+		// System.out.println("E: " + E);
+		// System.out.println("F: " + F);
+		// System.out.println("line: " + Util.printLineEq(new Double[] {a, b, c}));
+		Double[] solutions = new Double[2];
+		Double firstTerm = -(2 * B * a * c + D * Math.pow(b, 2) - E * a * b - C * c * b);
+		Double discriminant = Voronoi.computeDiscriminantX(A, B, C, D, E, F, a, b, c);
+		Double denominator = 2 * (A * Math.pow(b, 2) - C * a * b + B * Math.pow(a, 2));
+		
+		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
+		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
+		
+		System.out.println("x+: " + solutions[0]);
+		System.out.println("x-: " + solutions[1]);
+		
+		return solutions;
+	}
+	
+	/*
+	 * Compute x solution for a ugly, but valid intersection point between a conic and a line
+	 */
+	private static Double[] computeSolutionY(Double A, Double B, Double C, Double D, Double E, Double F, Double a, Double b, Double c) {
+		Double[] solutions = new Double[2];
+		Double firstTerm = -1 * (2 * A * b * c - C * c * a - D * b * a + E * Math.pow(a, 2));
+		Double discriminant = Voronoi.computeDiscriminantY(A, B, C, D, E, F, a, b, c);
+		Double denominator = 2 * (A * Math.pow(b, 2) - C * b * a + B * Math.pow(a, 2));
+		
+		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
+		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
+		
+		System.out.println("y+: " + solutions[0]);
+		System.out.println("y-: " + solutions[1]);
+
+		return solutions;
+	}
+
+	/*
+	 * Detecting bisectors by keeping track of the color
+	 * Source: https://stemandmusic.in/maths/coordinate-geometry/conicLI.php
+	 */
+	public LinkedList<Point2D.Double> newthetaRayTrace(DrawingApplet frame, Double[] line, Point2D.Double site1, Point2D.Double site2, 
+			Segment edge1, Segment edge2, Segment edge3, Segment edge4) {
+		
+		// list of bisector points to return
+		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
+		
+		// compute line equations for Segments
+		// get endpoints
+		Point2D.Double leftPoint1 = new Point2D.Double(edge1.getLeftPoint().x, edge1.getLeftPoint().y);
+		Point2D.Double rightPoint1 = new Point2D.Double(edge1.getRightPoint().x, edge1.getRightPoint().y);
+		Point2D.Double leftPoint2 = new Point2D.Double(edge2.getLeftPoint().x, edge2.getLeftPoint().y);
+		Point2D.Double rightPoint2 = new Point2D.Double(edge2.getRightPoint().x, edge2.getRightPoint().y);
+		Point2D.Double leftPoint3 = new Point2D.Double(edge3.getLeftPoint().x, edge3.getLeftPoint().y);
+		Point2D.Double rightPoint3 = new Point2D.Double(edge3.getRightPoint().x, edge3.getRightPoint().y);
+		Point2D.Double leftPoint4 = new Point2D.Double(edge4.getLeftPoint().x, edge4.getLeftPoint().y);
+		Point2D.Double rightPoint4 = new Point2D.Double(edge4.getRightPoint().x, edge4.getRightPoint().y);
+		
+		// convert to homogenous points
+		Point3d lp1 = HilbertGeometry.toHomogeneous(leftPoint1);
+		Point3d rp1 = HilbertGeometry.toHomogeneous(rightPoint1);
+		Point3d lp2 = HilbertGeometry.toHomogeneous(leftPoint2);
+		Point3d rp2 = HilbertGeometry.toHomogeneous(rightPoint2);
+		Point3d lp3 = HilbertGeometry.toHomogeneous(leftPoint3);
+		Point3d rp3 = HilbertGeometry.toHomogeneous(rightPoint3);
+		Point3d lp4 = HilbertGeometry.toHomogeneous(leftPoint4);
+		Point3d rp4 = HilbertGeometry.toHomogeneous(rightPoint4);
+		
+		// get line equations
+		Point3d line1 = lp1.crossProduct(rp1); // a_1 x + a_2 y + a_3 = 0
+		Point3d line2 = lp2.crossProduct(rp2); // b_1 x + b_2 y + b_3 = 0
+		Point3d line3 = lp3.crossProduct(rp3); // c_1 x + c_2 y + c_3 = 0
+		Point3d line4 = rp4.crossProduct(lp4); // d_1 x + d_2 y + d_3 = 0
+		
+		// System.out.println(Util.printLineEq(new Double[] {line1.x, line1.y, line1.z}));
+		// System.out.println(Util.printLineEq(new Double[] {line2.x, line2.y, line2.z}));
+		// System.out.println(Util.printLineEq(new Double[] {line3.x, line3.y, line3.z}));
+		// System.out.println(Util.printLineEq(new Double[] {line4.x, line4.y, line4.z}));
+		
+		// compute constants
+		Double K = (Math.abs(line4.x * site1.x + line4.y * site1.y + line4.z) / Math.abs(line2.x * site1.x + line2.y * site1.y + line2.z))
+				* (Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z) / Math.abs(line1.x * site2.x + line1.y * site2.y + line1.z));
+		Double s = (double) 1;
+		// System.out.println("K: " + K);
+		
+		// compute coefficients of bisector curve
+		Double A = line3.x * line4.x - K * s * (line1.x * line2.x); 
+		Double B = line3.y * line4.y - K * s * line1.y * line2.y; 
+		Double C = line3.y * line4.x + line3.x * line4.y - K * s * (line1.y * line2.x + line1.x * line2.y); 
+		Double D = line3.z * line4.x + line3.x * line4.z - K * s * (line1.z * line2.x + line1.x * line2.z); 
+		Double E = line3.z * line4.y + line3.y * line4.z - K * s * (line1.z * line2.y + line1.y * line2.z); 
+		Double F = line3.z * line4.z - K * s * (line1.z * line2.z); 
+		// System.out.println("A: " + A);
+		// System.out.println("B: " + B);
+		// System.out.println("C: " + C);
+		// System.out.println("D: " + D);
+		// System.out.println("E: " + E);
+		// System.out.println("F: " + F);
+		
+		// determine intersection point
+		Double discriminantX = Voronoi.computeDiscriminantX(A, B, C, D, E, F, line[0], line[1], line[2]);
+		Double discriminantY = Voronoi.computeDiscriminantY(A, B, C, D, E, F, line[0], line[1], line[2]);
+		
+		if(discriminantX >= 0) {
+			System.out.println("discriminantX: " + discriminantX);
+			Double[] solutionX = Voronoi.computeSolutionX(A, B, C, D, E, F, line[0], line[1], line[2]);
+			for(int index = 0; index < solutionX.length; index++) {
+				Double y = -(line[0] / line[1]) * solutionX[index] - line[2] / line[1];
+				Point2D.Double newPoint = new Point2D.Double(solutionX[index], y);
+				if(!bisectorPoints.contains(newPoint))
+					bisectorPoints.add(newPoint);
+			}
+		}
+		if(discriminantY >= 0) {
+			System.out.println("discriminantY: " + discriminantY);
+			Double[] solutionY = Voronoi.computeSolutionY(A, B, C, D, E, F, line[0], line[1], line[2]);
+			for(int index = 0; index < solutionY.length; index++) {
+				Double x = -(line[1] / line[0]) * solutionY[index] - line[2] / line[0];
+				Point2D.Double newPoint = new Point2D.Double(x, solutionY[index]);
+				if(!bisectorPoints.contains(newPoint))
+					bisectorPoints.add(newPoint);
+			}
+			
+		}
+
+		// return all bisectors found
+		return bisectorPoints;
+	}
 
 	/*
 	 * Spokes stop at Voronoi bisector to visualize effects of multiple spokes on
@@ -355,4 +519,27 @@ public class Voronoi {
 
 		return thetaRayTrace(null, line, site);
 	}
+
+	public static void main(String[] argv) {
+		Point2D.Double s1 = new Point2D.Double(23, 20);
+		Point2D.Double s2 = new Point2D.Double(28, 12);
+		HilbertGeometry g = new HilbertGeometry();
+		g.convex = new Convex();
+		Voronoi v = new Voronoi(g);
+		Point2D.Double p1 = new Point2D.Double(0, 0);
+		Point2D.Double p2 = new Point2D.Double(10, 30);
+		Point2D.Double p3 = new Point2D.Double(35, 20);
+		Point2D.Double p4 = new Point2D.Double(40, 5);
+		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
+		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
+		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
+		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
+
+		int n = 5;
+		Double[][] lines = Voronoi.thetaRays(s1, n);
+		// System.out.println(Util.printLineEq(lines[1]));
+		LinkedList<Point2D.Double> intersectionPoints = v.newthetaRayTrace(null, lines[1], s1, s2, e1, e2, e3, e4);
+		for(Point2D.Double p : intersectionPoints)
+			System.out.println("point: " + Util.printCoordinate(p));
+	}	
 }
