@@ -88,11 +88,9 @@ public class TrapMap {
 		final Map<Segment, Segment> segments = new HashMap<>(polygons.size() * 3);
 		for (PShape polygon : polygons) {
 			
-			/* NEED TO ADDRESS: FEATURE IS NOT PART OF PROCESSING 2.2.1
 			if (polygon.getFamily() == PShape.PRIMITIVE || polygon.getFamily() == PShape.GROUP) {
 				continue; // process polygonal shapes only
 			}
-			*/
 
 			// for each polygon, it creates segments for all vertices in the polygon
 			for (int i = 0; i < polygon.getVertexCount(); i++) {

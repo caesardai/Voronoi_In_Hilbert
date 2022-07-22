@@ -12,6 +12,11 @@ public class Util {
     if (p1 == null) return false;
     return ((Double) p1.distanceSq(p2) < 1);
   }
+
+  public static boolean roughlySamePoints(Point2D.Double p1, Point2D.Double p2, Double error) {
+    if (p1 == null || p2 == null) return false;
+    return ((Double) p1.distanceSq(p2) <= error);
+  }
   
   public static boolean contains(Point2D.Double[] array, Point2D.Double point) {
     for (int i = 0; i < array.length; i++) {
