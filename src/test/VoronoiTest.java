@@ -3,6 +3,7 @@ package test;
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
 
+import geometry.Bisector;
 import geometry.Convex;
 import geometry.HilbertGeometry;
 import geometry.Voronoi;
@@ -21,17 +22,21 @@ public class VoronoiTest {
 		Point2D.Double p2 = new Point2D.Double(10, 30);
 		Point2D.Double p3 = new Point2D.Double(35, 20);
 		Point2D.Double p4 = new Point2D.Double(40, 5);
+		g.convex.addPoint(p1);
+		g.convex.addPoint(p2);
+		g.convex.addPoint(p3);
+		g.convex.addPoint(p4);
 		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
 		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
 		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
+		Bisector b = new Bisector(s1, s2, e1, e2, e3, e4, p1, p3);
 
-		int n = 400;
-		Double[][] lines = Voronoi.thetaRays(s1, n);
-		// System.out.println(Util.printLineEq(lines[1]));
-		// LinkedList<Point2D.Double> intersectionPoints = v.newthetaRayTrace(null, lines[198], s1, s2, e1, e2, e3, e4);
-//		for(Point2D.Double p : intersectionPoints)
-//			System.out.println("point: " + Util.printCoordinate(p));
+		int n = 20;
+		Double[][] lines = Voronoi.thetaRays(s1, p1, p3, n);
+		LinkedList<Point2D.Double> points = Voronoi.newthetaRayTrace(b, g.convex, lines);
+		for(Point2D.Double p : points)
+			System.out.println("points on bisector: " + Util.printCoordinate(p));
 	}
 	
 	public static void testSpokeAngle() {

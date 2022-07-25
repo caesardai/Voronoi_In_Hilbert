@@ -1,5 +1,6 @@
 package geometry;
 import java.awt.geom.Point2D;
+import processing.core.PVector;
 
 public class Util {
   final static double epsilon = 10d;
@@ -25,6 +26,14 @@ public class Util {
       }
     }
     return false;
+  }
+  
+  public static PVector toPVector(Point2D.Double p) {
+	  return new PVector((float) p.x, (float) p.y);
+  }
+
+  public static Point2D.Double toPoint2D(PVector p) {
+	  return new Point2D.Double((double) p.x, (double) p.y);
   }
   
   public static String printCoordinate(Point2D.Double p) {

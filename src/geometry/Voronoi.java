@@ -229,6 +229,13 @@ public class Voronoi {
 			theta2 = (s.y < endPoint.y) ? Math.PI / 2 : 3 * Math.PI / 2;
 		theta1 = Voronoi.spokeAngle(s, startPoint);
 		theta2 = Voronoi.spokeAngle(s, endPoint);
+		
+		// ensure that angles are ordered correctly
+		if(theta2 < theta1) {
+			Double temp = theta1;
+			theta1 = theta2;
+			theta2 = temp;
+		}
 
 		Point2D.Double p = new Point2D.Double(1, 0);
 		Double[][] lines = new Double[n+1][3];
@@ -441,10 +448,10 @@ public class Voronoi {
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
 		Bisector b = new Bisector(s1, s2, e1, e2, e3, e4, p1, p3);
 
-		int n = 2;
-		Double[][] lines = Voronoi.thetaRays(s1, n);
+		int n = 20;
+		Double[][] lines = Voronoi.thetaRays(s1, p1, p3, n);
 		LinkedList<Point2D.Double> points = Voronoi.newthetaRayTrace(b, g.convex, lines);
 		for(Point2D.Double p : points)
-			System.out.println(Util.printCoordinate(p));
+			System.out.println("points on bisector: " + Util.printCoordinate(p));
 	}	
 }

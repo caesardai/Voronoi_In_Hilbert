@@ -184,48 +184,79 @@ public class Bisector {
 		Double error = 1e-8;
 		for(Point2D.Double p : xIntersect) {
 			// check if the point p is in the convex body; if not, move to next point
-			if(!c.isInConvex(p))
-				continue;
+			if(!c.isInConvex(p)) {
+				// check if the point is on the boundary of the convex body. this checks for the closure of the convex body
+				boolean onEdge = false;
+				Point3d homogenousP = HilbertGeometry.toHomogeneous(p);
+				for(int index = 0; index < c.convexHull.length-1; index++) {
+					Point3d edge = Bisector.computeLineEquation(c.convexHull[index], c.convexHull[index+1]);
+					if(Math.abs(edge.scalarProduct(homogenousP)) <= 1e-8) {
+						onEdge = true;
+						break;
+					}
+				}
+				if(!onEdge)
+					continue;
+			}
 			
 			// compute y value for given x values
 			Double[] yPoints = this.computeY(p.x);
 			Point2D.Double test1 = new Point2D.Double(p.x, yPoints[0]);
 			Point2D.Double test2 = new Point2D.Double(p.x, yPoints[1]);
 			if(Util.roughlySamePoints(p, test1, error)) {
-				intersectionPoints.add(p);
-//				System.out.println("solution x: " + Util.printCoordinate(p));
-//				System.out.println("compared against: " + Util.printCoordinate(test1));
+				if(!Bisector.listRouglyContainsPoint(intersectionPoints, p, error))
+					intersectionPoints.add(p);
 			}
 			else if(Util.roughlySamePoints(p, test2, error)) {
-				intersectionPoints.add(p);
-//				System.out.println("solution x: " + Util.printCoordinate(p));
-//				System.out.println("compared against: " + Util.printCoordinate(test2));
+				if(!Bisector.listRouglyContainsPoint(intersectionPoints, p, error))
+					intersectionPoints.add(p);
 			}
 		}
 		for(Point2D.Double p : yIntersect) {
 			// check if the point p is in the convex body; if not, move to next point
-			if(!c.isInConvex(p))
-				continue;
+			if(!c.isInConvex(p)) {
+				// check if the point is on the boundary of the convex body. this checks for the closure of the convex body
+				boolean onEdge = false;
+				Point3d homogenousP = HilbertGeometry.toHomogeneous(p);
+				for(int index = 0; index < c.convexHull.length-1; index++) {
+					Point3d edge = Bisector.computeLineEquation(c.convexHull[index], c.convexHull[index+1]);
+					if(Math.abs(edge.scalarProduct(homogenousP)) <= 1e-8) {
+						onEdge = true;
+						break;
+					}
+				}
+				if(!onEdge)
+					continue;
+			}
 			
 			// compute y value for given x values
 			Double[] xPoints = this.computeX(p.y);
 			Point2D.Double test1 = new Point2D.Double(xPoints[0], p.y);
 			Point2D.Double test2 = new Point2D.Double(xPoints[1], p.y);
 			if(Util.roughlySamePoints(p, test1, error)) {
-				intersectionPoints.add(p);
-//				System.out.println("solution y: " + Util.printCoordinate(p));
-//				System.out.println("compared against: " + Util.printCoordinate(test1));
+				if(!Bisector.listRouglyContainsPoint(intersectionPoints, p, error))
+					intersectionPoints.add(p);
 			}
 			else if(Util.roughlySamePoints(p, test2, error)) {
-				intersectionPoints.add(p);
-//				System.out.println("solution y: " + Util.printCoordinate(p));
-//				System.out.println("compared against: " + Util.printCoordinate(test2));
+				if(!Bisector.listRouglyContainsPoint(intersectionPoints, p, error))
+					intersectionPoints.add(p);
 			}
 		}
 		
 		// return all intersection points
 		return intersectionPoints;
 		
+	}
+	
+	/*
+	 * Checks if list contains a point that is approximately equal to some other points. the approximation is based on the error parameter
+	 */
+	private static boolean listRouglyContainsPoint(LinkedList<Point2D.Double> list, Point2D.Double p, Double error) {
+		for(Point2D.Double t : list) {
+			if(t.distance(p) <= error)
+				return true;
+		}
+		return false;
 	}
 
 	/*
@@ -314,50 +345,27 @@ public class Bisector {
 		Point2D.Double rightPoint3 = new Point2D.Double(edge3.getRightPoint().x, edge3.getRightPoint().y);
 		Point2D.Double leftPoint4 = new Point2D.Double(edge4.getLeftPoint().x, edge4.getLeftPoint().y);
 		Point2D.Double rightPoint4 = new Point2D.Double(edge4.getRightPoint().x, edge4.getRightPoint().y);
-		
-		// convert to homogenous points
-		Point3d lp1 = HilbertGeometry.toHomogeneous(leftPoint1);
-		Point3d rp1 = HilbertGeometry.toHomogeneous(rightPoint1);
-		Point3d lp2 = HilbertGeometry.toHomogeneous(leftPoint2);
-		Point3d rp2 = HilbertGeometry.toHomogeneous(rightPoint2);
-		Point3d lp3 = HilbertGeometry.toHomogeneous(leftPoint3);
-		Point3d rp3 = HilbertGeometry.toHomogeneous(rightPoint3);
-		Point3d lp4 = HilbertGeometry.toHomogeneous(leftPoint4);
-		Point3d rp4 = HilbertGeometry.toHomogeneous(rightPoint4);
 
 		// compute line equations
-		this.line1 = lp1.crossProduct(rp1); // a_1 x + a_2 y + a_3 = 0
-		this.line2 = lp2.crossProduct(rp2); // b_1 x + b_2 y + b_3 = 0
-		this.line3 = lp3.crossProduct(rp3); // c_1 x + c_2 y + c_3 = 0
-		this.line4 = rp4.crossProduct(lp4); // d_1 x + d_2 y + d_3 = 0
+		this.line1 = Bisector.computeLineEquation(leftPoint1, rightPoint1); // a_1 x + a_2 y + a_3 = 0
+		this.line2 = Bisector.computeLineEquation(leftPoint2, rightPoint2); // b_1 x + b_2 y + b_3 = 0
+		this.line3 = Bisector.computeLineEquation(leftPoint3, rightPoint3); // c_1 x + c_2 y + c_3 = 0
+		this.line4 = Bisector.computeLineEquation(rightPoint4, leftPoint4); // d_1 x + d_2 y + d_3 = 0
+	}
+	
+	/*
+	 * computes coefficients of the equations of two given points
+	 */
+	public static Point3d computeLineEquation(Point2D.Double p1, Point2D.Double p2) {
+		Point3d lp = HilbertGeometry.toHomogeneous(p1);
+		Point3d rp = HilbertGeometry.toHomogeneous(p2);
+		
+		return lp.crossProduct(rp);
 	}
 	
 	/*
 	 * Test method for this object
 	 */
 	public static void main(String[] argv) {
-		Point2D.Double s1 = new Point2D.Double(23, 20);
-		Point2D.Double s2 = new Point2D.Double(28, 12);
-		Point2D.Double p1 = new Point2D.Double(0, 0);
-		Point2D.Double p2 = new Point2D.Double(10, 30);
-		Point2D.Double p3 = new Point2D.Double(35, 20);
-		Point2D.Double p4 = new Point2D.Double(40, 5);
-		Convex c = new Convex();
-		c.addPoint(p1);
-		c.addPoint(p2);
-		c.addPoint(p3);
-		c.addPoint(p4);
-		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
-		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
-		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
-		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
-		Bisector b = new Bisector(s1, s2, e1, e2, e3, e4);
-
-		int n = 253;
-		Double[][] lines = Voronoi.thetaRays(s1, n);
-		// System.out.println(Util.printLineEq(lines[1]));
-		LinkedList<Point2D.Double> intersectionPoints = b.intersectionPointsWithLine(c, lines[56]);
-		for(Point2D.Double p : intersectionPoints)
-			System.out.println("solution: " + Util.printCoordinate(p));
 	}	
 }
