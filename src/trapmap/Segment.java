@@ -1,4 +1,4 @@
-package micycle.trapmap;
+package trapmap;
 
 import processing.core.PShape;
 import processing.core.PVector;

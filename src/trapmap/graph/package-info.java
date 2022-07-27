@@ -18,4 +18,4 @@
  * <li>Go down to this descendant and repeat the process</li>
  * 
  */
-package micycle.trapmap.graph;
+package trapmap.graph;

@@ -1,6 +1,6 @@
-package micycle.trapmap.graph;
+package trapmap.graph;
 
-import micycle.trapmap.Trapezoid;
+import trapmap.Trapezoid;
 
 /**
  * Leafs model trapezoids at the lowest level of the History Graph.

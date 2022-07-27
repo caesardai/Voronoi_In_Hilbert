@@ -1,4 +1,4 @@
-package micycle.trapmap.graph;
+package trapmap.graph;
 
 import processing.core.PVector;
 

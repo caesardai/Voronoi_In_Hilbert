@@ -8,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import micycle.trapmap.graph.Leaf;
-import micycle.trapmap.graph.Node;
-import micycle.trapmap.graph.XNode;
-import micycle.trapmap.graph.YNode;
+import trapmap.graph.Leaf;
+import trapmap.graph.Node;
+import trapmap.graph.XNode;
+import trapmap.graph.YNode;
 import processing.core.PShape;
 import processing.core.PVector;
 

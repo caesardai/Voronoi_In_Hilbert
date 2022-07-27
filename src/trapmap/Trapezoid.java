@@ -1,9 +1,9 @@
-package micycle.trapmap;
+package trapmap;
 
 import java.util.Arrays;
 import java.util.List;
 
-import micycle.trapmap.graph.Leaf;
+import trapmap.graph.Leaf;
 import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
