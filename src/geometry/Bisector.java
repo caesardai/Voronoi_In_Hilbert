@@ -3,9 +3,24 @@ package geometry;
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
 
-import micycle.trapmap.Segment;
+import trapmap.Segment;
 
-// class to store bisectors between two sites and the end points that define the boundary between two different Voronoi cells
+import Jama.Matrix;
+
+/*
+ * Class to store bisector for some given sector
+ * Notation:
+ * - if p1 and p2 are points, then p1-p2 is the line segment with endpoints p1 and p2
+ * Assumptions:
+ * - let X be a point on the bisector
+ * - let S be the sector which the bisector corresponds to
+ * - segment site1-X passes through edges edge2 and edge4
+ * - segment site2-X passes through edges edge1 and edge3
+ * - X is closer to edge4 with respect to the Euclidean distance
+ * - X is closer to edge1 with respect to the Euclidean distance
+ * - site1 is closer to edge2 with respect to the Euclidean distance
+ * - site2 is closer to edge3 with respect to the Euclidean distance
+ */
 public class Bisector {
 	// constants for conic; equation for conic: Ax^2 + By^2 + Cxy + Dx + Ey + F = 0
 	private Double A;
@@ -27,7 +42,7 @@ public class Bisector {
 	private Point2D.Double site2;
 	
 	// edges
-	private Segment edge1;
+	private Segment edge1; 
 	private Segment edge2;
 	private Segment edge3;
 	private Segment edge4;
@@ -40,6 +55,13 @@ public class Bisector {
 	private Point2D.Double leftEndPoint;
 	private Point2D.Double rightEndPoint;
 	
+	// projective matrix transformation
+	private Matrix P;
+	private Matrix inverseP;
+	
+	// FOR DEBUGGING PURPOSES
+	public Bisector() {}
+	
 	// constructors - end points unknown
 	public Bisector(Point2D.Double site1, Point2D.Double site2, Segment edge1, Segment edge2, Segment edge3, Segment edge4) {
 		this.site1 = site1;
@@ -51,7 +73,9 @@ public class Bisector {
 		this.leftEndPoint = null;
 		this.rightEndPoint = null;
 		this.constantsComputed = false;
+		this.P = null;
 		this.computeBisector();
+		this.computeProjectiveMatrices();
 	}
 
 	// constructors - end points known
@@ -66,6 +90,7 @@ public class Bisector {
 		this.rightEndPoint = rightEndPoint;
 		this.constantsComputed = false;
 		this.computeBisector();
+		this.computeProjectiveMatrices();
 	}
 	
 	/*
@@ -82,7 +107,7 @@ public class Bisector {
 		// compute constants
 		this.K = (Math.abs(line4.x * site1.x + line4.y * site1.y + line4.z) / Math.abs(line2.x * site1.x + line2.y * site1.y + line2.z))
 				* (Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z) / Math.abs(line1.x * site2.x + line1.y * site2.y + line1.z));
-		this.s = (double) 1;
+		this.s = 1d;
 		
 		// compute coefficients of bisector curve
 		this.A = line3.x * line4.x - this.K * this.s * (line1.x * line2.x); 
@@ -249,6 +274,98 @@ public class Bisector {
 	}
 	
 	/*
+	 * Computes an approximate solution to the intersection to two conics/bisectors
+	 */
+	public static Double[] computeTwoBisectorIntersection(Bisector b1, Bisector b2) {
+		// express all variables in a nice manner
+		Double A1 = b1.A;
+		Double B1 = b1.B;
+		Double C1 = b1.C;
+		Double D1 = b1.D;
+		Double E1 = b1.E;
+		Double F1 = b1.F;
+		
+		Double A2 = b2.A;
+		Double B2 = b2.B;
+		Double C2 = b2.C;
+		Double D2 = b2.D;
+		Double E2 = b2.E;
+		Double F2 = b2.F;
+		
+		// determine the coefficients of the quartic; expressed as Px^4 + Qx^3 + Rx^2 + Sx + T = 0
+		Double T = -16 * Math.pow(B1, 2) * Math.pow(B2, 3) * E1 * E2 * F1 +
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * Math.pow(E2, 2) * F1 +
+				16 * Math.pow(B1, 2) * Math.pow(B2, 4) * Math.pow(F1, 2) + 
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * Math.pow(E1, 2) * F2 -
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * E1 * E2 * F2 - 
+				32 * Math.pow(B1, 3) * Math.pow(B2, 3) * F1 * F2  + 
+				16 * Math.pow(B1, 4) * Math.pow(B2, 2) * Math.pow(F2, 2);
+		
+		Double S = 16 * Math.pow(B1, 2) * Math.pow(B2, 3) * D2 * Math.pow(E1, 2) -
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * D1 * E1 * E2 - 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * D2 * E1 * E2 + 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * D1 * Math.pow(E2, 2) + 
+				32 * Math.pow(B1, 2) * Math.pow(B2, 4) * D1 * F1 - 
+				32 * Math.pow(B1, 3) * Math.pow(B2, 3) * D2 * F1 - 
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * C2 * E1 * F1 - 
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * E2 * F1 + 
+				32 * Math.pow(B1, 3) * Math.pow(B2, 2) * C2 * E2 * F1 - 
+				32 * Math.pow(B1, 3) * Math.pow(B2, 3) * D1 * F2 + 
+				32 * Math.pow(B1, 4) * Math.pow(B2, 2) * D2 * F2 + 
+				32 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * E1 * F2 - 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * C2 * E1 * F2 - 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * C1 * E2 * F2;
+
+		Double R = 16 * Math.pow(B1, 2) * Math.pow(B2, 4) * Math.pow(D1, 2) -
+				32 * Math.pow(B1, 3) * Math.pow(B2, 3) * D1 * D2 + 
+				16 * Math.pow(B1, 4) * Math.pow(B2, 2) * Math.pow(D2, 2) - 
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * C2 * D1 * E1 + 
+				32 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * D2 * E1 - 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * C2 * D2 * E1 + 
+				16 * A2 * Math.pow(B1, 2) * Math.pow(B2, 3) * Math.pow(E1, 2) - 
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * D1 * E2 + 
+				32 * Math.pow(B1, 3) * Math.pow(B2, 2) * C2 * D1 * E2 - 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * C1 * D2 * E2 - 
+				16 * A2 * Math.pow(B1, 3) * Math.pow(B2, 2) *  E1 * E2 - 
+				16 * A1 * Math.pow(B1, 2) * Math.pow(B2, 3) *  E1 * E2 + 
+				16 * A1 * Math.pow(B1, 3) * Math.pow(B2, 2) *  Math.pow(E2, 2) - 
+				32 * A2 * Math.pow(B1, 3) * Math.pow(B2, 3) *  F1 + 
+				32 * A1 * Math.pow(B1, 2) * Math.pow(B2, 4) *  F1 - 
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * C2 *  F1 + 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * Math.pow(C2, 2) *  F1 + 
+				32 * A2 * Math.pow(B1, 4) * Math.pow(B2, 2) * F2 - 
+				32 * A1 * Math.pow(B1, 3) * Math.pow(B2, 3) * F2 + 
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * Math.pow(C1, 2) * F2 - 
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * C1 * C2 * F2;
+				
+		Double Q = -32 * A2 * Math.pow(B1, 3) * Math.pow(B2, 3) * D1 +
+				32 * A1 * Math.pow(B1, 2) * Math.pow(B2, 4) * D1 -
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * C2 * D1 +
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * Math.pow(C2, 2) * D1 +
+				32 * A2 * Math.pow(B1, 4) * Math.pow(B2, 2) * D2 -
+				32 * A1 * Math.pow(B1, 3) * Math.pow(B2, 3) * D2 +
+				16 * Math.pow(B1, 2) * Math.pow(B2, 3) * Math.pow(C1, 2) * D2 -
+				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * C1 * C2 * D2 +
+				32 * A2 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * E1 -
+				16 * A2 * Math.pow(B1, 3) * Math.pow(B2, 2) * C2 * E1 -
+				16 * A1 * Math.pow(B1, 2) * Math.pow(B2, 3) * C2 * E1 -
+				16 * A2 * Math.pow(B1, 3) * Math.pow(B2, 2) * C1 * E2 -
+				16 * A1 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * E2 +
+				32 * A1 * Math.pow(B1, 3) * Math.pow(B2, 2) * C2 * E2;
+		
+		Double P = 16 * Math.pow(A2, 2) * Math.pow(B1, 4) * Math.pow(B2, 2) - 
+				32 * A1 * A2 * Math.pow(B1, 3) * Math.pow(B2, 3) + 
+				16 * Math.pow(A1, 2) * Math.pow(B1, 2) * Math.pow(B2, 4) + 
+				16 * A2 * Math.pow(B1, 2) * Math.pow(B2, 3) * Math.pow(C1, 2) - 
+				16 * A2 * Math.pow(B1, 3) * Math.pow(B2, 2) * C1 * C2 - 
+				16 * A1 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * C2 + 
+				16 * A1 * Math.pow(B1, 3) * Math.pow(B2, 2) * Math.pow(C2, 2);
+		
+		// DEBUGGING, MAKE SURE THAT COEFFICIENTS ARE CORRECT
+		return new Double[] {P, Q, R, S, T};
+	}
+	
+	/*
 	 * Checks if list contains a point that is approximately equal to some other points. the approximation is based on the error parameter
 	 */
 	private static boolean listRouglyContainsPoint(LinkedList<Point2D.Double> list, Point2D.Double p, Double error) {
@@ -258,7 +375,7 @@ public class Bisector {
 		}
 		return false;
 	}
-
+	
 	/*
 	 * Compute discriminant for the intersection point between the bisector and a line; this corresponds for solution of x
 	 */
@@ -354,6 +471,129 @@ public class Bisector {
 	}
 	
 	/*
+	 * compute projective matrix
+	 */
+	private void computeProjectiveMatrices() {
+		// compute the vertices of the quad
+		Point2D.Double[] vertices = new Point2D.Double[4];
+		vertices[0] = HilbertGeometry.toCartesian( this.line1.crossProduct(this.line2) );
+		vertices[1] = HilbertGeometry.toCartesian( this.line2.crossProduct(this.line3) );
+		vertices[2] = HilbertGeometry.toCartesian( this.line3.crossProduct(this.line4) );
+		vertices[3] = HilbertGeometry.toCartesian( this.line4.crossProduct(this.line1) );
+		
+		// determine relative position of all these points (i.e. which point is the top left vertex, which is the top right vertex, etc.)
+		// vertices[0] is bottom left corner
+		// vertices[1] is bottom right corner
+		// vertices[2] is top right corner
+		// vertices[3] is top left corner
+		
+		// sort bottom segment by value of x
+		if(vertices[0].x > vertices[1].x) {
+			Point2D.Double temp = vertices[0];
+			vertices[0] = vertices[1];
+			vertices[1] = temp;
+		}
+
+		// sort top segment by value of x
+		if(vertices[3].x > vertices[2].x) {
+			Point2D.Double temp = vertices[2];
+			vertices[2] = vertices[3];
+			vertices[3] = temp;
+		}
+		
+		// sort left segment by value of y
+		if(vertices[0].y > vertices[3].y) {
+			Point2D.Double temp = vertices[0];
+			vertices[0] = vertices[3];
+			vertices[3] = temp;
+			
+		}
+
+		// sort left segment by value of y
+		if(vertices[1].y > vertices[2].y) {
+			Point2D.Double temp = vertices[2];
+			vertices[2] = vertices[1];
+			vertices[1] = temp;
+			
+		}
+		
+		// construct forward projective matrix
+		// we map to the unit square
+		Matrix T = new Matrix(
+			new double[][] {
+				{ vertices[0].x, vertices[0].y, 1d, 0d, 0d, 0d, -vertices[0].x * 0d, -vertices[0].y * 0d  },
+				{ 0d, 0d, 0d, vertices[0].x, vertices[0].y, 1d, -vertices[0].x * 0d, -vertices[0].y * 0d  },
+				{ vertices[1].x, vertices[1].y, 1d, 0d, 0d, 0d, -vertices[1].x * 1d, -vertices[1].y * 1d  },
+				{ 0d, 0d, 0d, vertices[1].x, vertices[1].y, 1d, -vertices[1].x * 0d, -vertices[1].y * 0d  },
+				{ vertices[2].x, vertices[2].y, 1d, 0d, 0d, 0d, -vertices[2].x * 1d, -vertices[2].y * 1d  },
+				{ 0d, 0d, 0d, vertices[2].x, vertices[2].y, 1d, -vertices[2].x * 1d, -vertices[2].y * 1d  },
+				{ vertices[3].x, vertices[3].y, 1d, 0d, 0d, 0d, -vertices[3].x * 0d, -vertices[3].y * 0d  },
+				{ 0d, 0d, 0d, vertices[3].x, vertices[3].y, 1d, -vertices[3].x * 1d, -vertices[3].y * 1d  }
+			}
+		);
+		Matrix Q = new Matrix(
+			new double[][] {
+				{0d},
+				{0d},
+				{1d},
+				{0d},
+				{1d},
+				{1d},
+				{0d},
+				{1d}
+			}
+		);
+		
+		Matrix C = T.inverse().times(Q);
+		
+		this.P = new Matrix(
+			new double[][] {
+				{ C.get(0, 0), C.get(1, 0), C.get(2, 0) }, 
+				{ C.get(3, 0), C.get(4, 0), C.get(5, 0) }, 
+				{ C.get(6, 0), C.get(7, 0), 1d }
+			}
+		);
+		
+		// construct backwards projective matrix
+		// we map from the unit square back to the original quad
+		T = new Matrix(
+			new double[][] {
+				{0d, 0d, 1d, 0d, 0d, 0d, -0d * vertices[0].x, -0d * vertices[0].x},
+				{0d, 0d, 0d, 0d, 0d, 1d, -0d * vertices[0].y, -0d * vertices[0].y},
+				{1d, 0d, 1d, 0d, 0d, 0d, -1d * vertices[1].x, -0d * vertices[1].x},
+				{0d, 0d, 0d, 1d, 0d, 1d, -1d * vertices[1].y, -0d * vertices[1].y},
+				{1d, 1d, 1d, 0d, 0d, 0d, -1d * vertices[2].x, -1d * vertices[2].x},
+				{0d, 0d, 0d, 1d, 1d, 1d, -1d * vertices[2].y, -1d * vertices[2].y},
+				{0d, 1d, 1d, 0d, 0d, 0d, -0d * vertices[3].x, -1d * vertices[3].x},
+				{0d, 0d, 0d, 0d, 1d, 1d, -0d * vertices[3].y, -1d * vertices[3].y}
+			}
+		);
+		Matrix PP = new Matrix(
+			new double[][] {
+				{vertices[0].x},
+				{vertices[0].y},
+				{vertices[1].x},
+				{vertices[1].y},
+				{vertices[2].x},
+				{vertices[2].y},
+				{vertices[3].x},
+				{vertices[3].y}
+			}
+		);
+		
+		C = T.inverse().times(PP);
+		
+		this.inverseP = new Matrix(
+			new double[][] {
+				{ C.get(0, 0), C.get(1, 0), C.get(2, 0) }, 
+				{ C.get(3, 0), C.get(4, 0), C.get(5, 0) }, 
+				{ C.get(6, 0), C.get(7, 0), 1d }
+			}
+		);
+		
+	}
+	
+	/*
 	 * computes coefficients of the equations of two given points
 	 */
 	public static Point3d computeLineEquation(Point2D.Double p1, Point2D.Double p2) {
@@ -367,5 +607,33 @@ public class Bisector {
 	 * Test method for this object
 	 */
 	public static void main(String[] argv) {
+		Segment s1 = new Segment(0, 0, 10, 30);
+		Segment s2 = new Segment(10, 30, 35, 20);
+		Segment s3 = new Segment(35, 20, 40, 5);
+		Segment s4 = new Segment(40, 5, 0, 0);
+		
+		
+		Bisector b1 = new Bisector(new Point2D.Double(1, 1), new Point2D.Double(2, 2), s1, s2, s3, s4);
+		// Bisector b2 = new Bisector();
+		
+		/*
+		// assign conic coefficients
+		b1.A = -56.844;
+		b1.B = -2.984;
+		b1.C = 82.018;
+		b1.D = 1d;
+		b1.E = 6d;
+		b1.F = -1.7;
+
+		b2.A = 3.6;
+		b2.B = 3.8;
+		b2.C = -5.8;
+		b2.D = -4.7;
+		b2.E = -3.9;
+		b2.F = -6.9;
+		
+		Double[] results = Bisector.computeTwoBisectorIntersection(b1, b2);
+		int dummy = 0;
+		*/
 	}	
 }

@@ -1,4 +1,4 @@
-package micycle.trapmap;
+package trapmap;
 
 import java.util.ArrayList;
 import java.util.Collection;

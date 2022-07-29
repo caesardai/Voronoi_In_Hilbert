@@ -1,11 +1,18 @@
 package drawing;
 
 import javax.swing.*;
+
+import geometry.Util;
+
 import java.awt.*;
 import java.awt.event.*;
 
 import processing.core.PApplet;
 import processing.event.Event;
+
+import trapmap.Segment;
+import trapmap.Trapezoid;
+import trapmap.TrapMap;
 
 import java.awt.Button;
 import java.awt.Checkbox;
@@ -56,6 +63,9 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	private Checkbox drawConvex;
 	private Checkbox drawSpokes;
 	private Checkbox drawVoronoi;
+	
+	// DEBUGGING 
+	private java.util.List<Trapezoid> allTraps;
 
 	public static void main(String[] args) {
 		if (args != null) {
@@ -73,6 +83,34 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	public void setup() {
 		size(800, 600);
 		initButton();
+		
+		/*
+		// DEBUGGING -------------------------------------------------------
+		java.util.List<Segment> segments = new ArrayList<>();
+		Point2D.Double site1 = new Point2D.Double(10, 20);
+		Point2D.Double site2 = new Point2D.Double(55, 10);
+		Point2D.Double site3 = new Point2D.Double(200, 18);
+
+		// larger box
+		Segment s1 = new Segment(100, 100, 200, 400, site1);
+		Segment s2 = new Segment(200, 400, 400, 550, site1);
+		Segment s3 = new Segment(400, 550, 550, 300, site3);
+		Segment s4 = new Segment(550, 300, 600, 100, site3);
+		Segment s5 = new Segment(450, 100, 600, 100, site3);
+		Segment s6 = new Segment(250, 100, 450, 100, site2);
+		Segment s7 = new Segment(100, 100, 250, 100, site1);
+		Segment s8 = new Segment(250, 100, 400, 550, site1, site2);
+		Segment s9 = new Segment(450, 100, 400, 550, site2, site3);
+		segments.addAll(Arrays.asList(s1, s2, s3, s4, s5, s6, s7, s8, s9));
+
+		TrapMap trapMap = new TrapMap(segments);
+		
+		// get all trapezoids
+		this.allTraps = trapMap.getAllTrapezoids();
+		size(800, 600);
+		// END DEBUGGING -------------------------------------------------------
+	 */
+
 		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
 		if (FILENAME_VORONOI != null)
 			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
@@ -162,6 +200,93 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		background(220);
 		textFont(createFont("Arial", 12, true), 12); // font used
 		fill(0); // font color
+		
+		/*
+		// DEBUGGING -----------------------------------------
+		int n = 3;
+		int siteCount = 0;
+		ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>(n);
+		ArrayList<Color> siteColors = new ArrayList<Color>(n);
+		ArrayList<Trapezoid> listTraps = new ArrayList<Trapezoid>();
+		listTraps.addAll(this.allTraps);
+
+		// keep track of every segment
+		ArrayList<Segment> segs = new ArrayList<Segment>();
+		ArrayList<Color> colors = new ArrayList<Color>();
+		for(int index = 0; index < listTraps.size(); index++) {
+			Trapezoid t = listTraps.get(index);
+			Segment top = t.getUpperBound();
+			Segment bottom = t.getLowerBound();
+			
+			// default color option
+			Color c = DrawUtil.BLACK;
+			if(t.getSite() != null) {
+				// populate sites if they are null
+				if(siteCount < n && !sites.contains(t.getSite())) {
+					// add site
+					sites.add(t.getSite());
+
+					// set color
+					if(siteCount == 0)
+						c = DrawUtil.PURPLE;
+					else if(siteCount == 1)
+						c = DrawUtil.GREEN;
+					else if(siteCount == 2)
+						c = DrawUtil.BLUE;
+					else
+						System.out.println("ERROR: COLOR OVERFLOW");
+					
+					siteColors.add(c);
+					siteCount++;
+				}
+				
+				// determine color to use
+				int siteIndex = sites.indexOf(t.getSite());
+				c = siteColors.get(siteIndex);
+			}
+
+			// determine if the segment already exists in the ArrayList
+			int i1 = segs.indexOf(top);
+			int i2 = segs.indexOf(bottom);
+			
+			if(i1 == -1) {
+				segs.add(top);
+				colors.add(c);
+			} else {
+				Color oldColor = colors.get(i1);
+				if(oldColor.equals(DrawUtil.BLACK) && !c.equals(DrawUtil.BLACK))
+					colors.set(i1, c);
+			}
+
+			if(i2 == -1) {
+				segs.add(bottom);
+				colors.add(c);
+			} else {
+				Color oldColor = colors.get(i2);
+				if(oldColor.equals(DrawUtil.BLACK) && !c.equals(DrawUtil.BLACK))
+					colors.set(i2, c);
+			}
+			
+			// draw vertical lines
+			Point2D.Double tl = Util.toPoint2D( t.getUpperBound().intersect(t.getLeftBound().x) );
+			Point2D.Double tr = Util.toPoint2D( t.getUpperBound().intersect(t.getRightBound().x) );
+			Point2D.Double bl = Util.toPoint2D( t.getLowerBound().intersect(t.getLeftBound().x) );
+			Point2D.Double br = Util.toPoint2D( t.getLowerBound().intersect(t.getRightBound().x) );
+
+			DrawUtil.changeColor(this, c);
+			DrawUtil.drawSegment(bl, tl, this);
+			DrawUtil.drawSegment(br, tr, this);
+		}
+		
+		for(int index = 0; index < segs.size(); index++) {
+			Segment s = segs.get(index);
+			DrawUtil.changeColor(this, colors.get(index));
+			DrawUtil.drawSegment(Util.toPoint2D(s.getLeftPoint()), Util.toPoint2D(s.getRightPoint()), this);
+			continue;
+		}
+
+		// END DEBUGGING -----------------------------------------
+	 */
 
 		if (this.geometry.convex.convexHull.length < 3)
 			return; // no convex Hull to display.

@@ -1,9 +1,13 @@
 package trapmap;
 
+import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.List;
 
+import geometry.Util;
+
 import trapmap.graph.Leaf;
+
 import processing.core.PConstants;
 import processing.core.PShape;
 import processing.core.PVector;
@@ -37,6 +41,9 @@ public final class Trapezoid {
 	private Segment botSeg;
 	private PShape poly; // polygonal representation of trapezoid
 	private List<PVector> polyVertices;
+	
+	// determine Voronoi cell Trapezoid belongs to
+	private Point2D.Double site = null;
 
 	/**
 	 * Boolean flag that indicates whether the mapping to the polygonal face this
@@ -70,6 +77,27 @@ public final class Trapezoid {
 		neighborUR = null;
 		neighborLR = null;
 		owner = null;
+		
+		if(topSeg.getSite1() != null && botSeg.getSite1() != null) {
+			if(topSeg.getSite1().equals(botSeg.getSite1()))
+				this.site = topSeg.getSite1();
+
+			else if(topSeg.getSite2() != null) {
+				if(topSeg.getSite2().equals(botSeg.getSite1())) 
+					this.site = topSeg.getSite2();
+			}
+			
+			else if(botSeg.getSite2() != null) {
+				if(topSeg.getSite1().equals(botSeg.getSite2()))
+					this.site = topSeg.getSite1();
+				
+			}
+			
+			else if(topSeg.getSite2() != null && botSeg.getSite2() != null) {
+				if(topSeg.getSite2().equals(botSeg.getSite2())) 
+					this.site = topSeg.getSite2();
+			}
+		}
 	}
 
 	/**
@@ -134,6 +162,10 @@ public final class Trapezoid {
 
 	public Trapezoid getUpperRightNeighbor() {
 		return neighborUR;
+	}
+	
+	public Point2D.Double getSite() {
+		return this.site;
 	}
 
 	void setLowerLeftNeighbor(Trapezoid t) {
@@ -284,7 +316,13 @@ public final class Trapezoid {
 		final PVector tr = topSeg.intersect(rightP.x);
 		final PVector bl = botSeg.intersect(leftP.x);
 		final PVector br = botSeg.intersect(rightP.x);
-		return String.join(", ", tl.toString(), tr.toString(), br.toString(), bl.toString());
+		String strSite = "";
+		if(this.site == null)
+			strSite = "null";
+		else
+			strSite = Util.printCoordinate(this.site);
+
+		return String.join(", ", tl.toString(), tr.toString(), br.toString(), bl.toString(), strSite);
 	}
 
 	@Override

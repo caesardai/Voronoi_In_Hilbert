@@ -1,5 +1,6 @@
 package trapmap;
 
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -93,43 +94,23 @@ class TrapMapTests {
 	
 	static void testPointLocation1() {
 		List<Segment> segments = new ArrayList<>();
+		Point2D.Double site1 = new Point2D.Double(10, 20);
+		Point2D.Double site2 = new Point2D.Double(55, 10);
 
 		// larger box
-		Segment s1 = new Segment(0, 0, 10, 50);
-		Segment s2 = new Segment(10, 50, 25, 25); // horizontal top
-		Segment s3 = new Segment(25, 25, 20, 10); // horizontal top
-		Segment s4 = new Segment(20, 10, 0, 0); // horizontal top
+		Segment s1 = new Segment(0, 0, 10, 50, site1); // left side
+		Segment s2 = new Segment(10, 50, 25, 25, site1); // top side
+		Segment s3 = new Segment(25, 25, 20, 10, site1); // right side
+		Segment s4 = new Segment(20, 10, 0, 0, site1); // bottom side
 		segments.addAll(Arrays.asList(s1, s2, s3, s4));
 
 		TrapMap trapMap = new TrapMap(segments);
 
 		// smaller box region
-		Set<Trapezoid> t1 = trapMap.findFaceTrapezoids(9, 5);
+		// Set<Trapezoid> t1 = trapMap.findFaceTrapezoids(9, 5);
 		
 		// get all trapezoids
 		List<Trapezoid> allTraps = trapMap.getAllTrapezoids();
-		
-		System.out.println("polygon size: " + t1.size());
-		System.out.println("all trapezoids:" + allTraps.size());
-
-		for(Trapezoid t : t1) {
-			System.out.println("top: " + t.getUpperBound());
-			System.out.println("bottom: " + t.getLowerBound());
-			System.out.println("left: " + t.getLeftBound());
-			System.out.println("right: " + t.getRightBound());
-			System.out.println();
-		}
-		
-		/*
-		System.out.println("all trapezoids:");
-		for(Trapezoid t : allTraps) {
-			System.out.println("top: " + t.getUpperBound());
-			System.out.println("bottom: " + t.getLowerBound());
-			System.out.println("left: " + t.getLeftBound());
-			System.out.println("right: " + t.getRightBound());
-			System.out.println();
-		}
-		*/
 	}
 	
 	// testing script

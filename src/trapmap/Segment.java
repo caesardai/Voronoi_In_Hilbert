@@ -1,5 +1,7 @@
 package trapmap;
 
+import java.awt.geom.Point2D;
+
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -16,6 +18,10 @@ public class Segment {
 
 	PShape faceA; // segment will always have one face
 	PShape faceB; // possible (such as mesh)
+	
+	// for TrapMap
+	private Point2D.Double site1;
+	private Point2D.Double site2;
 
 	public Segment(PVector one, PVector two) {
 		// we store the left, lower point as lpoint
@@ -52,6 +58,24 @@ public class Segment {
 
 	public Segment(float p1X, float p1Y, float p2X, float p2Y) {
 		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
+	}
+
+	/**
+	 * Construct Segment with labels of one site
+	 */
+	public Segment(float p1X, float p1Y, float p2X, float p2Y, Point2D.Double s1) {
+		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
+		this.site1 = s1;
+		this.site2 = null;
+	}
+
+	/**
+	 * Construct Segment with labels of one site
+	 */
+	public Segment(float p1X, float p1Y, float p2X, float p2Y, Point2D.Double s1, Point2D.Double s2) {
+		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
+		this.site1 = s1;
+		this.site2 = s2;
 	}
 
 	/**
@@ -110,6 +134,45 @@ public class Segment {
 	float getMaxY() {
 		return Math.max(lPoint.y, rPoint.y);
 	}
+	
+	/**
+	 * Get the site1 label of the Segment
+	 * 
+	 * @return site1 label
+	 */
+	Point2D.Double getSite1() {
+		return this.site1;
+	}
+
+	/**
+	 * Get the site2 label of the Segment
+	 * 
+	 * @return site2 label
+	 */
+	Point2D.Double getSite2() {
+		return this.site2;
+	}
+
+	/**
+	 * Updates the site1 label to the new site p
+	 * 
+	 * @param p1, the new site to update site1
+	 */
+	void setSites(Point2D.Double p1) {
+		this.site1 = p1;
+	}
+
+	/**
+	 * Updates the site1 label to the new site p1, and updates the site2 label to the new site p2
+	 * 
+	 * @param p1, the new site to update site1
+	 * @param p2, the new site to update site2
+	 */
+	void setSites(Point2D.Double p1, Point2D.Double p2) {
+		this.site1 = p1;
+		this.site2 = p2;
+	}
+
 
 	/**
 	 * Returns the point on the segment at the given x value or the lower endpoint
@@ -119,7 +182,7 @@ public class Segment {
 	 * @param x The x-value to intersect the line at
 	 * @return The point on the line (segment) at the given x-value
 	 */
-	PVector intersect(float x) {
+	public PVector intersect(float x) {
 		if (lPoint.x != rPoint.x) {
 			float ysum = (x - lPoint.x) * (rPoint.y) + (rPoint.x - x) * (lPoint.y);
 			float yval = ysum / (rPoint.x - lPoint.x);

@@ -59,6 +59,6 @@ public class VoronoiTest {
 	}
 	
 	public static void main(String[] argv) {
-		testNewThetaRay();
+		testNewThetaRayTrace();
 	}
 }

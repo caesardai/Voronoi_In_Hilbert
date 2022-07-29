@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-import micycle.trapmap.Segment;
+import trapmap.Segment;
 import processing.core.PVector;
 
 /*
@@ -40,6 +40,11 @@ public class Convex {
 	 * Convert convex hull points to line segments
 	 */
 	public void pointsToSegment(Point2D.Double[] convexHull) {
+		// case if there are no convex hull points, do not run this method
+		if(convexHull.length < 1)
+			return;
+		// otherwise, create objects for all segments in convex hull
+		lineSegments = new Segment[convexHull.length - 1];
 		for (int i = 0; i < convexHull.length - 1; i++) {
 			// Convert 2D Point type to vector
 			double p1x = convexHull[i].x;

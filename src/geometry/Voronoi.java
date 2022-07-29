@@ -4,12 +4,15 @@ import java.awt.geom.Point2D;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import drawing.DrawingApplet;
 import drawing.DrawUtil;
 
-import micycle.trapmap.Segment;
+import trapmap.TrapMap;
+import trapmap.Trapezoid;
+import trapmap.Segment;
 
 public class Voronoi {
 	/* HG where we compute voronoi diagram */
@@ -21,6 +24,9 @@ public class Voronoi {
 	 * closest to it.
 	 */
 	public HashMap<Point2D.Double, Integer> voronoiPoints = new HashMap<Point2D.Double, Integer>();
+	
+	/* Trapezoidal map of all Voronoi cells */
+	public TrapMap voronoiCells = null;
 
 	public Voronoi(HilbertGeometry g) {
 		this.geometry = g;
@@ -294,7 +300,7 @@ public class Voronoi {
 				testPoint.y += 1;
 			}
 		}
-		System.out.println("no points were found");
+		// System.out.println("no points were found");
 		return null;
 	}
 
@@ -427,6 +433,28 @@ public class Voronoi {
 
 		return thetaRayTrace(null, line, site);
 	}
+	
+	/*
+	 * Construct the Trapezoidal map for all Voronoi cells
+	 */
+	public void constructVoronoiCellTrapMap() {
+		// if there are no Voronoi cells, then return
+		if(this.centerPoints.size() < 1)
+			return;
+		
+		// if there is one Voronoi cells, make a trapmap using only the sides of the convex body
+		else if(this.centerPoints.size() == 1) {
+			LinkedList<Segment> edges = new LinkedList();
+			for(Segment s : this.geometry.convex.lineSegments)
+				edges.add(s);
+			this.voronoiCells = new TrapMap(edges);
+		}
+		
+		// for cases where there are more than one site
+		else {
+			return; // to implemented later
+		}
+	}
 
 	public static void main(String[] argv) {
 		Point2D.Double s1 = new Point2D.Double(23, 20);
@@ -442,16 +470,15 @@ public class Voronoi {
 		g.convex.addPoint(p2);
 		g.convex.addPoint(p3);
 		g.convex.addPoint(p4);
+		g.convex.pointsToSegment(g.convex.convexHull);
 		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
 		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
 		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
 		Bisector b = new Bisector(s1, s2, e1, e2, e3, e4, p1, p3);
 
-		int n = 20;
-		Double[][] lines = Voronoi.thetaRays(s1, p1, p3, n);
-		LinkedList<Point2D.Double> points = Voronoi.newthetaRayTrace(b, g.convex, lines);
-		for(Point2D.Double p : points)
-			System.out.println("points on bisector: " + Util.printCoordinate(p));
+		v.addPoint(s1);
+		v.constructVoronoiCellTrapMap();
+		List<Trapezoid> allTrap = v.voronoiCells.getAllTrapezoids();
 	}	
 }
