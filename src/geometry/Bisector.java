@@ -23,6 +23,7 @@ import Jama.Matrix;
  */
 public class Bisector {
 	// constants for conic; equation for conic: Ax^2 + By^2 + Cxy + Dx + Ey + F = 0
+	// FOR NEW METHOD: these coefficients are for the bisector in the projected unit square
 	private Double A;
 	private Double B;
 	private Double C;
@@ -74,8 +75,10 @@ public class Bisector {
 		this.rightEndPoint = null;
 		this.constantsComputed = false;
 		this.P = null;
-		this.computeBisector();
+		this.inverseP = null;
+		this.computeEdgeLineEquations();
 		this.computeProjectiveMatrices();
+		this.computeBisector();
 	}
 
 	// constructors - end points known
@@ -89,14 +92,19 @@ public class Bisector {
 		this.leftEndPoint = leftEndPoint;
 		this.rightEndPoint = rightEndPoint;
 		this.constantsComputed = false;
-		this.computeBisector();
+		this.P = null;
+		this.inverseP = null;
+		this.computeEdgeLineEquations();
 		this.computeProjectiveMatrices();
+		this.computeBisector();
 	}
 	
-	/*
+	/**
 	 * Computes the coefficients of the bisector in its conic form
 	 */
 	public void computeBisector() {
+		/* OLD METHOD OF COMPUTING THE BISECTORS
+		 * -----------------------------------------------------------------------------------------------------------------------------------
 		// ensure that all necessary fields are not null
 		if(this.site1 == null || this.site2 == null || this.edge1 == null || this.edge2 == null || this.edge3 == null || this.edge4 == null)
 			return;
@@ -117,17 +125,54 @@ public class Bisector {
 		this.E = line3.z * line4.y + line3.y * line4.z - this.K * this.s * (line1.z * line2.y + line1.y * line2.z); 
 		this.F = line3.z * line4.z - this.K * this.s * (line1.z * line2.z); 
 
+		 * -----------------------------------------------------------------------------------------------------------------------------------
+		 */
+		
+		// ensure that projective matrices have been computed
+		if(this.P == null || this.inverseP == null)
+			this.computeProjectiveMatrices();
+		
+		// determine sites in the projected unit square
+		Point2D.Double pSite1 = Bisector.convertToPoint2D( this.P.times( Bisector.convertToMatrix(this.site1) ) );
+		Point2D.Double pSite2 = Bisector.convertToPoint2D( this.P.times( Bisector.convertToMatrix(this.site2) ) ); // let this be point C in math: (c, d)
+		
+		// determine the point with smaller y-coordinate
+		Point2D.Double top = pSite1;
+		Point2D.Double bottom = pSite2;
+		if(pSite1.y < pSite2.y) {
+			top = pSite2;
+			bottom = pSite1;
+		}
+		
+		// compute the coefficients depending on the quadrant that top lies on the plane centered at bottom 
+		if(bottom.x < top.x) {
+			this.A = 0d;
+			this.B = 0d;
+			this.C = -(bottom.x + top.y - 1);
+			this.D = bottom.x * top.y;
+			this.E = bottom.x * top.y;
+			this.F = - bottom.x * top.y;
+		} else {
+			this.A = 0d;
+			this.B = 0d;
+			this.C = bottom.x - top.y;
+			this.D = top.y * (1 - bottom.x);
+			this.E = bottom.x * (top.y - 1);
+			this.F = 0d;
+		}
+
 		this.constantsComputed = true;
 	}
 	
 	/*
 	 * Given some x, compute the corresponding real y value on the conic
 	 */
-	public Double[] computeY(Double x) {
+	public Double computeY(Double x) {
 		// compute constants if not already computed
 		if(!this.constantsComputed)
 			this.computeBisector();
 		
+		/*
 		// determine constants for this parameterized (in terms of x) conic
 		Double K1 = this.B;
 		Double K2 = this.C * x + this.E;
@@ -143,16 +188,26 @@ public class Bisector {
 		 solutions[1] = (-K2 - Math.sqrt(discriminant)) / (2 * K1);
 		
 		 return solutions;
+		 */
+		
+		Double numerator = this.D * x + this.F;
+		Double denominator = this.C * x + this.E;
+		if(denominator == 0d) {
+			System.out.println("division by zero error");
+			return Double.MIN_VALUE;
+		} else
+			return - numerator / denominator;
 	}
 
 	/*
 	 * Given some y, compute the corresponding real x value on the conic
 	 */
-	public Double[] computeX(Double y) {
+	public Double computeX(Double y) {
 		// compute constants if not already computed
 		if(!this.constantsComputed)
 			this.computeBisector();
 		
+		/*
 		// determine constants for this parameterized (in terms of x) conic
 		Double K1 = this.A;
 		Double K2 = this.C * y + this.D;
@@ -168,12 +223,24 @@ public class Bisector {
 		 solutions[1] = (-K2 - Math.sqrt(discriminant)) / (2 * K1);
 		
 		 return solutions;
+		 */
+
+		Double numerator = this.E * y + this.F;
+		Double denominator = this.C * y + this.D;
+		if(denominator == 0d) {
+			System.out.println("division by zero error");
+			return Double.MIN_VALUE;
+		} else
+			return - numerator / denominator;
 	}
 	
-	/*
+	/**
 	 * Given a line, determine all intersection between the bisector and this line
+	 * 
+	 * @param line the line in the projected square that intersections the projected bisector
+	 * @return all intersections between the line and the bisector
 	 */
-	public LinkedList<Point2D.Double> intersectionPointsWithLine(Convex c, Double[] line) {
+	public LinkedList<Point2D.Double> intersectionPointsWithLine(Double[] line) {
 		// list of intersection points
 		LinkedList<Point2D.Double> intersectionPoints = new LinkedList<Point2D.Double>();
 		
@@ -188,6 +255,34 @@ public class Bisector {
 		if(!this.constantsComputed)
 			this.computeBisector();
 		
+		// compute coefficients of the quadratic to determine intersection points
+		Double K1 = this.C * line[0];
+		Double K2 = this.E * line[0] + this.C * line[2] - this.D * line[1];
+		Double K3 = this.E * line[2] - this.F * line[1];
+		
+		// compute discriminant
+		Double discriminant = Math.pow(K2, 2) - 4 * K1 * K3; 
+		
+		// determine if the discriminant is zero
+		if(K1 == 0d || discriminant < 0)
+			return intersectionPoints;
+		
+		// get potential solutions
+		Double x1 = (-K2 + Math.sqrt(discriminant)) / (2 * K1);
+		Double x2 = (-K2 - Math.sqrt(discriminant)) / (2 * K1);
+		Point2D.Double solution1 = new Point2D.Double(x1, this.computeY(x1));
+		Point2D.Double solution2 = new Point2D.Double(x2, this.computeY(x2));
+		
+		// determine if solution is in the convex body
+		if( (solution1.x >= 0 && solution1.x <= 1) && (solution1.y >= 0 && solution1.y <= 1) )
+			intersectionPoints.add(solution1);
+		if( (solution2.x >= 0 && solution2.x <= 1) && (solution2.y >= 0 && solution2.y <= 1) )
+			intersectionPoints.add(solution2);
+		
+		// return all intersection points
+		return intersectionPoints;
+		
+		/*
 		Double dX = this.computeDiscriminantX(line);
 		Double dY = this.computeDiscriminantY(line);
 	
@@ -206,7 +301,7 @@ public class Bisector {
 		}
 		
 		// check if the points computed above map to the same point using the conic equations
-		Double error = 1e-8;
+		// Double error = 1e-8;
 		for(Point2D.Double p : xIntersect) {
 			// check if the point p is in the convex body; if not, move to next point
 			if(!c.isInConvex(p)) {
@@ -267,31 +362,55 @@ public class Bisector {
 					intersectionPoints.add(p);
 			}
 		}
-		
-		// return all intersection points
-		return intersectionPoints;
-		
+		*/
 	}
 	
 	/*
 	 * Computes an approximate solution to the intersection to two conics/bisectors
 	 */
-	public static Double[] computeTwoBisectorIntersection(Bisector b1, Bisector b2) {
+	public static LinkedList<Point2D.Double> computeTwoBisectorIntersection(Bisector b1, Bisector b2) {
 		// express all variables in a nice manner
-		Double A1 = b1.A;
-		Double B1 = b1.B;
-		Double C1 = b1.C;
-		Double D1 = b1.D;
-		Double E1 = b1.E;
-		Double F1 = b1.F;
+		Double A1 = b1.D;
+		Double B1 = b1.C;
+		Double C1 = b1.E;
+		Double D1 = b1.F;
+
+		Double A2 = b2.D;
+		Double B2 = b2.C;
+		Double C2 = b2.E;
+		Double D2 = b2.F;
 		
-		Double A2 = b2.A;
-		Double B2 = b2.B;
-		Double C2 = b2.C;
-		Double D2 = b2.D;
-		Double E2 = b2.E;
-		Double F2 = b2.F;
+		// list of intersection points
+		LinkedList<Point2D.Double> intersectionPoints = new LinkedList<Point2D.Double>();
 		
+		// coefficients of quadratic to solve
+		Double G1 = A1 * B2 - A2 * B1;
+		Double G2 = A1 * C2 + B2 * D1 - A2 * C1 - B1 * D2;
+		Double G3 = C2 * D1 - C1 * D2;
+		
+		// compute discriminant
+		Double discriminant = Math.pow(G2, 2) - 4 * G1 * G3;
+		
+		// determine if quadratic is solvable
+		if(G1 == 0 || discriminant < 0)
+			return intersectionPoints;
+		
+		// if the quadratic is solvable, then solve the quadratic
+		Double x1 = (-G2 + Math.sqrt(discriminant)) / (2 * G1);
+		Double x2 = (-G2 - Math.sqrt(discriminant)) / (2 * G1);
+		Point2D.Double solution1 = new Point2D.Double(x1, b1.computeY(x1));
+		Point2D.Double solution2 = new Point2D.Double(x2, b1.computeY(x2));
+		
+		// determine if solution is in the convex body
+		if( (solution1.x >= 0 && solution1.x <= 1) && (solution1.y >= 0 && solution1.y <= 1) )
+			intersectionPoints.add(solution1);
+		if( (solution2.x >= 0 && solution2.x <= 1) && (solution2.y >= 0 && solution2.y <= 1) )
+			intersectionPoints.add(solution2);
+		
+		// return all intersection points
+		return intersectionPoints;
+		
+		/*
 		// determine the coefficients of the quartic; expressed as Px^4 + Qx^3 + Rx^2 + Sx + T = 0
 		Double T = -16 * Math.pow(B1, 2) * Math.pow(B2, 3) * E1 * E2 * F1 +
 				16 * Math.pow(B1, 3) * Math.pow(B2, 2) * Math.pow(E2, 2) * F1 +
@@ -360,9 +479,7 @@ public class Bisector {
 				16 * A2 * Math.pow(B1, 3) * Math.pow(B2, 2) * C1 * C2 - 
 				16 * A1 * Math.pow(B1, 2) * Math.pow(B2, 3) * C1 * C2 + 
 				16 * A1 * Math.pow(B1, 3) * Math.pow(B2, 2) * Math.pow(C2, 2);
-		
-		// DEBUGGING, MAKE SURE THAT COEFFICIENTS ARE CORRECT
-		return new Double[] {P, Q, R, S, T};
+		*/
 	}
 	
 	/*
@@ -378,7 +495,6 @@ public class Bisector {
 	
 	/*
 	 * Compute discriminant for the intersection point between the bisector and a line; this corresponds for solution of x
-	 */
 	private Double computeDiscriminantX(Double[] line) {
 		Double a = line[0];
 		Double b = line[1];
@@ -391,10 +507,10 @@ public class Bisector {
 
 		return first - 4 * second * third; 
 	}
+	 */
 
 	/*
 	 * Compute discriminant for the intersection point between the bisector and a line; this corresponds for solution of y
-	 */
 	private Double computeDiscriminantY(Double[] line) {
 		Double a = line[0];
 		Double b = line[1];
@@ -406,10 +522,10 @@ public class Bisector {
 
 		return first - 4 * second * third; 
 	}
+	 */
 	
 	/*
 	 * Compute the x-values of any intersection points between a given line and the bisector
-	 */
 	private Double[] intersectionBisectorLineX(Double[] line) {
 		Double[] solutions = new Double[2];
 		Double a = line[0];
@@ -426,10 +542,10 @@ public class Bisector {
 		
 		return solutions;
 	}
+	 */
 
 	/*
 	 * Compute the y-values of any intersection points between a given line and the bisector
-	 */
 	private Double[] intersectionBisectorLineY(Double[] line) {
 		Double[] solutions = new Double[2];
 		Double a = line[0];
@@ -445,6 +561,7 @@ public class Bisector {
 
 		return solutions;
 	}
+	 */
 	
 	/*
 	 * Computes the coefficients of the equations of the segments on the boundary of the convex body
@@ -474,6 +591,10 @@ public class Bisector {
 	 * compute projective matrix
 	 */
 	private void computeProjectiveMatrices() {
+		// make sure that lines of edges are computed
+		if(this.line1 == null || this.line2 == null || this.line3 == null || this.line4 == null)
+			this.computeEdgeLineEquations();
+		
 		// compute the vertices of the quad
 		Point2D.Double[] vertices = new Point2D.Double[4];
 		vertices[0] = HilbertGeometry.toCartesian( this.line1.crossProduct(this.line2) );
@@ -486,6 +607,17 @@ public class Bisector {
 		// vertices[1] is bottom right corner
 		// vertices[2] is top right corner
 		// vertices[3] is top left corner
+		
+		// check vertical lines, if they exist permute the vertices position
+		if(vertices[0].x == vertices[1].x || vertices[2].x == vertices[3].x) {
+			Point2D.Double first = (Point2D.Double) vertices[0].clone();
+			for(int index = 0; index < vertices.length; index++) {
+				if(index == vertices.length - 1)
+					vertices[index] = first;
+				else
+					vertices[index] = vertices[ (index + 1)%vertices.length ];
+			}
+		}
 		
 		// sort bottom segment by value of x
 		if(vertices[0].x > vertices[1].x) {
@@ -592,9 +724,13 @@ public class Bisector {
 		);
 		
 	}
-	
-	/*
+
+	/**
 	 * computes coefficients of the equations of two given points
+	 * 
+	 * @param p1 the first point on the line
+	 * @param p2 the second point on the line
+	 * @return, Point3d that contains the coefficients c1, c2, c3 of the line c1 x + c2 y + c3 = 0
 	 */
 	public static Point3d computeLineEquation(Point2D.Double p1, Point2D.Double p2) {
 		Point3d lp = HilbertGeometry.toHomogeneous(p1);
@@ -603,37 +739,72 @@ public class Bisector {
 		return lp.crossProduct(rp);
 	}
 	
+	/**
+	 * Converts point p into a matrix that corresponds the homogeneous coordinate corresponds to p 
+	 * 
+	 * @param p, the intended Point2D.Double point to being converted
+	 * @return a (n+1) x 1 matrix that corresponds the homogeneous coordinates of p
+	 */
+	private static Matrix convertToMatrix(Point2D.Double p) {
+		return new Matrix(new double[][] {{p.x}, {p.y}, {1}});
+	}
+
+	/**
+	 * Converts matrix m that corresponds the homogeneous coordinate p back into an Point object
+	 * 
+	 * @param m the matrix m intended to be converted into homogeneous coordinate 
+	 * @return the homogeneous coordinate p that corresponds to m
+	 */
+	private static Point2D.Double convertToPoint2D(Matrix m) {
+		if(m.getRowDimension() != 3 && m.getColumnDimension() != 1)
+			return null;
+		
+		if(m.get(2, 0) == 0)
+			return new Point2D.Double(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		else
+			return new Point2D.Double(m.get(0, 0) / m.get(2, 0), m.get(1, 0) / m.get(2, 0));
+	}
+	
 	/*
 	 * Test method for this object
 	 */
 	public static void main(String[] argv) {
-		Segment s1 = new Segment(0, 0, 10, 30);
-		Segment s2 = new Segment(10, 30, 35, 20);
-		Segment s3 = new Segment(35, 20, 40, 5);
-		Segment s4 = new Segment(40, 5, 0, 0);
+		// construct convex body; it will be a unit square to easily test the following square without worrying projective transformations
+		Point2D.Double e1 = new Point2D.Double(0d, 0d);
+		Point2D.Double e2 = new Point2D.Double(1d, 0d);
+		Point2D.Double e3 = new Point2D.Double(1d, 1d);
+		Point2D.Double e4 = new Point2D.Double(0d, 1d);
+		Segment edge1 = new Segment( Util.toPVector(e1), Util.toPVector(e2) );
+		Segment edge2 = new Segment( Util.toPVector(e2), Util.toPVector(e3) );
+		Segment edge3 = new Segment( Util.toPVector(e3), Util.toPVector(e4) );
+		Segment edge4 = new Segment( Util.toPVector(e4), Util.toPVector(e1) );
+		Point2D.Double site1 = new Point2D.Double(0.5, 0.9);
+		Point2D.Double site2 = new Point2D.Double(0.3, 0.3);
+		Point2D.Double site3 = new Point2D.Double(0.8, 0.3);
+		Bisector b1 = new Bisector(site1, site2, edge1, edge2, edge3, edge4);
+		Bisector b2 = new Bisector(site1, site3, edge1, edge2, edge3, edge4);
 		
+		// compute intersection points
+		LinkedList<Point2D.Double> points = Bisector.computeTwoBisectorIntersection(b1, b2);
 		
-		Bisector b1 = new Bisector(new Point2D.Double(1, 1), new Point2D.Double(2, 2), s1, s2, s3, s4);
-		// Bisector b2 = new Bisector();
+		for(Point2D.Double p : points)
+			System.out.println(Util.printCoordinate(p));
+		
 		
 		/*
-		// assign conic coefficients
-		b1.A = -56.844;
-		b1.B = -2.984;
-		b1.C = 82.018;
-		b1.D = 1d;
-		b1.E = 6d;
-		b1.F = -1.7;
-
-		b2.A = 3.6;
-		b2.B = 3.8;
-		b2.C = -5.8;
-		b2.D = -4.7;
-		b2.E = -3.9;
-		b2.F = -6.9;
+		// determine line to compute
+		int k = 1, n = 10;
+		Double theta = k * 2 * Math.PI / n;
+		Point2D.Double s = new Point2D.Double(site1.x + Math.cos(theta), site1.y + Math.sin(theta));
+		Point3d l = Bisector.computeLineEquation(site1, s);
+		Double[] line = new Double[] {l.x, l.y, l.z};
 		
-		Double[] results = Bisector.computeTwoBisectorIntersection(b1, b2);
-		int dummy = 0;
+		// compute intersection points
+		LinkedList<Point2D.Double> points = b.intersectionPointsWithLine(line);
+		
+		for(Point2D.Double p : points)
+			System.out.println(Util.printCoordinate(p));
 		*/
+
 	}	
 }

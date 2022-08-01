@@ -8,7 +8,7 @@ import geometry.Convex;
 import geometry.Voronoi;
 import geometry.Util;
 
-import micycle.trapmap.Segment;
+import trapmap.Segment;
 
 public class BisectorTest {
 	public static void testBisectorLineIntersectionPoints() {
@@ -35,6 +35,16 @@ public class BisectorTest {
 		LinkedList<Point2D.Double> intersectionPoints = b.intersectionPointsWithLine(c, lines[56]);
 		for(Point2D.Double p : intersectionPoints)
 			System.out.println("solution: " + Util.printCoordinate(p));
+	}
+	
+	public static void testProjectiveMatrices() {
+		Segment s1 = new Segment(0, 0, 10, 30);
+		Segment s2 = new Segment(10, 30, 35, 20);
+		Segment s3 = new Segment(35, 20, 40, 5);
+		Segment s4 = new Segment(40, 5, 0, 0);
+		
+		
+		Bisector b1 = new Bisector(new Point2D.Double(1, 1), new Point2D.Double(2, 2), s1, s2, s3, s4);
 	}
 	
 	public static void main(String[] argv) {
