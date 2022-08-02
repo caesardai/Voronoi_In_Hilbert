@@ -37,19 +37,23 @@ public class Convex {
 		this.computeConvexHull();
 	}
 
-	/*
+	/**
 	 * Inserting a site site and find the segments around it
+	 * 
+	 * @param hullVertex get information
+	 * @param site
+	 * @return
 	 */
 	public Map<Point2D.Double, List<Segment>> siteSegment(Point2D.Double[] hullVertex, Point2D.Double site) {
 		int numHullVertex = hullVertex.length;
-		// Segments with site as endpoint
+		// Segments with site as end point
 		Map<Point2D.Double, List<Segment>> siteSegments = new HashMap<Point2D.Double, List<Segment>>();
 
 		// Find equations for hull edges
-		Point3d[] hullEdges = new Point3d[(int) Math.ceil(numHullVertex / 2)]; // stores hull edges as Point3d object
-		for (int h = 0; h < numHullVertex - 1; h++) {
+		Point3d[] hullEdges = new Point3d[numHullVertex]; // stores hull edges as Point3d object
+		for (int h = 0; h < numHullVertex; h++) {
 			Point3d v_1 = HilbertGeometry.toHomogeneous(hullVertex[h]);
-			Point3d v_2 = HilbertGeometry.toHomogeneous(hullVertex[h + 1]);
+			Point3d v_2 = HilbertGeometry.toHomogeneous(hullVertex[(h + 1) % numHullVertex]);
 			hullEdges[h] = v_1.crossProduct(v_2);
 		}
 		// number of hull edges
@@ -61,18 +65,21 @@ public class Convex {
 			Point3d hproj = HilbertGeometry.toHomogeneous(hullVertex[h]);
 			Point3d spoke = sproj.crossProduct(hproj);
 
+			// Construct segments from current hull vertex to site
+			// Convert 2d points to PVector object
+			Segment spokeHullVertexSegments = constructSegment(site, hullVertex[h]); // site to vertex
+			spokeSegments.add(spokeHullVertexSegments);
+
 			for (int hVertex = 0; hVertex < numHullEdges; hVertex++) {
-				// Construct segments from current hull vertex to site
-
-				// Convert 2d points to PVector object
-				Segment spokeHullVertexSegments = constructSegment(site, hullVertex[hVertex]); // site to vertex
-				spokeSegments.add(spokeHullVertexSegments);
-
 				// Construct segments from this hull intersect to site
 				Point3d spokeHullEdgeIntersect = spoke.crossProduct(hullEdges[hVertex]);
 				Point2D.Double spokeHullEdgeIntersectPoint = HilbertGeometry.toCartesian(spokeHullEdgeIntersect);
-				Segment spokeHullEdgeSegments = constructSegment(site, spokeHullEdgeIntersectPoint); // site to edge
-				spokeSegments.add(spokeHullEdgeSegments);
+				
+				// check if intersection point is in the closure of the convex body
+				if(this.isOnConvexBoundary(spokeHullEdgeIntersectPoint)) {
+					Segment spokeHullEdgeSegments = constructSegment(site, spokeHullEdgeIntersectPoint); // site to edge
+					spokeSegments.add(spokeHullEdgeSegments);
+				}
 			}
 		}
 
@@ -93,10 +100,10 @@ public class Convex {
 	public List<Point2D.Double> spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double newSite, List<Segment> segments) {
 		double i_x, i_y;
 		double s, t, s1_x, s1_y, s2_x, s2_y;
-		Point2D.Double seg1LeftPoint = null;
-		Point2D.Double seg1RightPoint = null;
-		Point2D.Double seg2LeftPoint = null;
-		Point2D.Double seg2RightPoint = null;
+//		Point2D.Double seg1LeftPoint = null;
+//		Point2D.Double seg1RightPoint = null;
+//		Point2D.Double seg2LeftPoint = null;
+//		Point2D.Double seg2RightPoint = null;
 		List<Point2D.Double> spokeIntersects = new ArrayList<Point2D.Double>();
 		Map<Point2D.Double, List<Segment>> newSegments = new HashMap<Point2D.Double, List<Segment>>();
 		newSegments = siteSegment(hullVertex, newSite);
@@ -143,13 +150,13 @@ public class Convex {
 				if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
 					i_x = s1lx + (t * s1_x);
 					i_y = s1ly + (t * s1_y);
+					spokeIntersectionPoint = new Point2D.Double();
 					spokeIntersectionPoint.setLocation(i_x, i_y);
 				}
 				spokeIntersects.add(spokeIntersectionPoint);
 			}
 		}
 		return spokeIntersects;
-	}
 
 //				Point3d s1lh = HilbertGeometry.toHomogeneous(seg1LeftPoint);
 //				Point3d s1rh = HilbertGeometry.toHomogeneous(seg1RightPoint);
@@ -167,6 +174,7 @@ public class Convex {
 //			      return Point3d.linearCombination(pointCoeff, scalarCoeff);
 //			    }
 //			    // return new Point3d();
+	}
 
 
 	/*
@@ -202,8 +210,12 @@ public class Convex {
 		return orientation;
 	}
 
-	/*
+	/**
 	 * Find where the spokes intersects the convex hull
+	 * 
+	 * @param hullVertex all convex hull vertices
+	 * @param allPoints all convex hull and site vertices
+	 * @return all intersection points of any spoke and convex hull edge within the convex body
 	 */
 	public List<Point3d> spokeHullIntersection(Point2D.Double[] hullVertex, Point2D.Double[] allPoints) {
 		// Separating out the hull points from site points
@@ -238,7 +250,9 @@ public class Convex {
 				Point3d shLine = hproj.crossProduct(sproj); // spoke
 
 				for (int i = 0; i < hullEdgesArrayLength; i++) {
-					spokeHullIntersects.add(hullEdges[i].crossProduct(shLine));
+					Point3d intersection = hullEdges[i].crossProduct(shLine);
+					if( this.isOnConvexBoundary( HilbertGeometry.toCartesian(intersection) ) )
+						spokeHullIntersects.add(intersection);
 				}
 			}
 		}
@@ -349,7 +363,7 @@ public class Convex {
 	}
 
 	/*
-	 * Decides whether point p lies in the convex.
+	 * Decides whether point p lies in the interior convex.
 	 */
 	public boolean isInConvex(Point2D.Double p) {
 		int N = convexHull.length;
@@ -370,6 +384,49 @@ public class Convex {
 				return false;
 		}
 		return true;
+	}
+	
+	/**
+	 * Determines if the query point lays on the boundary of the convex body
+	 * 
+	 * @param p query point
+	 * @return true if the query point is on the convex body. otherwise, return false 
+	 */
+	public boolean isOnConvexBoundary(Point2D.Double p) {
+		int N = convexHull.length;
+		Point2D.Double a, b;
+		boolean onBoundary = false;
+
+		for (int i = 0; i < N-1; i++) {
+			a = convexHull[i];
+			b = convexHull[i + 1];
+			Point2D.Double ab = new Point2D.Double(b.x - a.x, b.y - a.y);
+			Point2D.Double ap = new Point2D.Double(p.x - a.x, p.y - a.y);
+			double crossProduct = ab.x * ap.y - ab.y * ap.x;
+			if (crossProduct == 0) {
+				// check if the point is within the correct bounds
+				double smallX = a.x;
+				double largeX = b.x;
+				double smallY = a.y;
+				double largeY = b.y;
+				
+				// swap values if not correct
+				if(smallX > largeX) {
+					double tmp = smallX;
+					smallX = largeX;
+					largeX = tmp;
+				}
+				if(smallY > largeY) {
+					double tmp = smallY;
+					smallY = largeY;
+					largeY = tmp;
+				}
+				
+				if( (p.x >= smallX && p.x <= largeX) && (p.y >= smallY && p.y <= largeY) )
+					onBoundary = true;
+			}
+		}
+		return onBoundary;
 	}
 
 	/*
@@ -431,6 +488,32 @@ public class Convex {
 
 		in.close();
 		return controlPoints;
+	}
+	
+	public static void main(String[] argv) {
+		Convex c = new Convex();
+		
+		// add points
+		c.addPoint(new Point2D.Double(1d, 0d));
+		c.addPoint(new Point2D.Double(2d, 1d));
+		c.addPoint(new Point2D.Double(1d, 2d));
+		c.addPoint(new Point2D.Double(0d, 1d));
+		
+		// query points
+		Point2D.Double p1 = new Point2D.Double(0.5, 1.5);
+		Point2D.Double p2 = new Point2D.Double(0.5, 0.5);
+		Point2D.Double p3 = new Point2D.Double(1d, 1d);
+		Point2D.Double p4 = new Point2D.Double(3.5, 2.5);
+		Point2D.Double p5 = new Point2D.Double(0.5, 2.5);
+		Point2D.Double p6 = new Point2D.Double(1.5, 1.5);
+		
+		// determine if points are on the boundary of the convex body
+		System.out.println(c.isOnConvexBoundary(p1));
+		System.out.println(c.isOnConvexBoundary(p2));
+		System.out.println(c.isOnConvexBoundary(p3));
+		System.out.println(c.isOnConvexBoundary(p4));
+		System.out.println(c.isOnConvexBoundary(p5));
+		System.out.println(c.isOnConvexBoundary(p6));
 	}
 }
 
