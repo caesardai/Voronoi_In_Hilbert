@@ -5,6 +5,7 @@ import java.awt.geom.Point2D.Double;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
@@ -20,14 +21,14 @@ public class Convex {
 	public Point2D.Double[] points;
 	// Actual points defining the convex hull.
 	public Point2D.Double[] convexHull;
-	// Line segments for constructing the trapezoidal map
-	public Segment[] lineSegments;
+	// Spoke segments
+	public List<Segment> spokeSegments;
 
 	// Default constructor
 	public Convex() {
 		points = new Point2D.Double[0];
 		convexHull = new Point2D.Double[0];
-		lineSegments = new Segment[0];
+		spokeSegments = new ArrayList<Segment>();
 	}
 
 	// Constructs convex from file.
@@ -37,30 +38,192 @@ public class Convex {
 	}
 
 	/*
-	 * Convert convex hull points to line segments
+	 * Inserting a site site and find the segments around it
 	 */
-	public void pointsToSegment(Point2D.Double[] convexHull) {
-		// case if there are no convex hull points, do not run this method
-		if(convexHull.length < 1)
-			return;
-		// otherwise, create objects for all segments in convex hull
-		lineSegments = new Segment[convexHull.length - 1];
-		for (int i = 0; i < convexHull.length - 1; i++) {
-			// Convert 2D Point type to vector
-			double p1x = convexHull[i].x;
-			double p1y = convexHull[i].y;
-			double p2x = convexHull[i+1].x;
-			double p2y = convexHull[i+1].y;
-			
-			PVector v1 = new PVector();
-			PVector v2 = new PVector();
-			v1.set((float) p1x, (float) p1y);
-			v2.set((float) p2x, (float) p2y);
-			
-			lineSegments[i] = new Segment(v1, v2);
+	public Map<Point2D.Double, List<Segment>> siteSegment(Point2D.Double[] hullVertex, Point2D.Double site) {
+		int numHullVertex = hullVertex.length;
+		// Segments with site as endpoint
+		Map<Point2D.Double, List<Segment>> siteSegments = new HashMap<Point2D.Double, List<Segment>>();
+
+		// Find equations for hull edges
+		Point3d[] hullEdges = new Point3d[(int) Math.ceil(numHullVertex / 2)]; // stores hull edges as Point3d object
+		for (int h = 0; h < numHullVertex - 1; h++) {
+			Point3d v_1 = HilbertGeometry.toHomogeneous(hullVertex[h]);
+			Point3d v_2 = HilbertGeometry.toHomogeneous(hullVertex[h + 1]);
+			hullEdges[h] = v_1.crossProduct(v_2);
+		}
+		// number of hull edges
+		int numHullEdges = hullEdges.length;
+
+		// Find spoke segments
+		Point3d sproj = HilbertGeometry.toHomogeneous(site);
+		for (int h = 0; h < numHullVertex; h++) {
+			Point3d hproj = HilbertGeometry.toHomogeneous(hullVertex[h]);
+			Point3d spoke = sproj.crossProduct(hproj);
+
+			for (int hVertex = 0; hVertex < numHullEdges; hVertex++) {
+				// Construct segments from current hull vertex to site
+
+				// Convert 2d points to PVector object
+				Segment spokeHullVertexSegments = constructSegment(site, hullVertex[hVertex]); // site to vertex
+				spokeSegments.add(spokeHullVertexSegments);
+
+				// Construct segments from this hull intersect to site
+				Point3d spokeHullEdgeIntersect = spoke.crossProduct(hullEdges[hVertex]);
+				Point2D.Double spokeHullEdgeIntersectPoint = HilbertGeometry.toCartesian(spokeHullEdgeIntersect);
+				Segment spokeHullEdgeSegments = constructSegment(site, spokeHullEdgeIntersectPoint); // site to edge
+				spokeSegments.add(spokeHullEdgeSegments);
+			}
+		}
+
+		// Constructing hashmap with site as the key and list of site-containing
+		// segments as value
+		siteSegments.put(site, spokeSegments);
+		return siteSegments;
+	}
+
+	/*
+	 * Find spoke intersections when more than one spoke is inserted
+	 */
+	public Point3d spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double newSite, List<Segment> segments) {
+		Point2D.Double seg1LeftPoint = null;
+		Point2D.Double seg1RightPoint = null;
+		Point2D.Double seg2LeftPoint = null;
+		Point2D.Double seg2RightPoint = null;
+		List<Point2D.Double> spokeIntersects = new ArrayList<Point2D.Double>();
+		Map<Point2D.Double, List<Segment>> newSegments = new HashMap<Point2D.Double, List<Segment>>();
+		newSegments = siteSegment(hullVertex, newSite);
+
+		// Looping through each element in the hashmap
+		for (Map.Entry<Point2D.Double, List<Segment>> segList : newSegments.entrySet()) {
+
+			// Access the list of segmetns associated with each site
+			List<Segment> segs = segList.getValue();
+			for (int i = 0; i < segs.size(); i++) {
+				Segment s1 = segs.get(i); // current segment
+				Segment s2 = segs.get(i); // next segment
+
+				// Segment 1 left and right end Point2D
+				PVector s1l = s1.getLeftPoint();
+				double s1lx = s1l.x;
+				double s1ly = s1l.y;
+				seg1LeftPoint.setLocation(s1l.x, s1l.y);
+				PVector s1r = s1.getRightPoint();
+				float s1rx = s1r.x;
+				float s1ry = s1r.y;
+				seg1RightPoint.setLocation(s1r.x, s1r.y);
+				// Segment 1 left and right end Point2D
+				PVector s2l = s2.getLeftPoint();
+				float s2lx = s2l.x;
+				float s2ly = s2l.y;
+				seg2LeftPoint.setLocation(s2l.x, s2l.y);
+				PVector s2r = s2.getRightPoint();
+				float s2rx = s2r.x;
+				float s2ry = s2r.y;
+				seg2RightPoint.setLocation(s2r.x, s2r.y);
+				
+				
+
+//				Point3d s1lh = HilbertGeometry.toHomogeneous(seg1LeftPoint);
+//				Point3d s1rh = HilbertGeometry.toHomogeneous(seg1RightPoint);
+//				Point3d s2lh = HilbertGeometry.toHomogeneous(seg2LeftPoint);
+//				Point3d s2rh = HilbertGeometry.toHomogeneous(seg2RightPoint);
+//				Point3d line1 = s1lh.crossProduct(s1rh);
+//				Point3d line2 = s2lh.crossProduct(s2rh);
+//				
+//				double denom = line1.scalarProduct(line2);
+//			    if (denom == 0) return new Point3d();
+//			    double t = - line1.scalarProduct(q) / denom;
+//			    if (t >= 0 && t <= 1) {
+//			      double[] scalarCoeff = {t, 1-t};
+//			      Point3d[] pointCoeff = {p, q};
+//			      return Point3d.linearCombination(pointCoeff, scalarCoeff);
+//			    }
+//			    // return new Point3d();
+				
+			    
+				
+
+			}
 		}
 	}
-	
+
+	/*
+	 * Converting 2d points to PVectors
+	 */
+	public Segment constructSegment(Point2D.Double p1, Point2D.Double p2) {
+		double p1x = p1.x;
+		double p1y = p1.y;
+		double p2x = p2.x;
+		double p2y = p2.y;
+		PVector v1 = new PVector();
+		PVector v2 = new PVector();
+		v1.set((float) p1x, (float) p1y);
+		v2.set((float) p2x, (float) p2y);
+		Segment segment = new Segment(v1, v2);
+		return segment;
+	}
+
+	/*
+	 * Check 3 points orientation
+	 */
+	public int threePointsOrientation(Point2D.Double p1, Point2D.Double p2, Point2D.Double p3) {
+		int orientation;
+		int val = (int) ((p2.y - p1.y) * (p3.x - p2.x) - (p2.x - p1.x) * (p3.y - p2.y));
+
+		if (val == 0) {
+			orientation = 0; // Collinear
+		} else if (val == 1) {
+			orientation = 1; // Clockwise
+		} else {
+			orientation = 2; // Counter Clockwise
+		}
+		return orientation;
+	}
+
+	/*
+	 * Find where the spokes intersects the convex hull
+	 */
+	public List<Point3d> spokeHullIntersection(Point2D.Double[] hullVertex, Point2D.Double[] allPoints) {
+		// Separating out the hull points from site points
+		List<Point2D.Double> allPoint = new ArrayList<Point2D.Double>(Arrays.asList(allPoints));
+		List<Point2D.Double> hullPoint = new ArrayList<Point2D.Double>(Arrays.asList(hullVertex));
+		List<Point2D.Double> sites = new ArrayList<Point2D.Double>();
+		allPoint.removeAll(hullPoint);
+		Collections.copy(sites, allPoint);
+		Point2D.Double[] allSites = new Point2D.Double[sites.size()];
+		allSites = (Double[]) sites.toArray();
+
+		int hullVertexLength = hullVertex.length;
+		int sitesArrayLength = allSites.length;
+
+		// Find equations for hull edges
+		Point3d[] hullEdges = new Point3d[(int) Math.ceil(hullVertexLength / 2)];
+		for (int h = 0; h < hullVertexLength - 1; h++) {
+			Point3d v_1 = HilbertGeometry.toHomogeneous(hullVertex[h]);
+			Point3d v_2 = HilbertGeometry.toHomogeneous(hullVertex[h + 1]);
+			hullEdges[h] = v_1.crossProduct(v_2);
+		}
+		int hullEdgesArrayLength = hullEdges.length;
+
+		// Find hull edge intersects
+		List<Point3d> spokeHullIntersects = new ArrayList<Point3d>();
+		// Point3d[] spokeHullIntersects = new Point3d[sitesArrayLength * 2];
+		for (int s = 0; s < sitesArrayLength; s++) {
+			Point3d sproj = HilbertGeometry.toHomogeneous(allSites[s]);
+
+			for (int h = 0; h < hullVertexLength; h++) {
+				Point3d hproj = HilbertGeometry.toHomogeneous(hullVertex[h]);
+				Point3d shLine = hproj.crossProduct(sproj); // spoke
+
+				for (int i = 0; i < hullEdgesArrayLength; i++) {
+					spokeHullIntersects.add(hullEdges[i].crossProduct(shLine));
+				}
+			}
+		}
+		return spokeHullIntersects;
+	}
+
 	/*
 	 * Constructs convex from a list of control points.
 	 */
@@ -75,7 +238,7 @@ public class Convex {
 		this.convexHull = new Point2D.Double[0];
 		this.computeConvexHull();
 	}
-	
+
 	private LinkedList<Point2D.Double> deleteDoubles(LinkedList<Point2D.Double> controlPoints) {
 		LinkedList<Point2D.Double> newControlPoints = new LinkedList<Point2D.Double>();
 		for (Point2D.Double p : controlPoints) {
@@ -249,4 +412,5 @@ public class Convex {
 		return controlPoints;
 	}
 }
+
 
