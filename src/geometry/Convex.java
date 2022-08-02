@@ -82,10 +82,17 @@ public class Convex {
 		return siteSegments;
 	}
 
-	/*
+	/**
 	 * Find spoke intersections when more than one spoke is inserted
+	 * 
+	 * @param hullVertex
+	 * @param newSite
+	 * @param segments
+	 * @return
 	 */
-	public Point3d spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double newSite, List<Segment> segments) {
+	public List<Point2D.Double> spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double newSite, List<Segment> segments) {
+		double i_x, i_y;
+		double s, t, s1_x, s1_y, s2_x, s2_y;
 		Point2D.Double seg1LeftPoint = null;
 		Point2D.Double seg1RightPoint = null;
 		Point2D.Double seg2LeftPoint = null;
@@ -97,32 +104,52 @@ public class Convex {
 		// Looping through each element in the hashmap
 		for (Map.Entry<Point2D.Double, List<Segment>> segList : newSegments.entrySet()) {
 
-			// Access the list of segmetns associated with each site
+			// Access the list of segments associated with each site
 			List<Segment> segs = segList.getValue();
 			for (int i = 0; i < segs.size(); i++) {
 				Segment s1 = segs.get(i); // current segment
 				Segment s2 = segs.get(i); // next segment
+				Point2D.Double spokeIntersectionPoint = null;
 
 				// Segment 1 left and right end Point2D
 				PVector s1l = s1.getLeftPoint();
 				double s1lx = s1l.x;
 				double s1ly = s1l.y;
-				seg1LeftPoint.setLocation(s1l.x, s1l.y);
+//				seg1LeftPoint.setLocation(s1l.x, s1l.y);
 				PVector s1r = s1.getRightPoint();
 				float s1rx = s1r.x;
 				float s1ry = s1r.y;
-				seg1RightPoint.setLocation(s1r.x, s1r.y);
+//				seg1RightPoint.setLocation(s1r.x, s1r.y);
 				// Segment 1 left and right end Point2D
 				PVector s2l = s2.getLeftPoint();
 				float s2lx = s2l.x;
 				float s2ly = s2l.y;
-				seg2LeftPoint.setLocation(s2l.x, s2l.y);
+//				seg2LeftPoint.setLocation(s2l.x, s2l.y);
 				PVector s2r = s2.getRightPoint();
 				float s2rx = s2r.x;
 				float s2ry = s2r.y;
-				seg2RightPoint.setLocation(s2r.x, s2r.y);
+//				seg2RightPoint.setLocation(s2r.x, s2r.y);
+
+				// Intersection points stored in i_x and i_y
+				s1_x = s1rx - s1lx;
+				s1_y = s1ry - s1ly;
+				s2_x = s2rx - s2lx;
+				s2_y = s2ry - s2ly;
+
+				s = (-s1_y * (s1lx - s2lx) + s1_x * (s1ly - s2ly)) / (-s2_x * s1_y + s1_x * s2_y);
+				t = (s2_x * (s1ly - s2ly) - s2_y * (s1lx - s2lx)) / (-s2_x * s1_y + s1_x * s2_y);
 				
-				
+				// Collision detected
+				if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+					i_x = s1lx + (t * s1_x);
+					i_y = s1ly + (t * s1_y);
+					spokeIntersectionPoint.setLocation(i_x, i_y);
+				}
+				spokeIntersects.add(spokeIntersectionPoint);
+			}
+		}
+		return spokeIntersects;
+	}
 
 //				Point3d s1lh = HilbertGeometry.toHomogeneous(seg1LeftPoint);
 //				Point3d s1rh = HilbertGeometry.toHomogeneous(seg1RightPoint);
@@ -140,13 +167,7 @@ public class Convex {
 //			      return Point3d.linearCombination(pointCoeff, scalarCoeff);
 //			    }
 //			    // return new Point3d();
-				
-			    
-				
 
-			}
-		}
-	}
 
 	/*
 	 * Converting 2d points to PVectors
