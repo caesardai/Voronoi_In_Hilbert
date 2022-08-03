@@ -9,9 +9,9 @@ import drawing.DrawUtil;
 
 import geometry.Util;
 
-import micycle.trapmap.Segment;
-import micycle.trapmap.Trapezoid;
-import micycle.trapmap.TrapMap;
+import trapmap.Segment;
+import trapmap.Trapezoid;
+import trapmap.TrapMap;
 
 /* NOTE: YOU ARE NOT INTENDED TO RUN THIS SOURCE CODE FROM THIS FILE. YOU NEED TO COPY THIS INTO DRAWINGAPPLET.JAVA TO MAKE THIS WORK!!!! */
 

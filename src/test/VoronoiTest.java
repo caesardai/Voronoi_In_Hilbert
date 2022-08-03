@@ -9,7 +9,7 @@ import geometry.HilbertGeometry;
 import geometry.Voronoi;
 import geometry.Util;
 
-import micycle.trapmap.Segment;
+import trapmap.Segment;
 
 public class VoronoiTest {
 	public static void testNewThetaRayTrace() {

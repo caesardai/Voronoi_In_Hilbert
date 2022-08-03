@@ -470,7 +470,7 @@ public class Voronoi {
 		g.convex.addPoint(p2);
 		g.convex.addPoint(p3);
 		g.convex.addPoint(p4);
-		g.convex.pointsToSegment(g.convex.convexHull);
+		// g.convex.pointsToSegment(g.convex.convexHull);
 		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
 		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
 		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
