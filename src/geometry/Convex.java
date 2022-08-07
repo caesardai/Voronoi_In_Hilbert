@@ -102,7 +102,7 @@ public class Convex {
 	 * @param segments
 	 * @return
 	 */
-	public List<Point2D.Double> spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double newSite,
+	public List<Segment> spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double newSite,
 			List<Segment> segments) {
 		double i_x, i_y;
 		double s, t, s1_x, s1_y, s2_x, s2_y;
@@ -116,6 +116,7 @@ public class Convex {
 
 		// grab arraylist for new sites
 		List<Segment> newSpokes = newSegments.get(newSite);
+		List<Segment> innerSegments = new ArrayList<Segment>();
 
 		// Looping through each element in the hashmap
 		for (Map.Entry<Point2D.Double, List<Segment>> segList : newSegments.entrySet()) {
@@ -125,7 +126,10 @@ public class Convex {
 				continue;
 
 			// Access the list of segments associated with each site
+			Point2D.Double site = segList.getKey();
 			List<Segment> segs = segList.getValue();
+			double s0l = site.x;
+			double s0r = site.y;
 
 			// loop through all new spokes
 			for (Segment seg1 : newSpokes) {
@@ -169,14 +173,14 @@ public class Convex {
 						i_y = s1ly + (t * s1_y);
 						spokeIntersectionPoint = new Point2D.Double();
 						spokeIntersectionPoint.setLocation(i_x, i_y);
+						Segment newInnerSegment = new Segment((float) s0l, (float) s0r, (float) i_x, (float) i_y);
+						innerSegments.add(newInnerSegment);
 					}
 					spokeIntersects.add(spokeIntersectionPoint);
 				}
-
 			}
-
 		}
-		return spokeIntersects;
+		return innerSegments;
 	}
 
 //				Point3d s1lh = HilbertGeometry.toHomogeneous(seg1LeftPoint);
@@ -195,7 +199,6 @@ public class Convex {
 //			      return Point3d.linearCombination(pointCoeff, scalarCoeff);
 //			    }
 //			    // return new Point3d();
-	
 
 	/*
 	 * Converting 2d points to PVectors
@@ -275,7 +278,7 @@ public class Convex {
 		double i_x, i_y;
 		double s, t, s1_x, s1_y, s2_x, s2_y;
 		List<Point2D.Double> spokeHullIntersects = new ArrayList<Point2D.Double>(numHullVertex * numSites);
-		
+
 		for (int i = 0; i < numHullSegments; i++) {
 			Segment s1 = hullSegments.get(i);
 			PVector s1l = s1.getLeftPoint();
@@ -284,7 +287,7 @@ public class Convex {
 			PVector s1r = s1.getRightPoint();
 			double s1rx = s1r.x;
 			double s1ry = s1r.y;
-			
+
 			for (int j = 0; j < numSiteEdgeSegments; j++) {
 				Point2D.Double spokeHullIntersectionPoint = null;
 				Segment s2 = hullSegments.get(j);
@@ -294,7 +297,7 @@ public class Convex {
 				PVector s2r = s2.getRightPoint();
 				double s2rx = s2r.x;
 				double s2ry = s2r.y;
-				
+
 				s1_x = s1rx - s1lx;
 				s1_y = s1ry - s1ly;
 				s2_x = s2rx - s2lx;
