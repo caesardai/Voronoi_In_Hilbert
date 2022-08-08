@@ -51,4 +51,21 @@ public class ConvexTest {
 		
 		System.out.println("finished");
 	}
+	
+	public static void testSpokeHullIntersect() {
+		Convex c = new Convex();
+		c.addPoint(new Point2D.Double(6.4, 5.3));
+		c.addPoint(new Point2D.Double(16d, 50d));
+		c.addPoint(new Point2D.Double(60d, 18d));
+		c.addPoint(new Point2D.Double(54d, 3d));
+
+		Point2D.Double site = new Point2D.Double(24d, 14d);
+
+		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length - 1);
+		Point2D.Double[] siteVertices = new Point2D.Double[] {site};
+
+		List<Point2D.Double> intersectionPoints = c.spokeHullIntersection(hullVertices, siteVertices);
+
+		System.out.println("finished");
+	}
 }

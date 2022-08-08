@@ -35,6 +35,14 @@ public class Util {
   public static Point2D.Double toPoint2D(PVector p) {
 	  return new Point2D.Double((double) p.x, (double) p.y);
   }
+
+  public static Point2D.Double toPoint2D(KdTree.XYZPoint p) {
+	  return new Point2D.Double(p.x, p.y);
+  }
+  
+  public static KdTree.XYZPoint toXYZPoint(Point2D.Double p) {
+	  return new KdTree.XYZPoint(p.x, p.y);
+  }
   
   public static String printCoordinate(Point2D.Double p) {
 	  return "(" + p.x + ", " + p.y + ")";

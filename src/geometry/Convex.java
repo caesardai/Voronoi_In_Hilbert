@@ -1,7 +1,6 @@
 package geometry;
 
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.LinkedList;
@@ -249,8 +248,8 @@ public class Convex {
 		for (int hv = 0; hv < numHullVertex; hv++) {
 			float hullVertex1EndPt1 = (float) hullVertex[hv].x;
 			float hullVertex1EndPt2 = (float) hullVertex[hv].y;
-			float hullVertex2EndPt1 = (float) hullVertex[hv + 1].x;
-			float hullVertex2EndPt2 = (float) hullVertex[hv + 1].y;
+			float hullVertex2EndPt1 = (float) hullVertex[(hv + 1) % numHullVertex].x;
+			float hullVertex2EndPt2 = (float) hullVertex[(hv + 1) % numHullVertex].y;
 			Segment newHullEdgeSegment = new Segment(hullVertex1EndPt1, hullVertex1EndPt2, hullVertex2EndPt1,
 					hullVertex2EndPt2);
 			hullSegments.add(newHullEdgeSegment);
@@ -537,6 +536,63 @@ public class Convex {
 		}
 		return false;
 	}
+	
+	/**
+	 * Given a set of points that are all colinear with each other, sort the points from left to right on this line
+	 * 
+	 * @param points the set of colinear points
+	 */
+	private static void sortColinearPoints(ArrayList<Point2D.Double> points) {
+		// only sort if there are more than 1 point in our list
+		if(points.size() < 2)
+			return;
+		
+		// determine if the set of points are colinear with a vertical line
+		if(Math.abs( points.get(0).y - points.get(1).y ) <= 1e-8)
+			Convex.quickSort(points, 0, points.size() - 1, false);
+		
+		// otherwise, sort points by the x-coordinate
+		// we are ignoring any float-point errors that may occur here
+		Convex.quickSort(points, 0, points.size() - 1, true);
+		
+	}
+	private static int partition(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
+        int pivot = end;
+
+        int counter = begin;
+		for (int i = begin; i < end; i++) {
+			// compare either x or y
+			double compare1, compare2;
+			if(useX) {
+				compare1 = array.get(i).x;
+				compare2 = array.get(pivot).x;
+			} else {
+				compare1 = array.get(i).y;
+				compare2 = array.get(pivot).y;
+			}
+			
+			if (compare1 < compare2) {
+				Point2D.Double temp = array.get(counter);
+				array.set(counter, array.get(i));
+				array.set(i, temp);
+				counter++;
+			}
+		}
+		Point2D.Double temp = array.get(pivot);
+		array.set(pivot, array.get(counter));
+		array.set(counter, temp);
+
+		return counter;
+    }
+
+    private static void quickSort(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
+        if (end <= begin) return;
+        int pivot = partition(array, begin, end, useX);
+        quickSort(array, begin, pivot-1, useX);
+        quickSort(array, pivot+1, end, useX);
+    }
+    	
+
 
 	/* Loads control points from input file */
 	public Point2D.Double[] load(String filename) {
@@ -570,26 +626,67 @@ public class Convex {
 	}
 
 	public static void main(String[] argv) {
-		Convex c = new Convex();
-		c.addPoint(new Point2D.Double(6.4, 5.3));
-		c.addPoint(new Point2D.Double(16d, 50d));
-		c.addPoint(new Point2D.Double(60d, 18d));
-		c.addPoint(new Point2D.Double(54d, 3d));
-
-		Point2D.Double site = new Point2D.Double(24d, 14d);
-
-		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length - 1);
-		Point2D.Double[] allVertices = new Point2D.Double[hullVertices.length + 1];
-		for (int index = 0; index < hullVertices.length; index++)
-			allVertices[index] = hullVertices[index];
-		allVertices[allVertices.length - 1] = site;
-
-		List<Point3d> intersectionPoints = c.spokeHullIntersection(hullVertices, allVertices);
-		List<Point2D.Double> ip = new ArrayList<Point2D.Double>();
-		for (int index = 0; index < intersectionPoints.size(); index++)
-			ip.add(HilbertGeometry.toCartesian(intersectionPoints.get(index)));
-
-		System.out.println("finished");
+		ArrayList<Point2D.Double> colinear = new ArrayList<Point2D.Double>();
+//		colinear.add(new Point2D.Double(57.671, 19.282));
+//		colinear.add(new Point2D.Double(-11.746, -1.521));
+//		colinear.add(new Point2D.Double(-54.158, -14.231));
+//		colinear.add(new Point2D.Double(16.7, 7.004));
+//		colinear.add(new Point2D.Double(-28.002, -6.392));
+//		colinear.add(new Point2D.Double(58.951, 19.666));
+//		colinear.add(new Point2D.Double(51.668, 17.484));
+//		colinear.add(new Point2D.Double(-52.655, -13.78));
+//		colinear.add(new Point2D.Double(40.823, 14.234));
+//		colinear.add(new Point2D.Double(-9.526, -0.855));
+		
+//		for(int i = 0; i < 10; i++) 
+//			colinear.add(new Point2D.Double(1d, Math.random() * 200 - 100));
+//		
+//		System.out.println("before");
+//		
+//		Convex.quickSort(colinear, 0, colinear.size()-1, false);
+//		
+//		System.out.println("after");
+		
+		HashMap<Segment, Boolean> map = new HashMap<Segment, Boolean>();
+		Segment k = new Segment(1f, 1f, 1f, 1f);
+		
+		for(int index = 0; index < 10; index++) {
+			float f1 = (float) Math.random() * 200 - 100;
+			float f2 = (float) Math.random() * 200 - 100;
+			float f3 = (float) Math.random() * 200 - 100;
+			float f4 = (float) Math.random() * 200 - 100;
+			map.put(new Segment(f1, f2, f3, f4), true);
+			if(index == 3)
+				k = new Segment(f1, f2, f3, f4);
+		}
+		
+		boolean[] contains = new boolean[1000000000];
+		
+		if(contains[918143])
+			System.out.println("true");
+		else
+			System.out.println("false");
+		
+//		Segment[] segs = map.keySet().toArray(new Segment[map.keySet().size()]);
+//		boolean containsCollision = false;
+//		for(int index = 0; index < segs.length; index++) {
+//			for(int curr = 0; curr < segs.length; curr++) {
+//				if(curr != index) {
+//					if(segs[index].hashCode() == segs[curr].hashCode()) {
+//						containsCollision = true;
+//						break;
+//					}
+//				}
+//			}
+//		}
+//		System.out.println(containsCollision);
+		
+//		float f1 = (float) Math.random() * 200 - 100;
+//		float f2 = (float) Math.random() * 200 - 100;
+//		float f3 = (float) Math.random() * 200 - 100;
+//		float f4 = (float) Math.random() * 200 - 100;
+//		System.out.println(map.containsKey(new Segment(f1, f2, f3, f4)));
+//		System.out.println(map.containsKey(k));
 	}
 }
 
