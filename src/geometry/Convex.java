@@ -147,6 +147,7 @@ public class Convex {
 			// convex hull
 			intersectionPoints.add(newSite);
 			intersectionPoints.add(hullVertex[i]);
+			Segment edgeIntersect = null;
 			for (int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
 				Point3d e1proj = HilbertGeometry.toHomogeneous(hullVertex[vertexCount]);
 				Point3d e2proj = HilbertGeometry.toHomogeneous(hullVertex[(vertexCount + 1) % hullVertex.length]);
@@ -155,6 +156,7 @@ public class Convex {
 
 				if (this.isOnConvexBoundary(p) && !Convex.almostContainsElement(vertices, p)) {
 					intersectionPoints.add(p);
+					edgeIntersect = this.constructSegment(hullVertex[vertexCount], hullVertex[(vertexCount + 1) % hullVertex.length]);
 					break;
 				}
 			}
@@ -166,11 +168,64 @@ public class Convex {
 				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size() - 1, false);
 
 			// construct segments to return
-			for (int index = 0; index < intersectionPoints.size() - 1; index++)
-				segs.add(this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index + 1)));
+			for (int index = 0; index < intersectionPoints.size() - 1; index++) {
+				Segment newSeg = this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index + 1));
+				newSeg.setEdge(edgeIntersect);
+				newSeg.setSites(newSite);
+				segs.add(newSeg);
+			}
 		}
 
 		return segs;
+	}
+	
+	/*
+	 * Construct sectors with given sites and segments
+	 * Each sector is associated with an edge and site
+	 */
+	public void constructSector(Point2D.Double site, KdTree<KdTree.XYZPoint> graph) {
+		// get all site's neighboring segment
+		
+		KdTree.KdNode node = KdTree.getNode(graph, Util.toXYZPoint(site));
+		KdTree.XYZPoint siteXYZ = node.getID();
+		ArrayList<Point2D.Double> endPoints = siteXYZ.getNeighbors();
+		
+		ArrayList<Double> angles = new ArrayList<>();
+		for (int i = 0; i < endPoints.size(); i++) {
+			angles.add(Voronoi.spokeAngle(site, endPoints.get(i)));
+		}
+		// Assume quicksort works
+		
+		// Loop through all the neighbors and construct nearby sectors
+		int neighborSize = endPoints.size();
+		for (int i = 0; i < neighborSize; i++) {
+			Point2D.Double p1 = endPoints.get(i);
+			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
+			KdTree.XYZPoint p1XYZ = nodeP1.getID();
+			Point2D.Double p2 = endPoints.get((i+1) % neighborSize);
+			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
+			KdTree.XYZPoint p2XYZ = nodeP2.getID();
+			
+			// 3 edge case
+			if (p1XYZ.containsNeighbor(p2)) {
+				
+			}
+			
+			// 4 edge case
+			
+			
+		}
+		
+		
+		// if endPointt[i] has another endPoint where it is not the site
+		
+		
+		
+		
+		
+		Point2D.Double currNeighbor = null;
+		Point2D.Double nextNeighbor = null;
+		// loop through the segment endpoints i, i+1 and check whether there is an existing line segment
 	}
 
 	/*
