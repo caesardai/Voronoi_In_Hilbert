@@ -101,74 +101,113 @@ public class Convex {
 	 * @param segments
 	 * @return
 	 */
-	public List<Segment> spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double[] oldSites, Point2D.Double newSite) {
+	public List<Segment> spokeIntersects(Point2D.Double[] hullVertex, Point2D.Double[] oldSites,
+			Point2D.Double newSite) {
 		// list to store segments from intersection
 		List<Segment> segs = new ArrayList<Segment>();
-		
+
 		// construct spokes from old sites
 		Point3d[][] oldSpokes = new Point3d[oldSites.length][hullVertex.length];
-		for(int siteCount = 0; siteCount < oldSites.length; siteCount++) {
-			for(int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
+		for (int siteCount = 0; siteCount < oldSites.length; siteCount++) {
+			for (int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
 				Point3d sproj = HilbertGeometry.toHomogeneous(oldSites[siteCount]);
 				Point3d vproj = HilbertGeometry.toHomogeneous(hullVertex[vertexCount]);
 				oldSpokes[siteCount][vertexCount] = sproj.crossProduct(vproj);
 			}
 		}
-		
+
 		// construct spokes from new site
-		Point3d[] newSpokes = new Point3d[hullVertex.length]; 
+		Point3d[] newSpokes = new Point3d[hullVertex.length];
 		Point3d sproj = HilbertGeometry.toHomogeneous(newSite);
-		for(int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
+		for (int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
 			Point3d vproj = HilbertGeometry.toHomogeneous(hullVertex[vertexCount]);
 			newSpokes[vertexCount] = sproj.crossProduct(vproj);
 		}
-		
+
 		// find the intersection point between every newSpoke and oldSpoke
 		// for each newSpoke
 		ArrayList<Point2D.Double> intersectionPoints = new ArrayList<Point2D.Double>();
 		List<Point2D.Double> vertices = Arrays.asList(hullVertex);
-		for(int i = 0; i < hullVertex.length; i++) {
+		for (int i = 0; i < hullVertex.length; i++) {
 			Point3d spoke = newSpokes[i];
-			
+
 			// find the intersection point of the spoke with every old spoke
 			intersectionPoints.clear();
-			for(int row = 0; row < oldSpokes.length; row++) {
-				for(int col = 0; col < oldSpokes[0].length; col++) {
+			for (int row = 0; row < oldSpokes.length; row++) {
+				for (int col = 0; col < oldSpokes[0].length; col++) {
 					Point3d s = oldSpokes[row][col];
 					Point2D.Double intersect = HilbertGeometry.toCartesian(spoke.crossProduct(s));
-					
-					if(this.isInConvex(intersect) && !Convex.almostContainsElement(vertices, intersect))
+
+					if (this.isInConvex(intersect) && !Convex.almostContainsElement(vertices, intersect))
 						intersectionPoints.add(intersect);
 				}
 			}
-			
-			// add site to points to sort and the intersection point between spoke and convex hull
+
+			// add site to points to sort and the intersection point between spoke and
+			// convex hull
 			intersectionPoints.add(newSite);
 			intersectionPoints.add(hullVertex[i]);
-			for(int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
+			for (int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
 				Point3d e1proj = HilbertGeometry.toHomogeneous(hullVertex[vertexCount]);
-				Point3d e2proj = HilbertGeometry.toHomogeneous(hullVertex[(vertexCount+1) % hullVertex.length]);
+				Point3d e2proj = HilbertGeometry.toHomogeneous(hullVertex[(vertexCount + 1) % hullVertex.length]);
 				Point3d edge = e1proj.crossProduct(e2proj);
 				Point2D.Double p = HilbertGeometry.toCartesian(spoke.crossProduct(edge));
 
-				if(this.isOnConvexBoundary(p) && !Convex.almostContainsElement(vertices, p)) {
+				if (this.isOnConvexBoundary(p) && !Convex.almostContainsElement(vertices, p)) {
 					intersectionPoints.add(p);
 					break;
 				}
 			}
-			
+
 			// sort intersection points
-			if(Math.abs(spoke.y) > 1e-8)
-				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size()-1, true);
-			else 
-				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size()-1, false);
-			
+			if (Math.abs(spoke.y) > 1e-8)
+				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size() - 1, true);
+			else
+				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size() - 1, false);
+
 			// construct segments to return
-			for(int index = 0; index < intersectionPoints.size()-1; index++)
-				segs.add(this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index+1)));
+			for (int index = 0; index < intersectionPoints.size() - 1; index++)
+				segs.add(this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index + 1)));
 		}
-		
+
 		return segs;
+	}
+
+	/*
+	 * Check whether a given segment lies on one of the spokes
+	 */
+	public void segmentVerify(Segment seg, Segment spoke) {
+		// Construct spoke with site and convex Hull vertices
+		PVector seg1 = seg.getLeftPoint();
+		PVector seg2 = seg.getRightPoint();
+		double seg1x = seg1.x;
+		double seg1y = seg1.y;
+		double seg2x = seg2.x;
+		double seg2y = seg2.y;
+		PVector spoke1 = spoke.getLeftPoint();
+		PVector spoke2 = spoke.getRightPoint();
+		double spoke1x = spoke1.x;
+		double spoke1y = spoke1.y;
+		double spoke2x = spoke1.x;
+		double spoke2y = spoke2.y;
+	
+		// Line equation formula: 
+		// a = y1 - y2 
+		// b = x2 - x1 
+		// c = (x1 - x2) * y1 + (y2 - y1) * x1
+		 
+		// double seg_a = seg1y - seg2y;
+		double spoke_a = spoke1y - spoke2y;
+		// double seg_b = seg2x - seg1x;
+		double spoke_b = spoke2x - spoke1x;
+		// double seg_c = (seg1x - seg2x) * seg1y + (seg2y - seg1y) * seg1x;
+		double spoke_c = (spoke1x - spoke2x) * spoke1y + (spoke2y - spoke1y) * spoke1x;
+
+		if (spoke_a * seg1x + spoke_b * seg1y + spoke_c == 0 && spoke_a * seg2x + spoke_b * seg2y + spoke_c == 0) {
+			System.out.println("Segment is on the spoke");
+		} else {
+			System.out.println("Segment is not on the spoke");
+		}
 	}
 
 //				Point3d s1lh = HilbertGeometry.toHomogeneous(seg1LeftPoint);
@@ -262,8 +301,7 @@ public class Convex {
 				Point2D.Double hullVertex_i = hullVertex[numSites];
 
 				// Construct hull vertex site segments
-				Segment newSegment = new Segment(sitePoint1, sitePoint2, hullVertexEndPoint1,
-						hullVertexEndPoint2);
+				Segment newSegment = new Segment(sitePoint1, sitePoint2, hullVertexEndPoint1, hullVertexEndPoint2);
 				siteHullEdgeSpoke.add(newSegment);
 
 				// Find spoke hull edge intersection and construct segment
@@ -526,41 +564,43 @@ public class Convex {
 		}
 		return false;
 	}
-	
+
 	/**
-	 * Given a set of points that are all colinear with each other, sort the points from left to right on this line
+	 * Given a set of points that are all colinear with each other, sort the points
+	 * from left to right on this line
 	 * 
 	 * @param points the set of colinear points
 	 */
 	private static void sortColinearPoints(ArrayList<Point2D.Double> points) {
 		// only sort if there are more than 1 point in our list
-		if(points.size() < 2)
+		if (points.size() < 2)
 			return;
-		
+
 		// determine if the set of points are colinear with a vertical line
-		if(Math.abs( points.get(0).y - points.get(1).y ) <= 1e-8)
+		if (Math.abs(points.get(0).y - points.get(1).y) <= 1e-8)
 			Convex.quickSort(points, 0, points.size() - 1, false);
-		
+
 		// otherwise, sort points by the x-coordinate
 		// we are ignoring any float-point errors that may occur here
 		Convex.quickSort(points, 0, points.size() - 1, true);
-		
-	}
-	private static int partition(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
-        int pivot = end;
 
-        int counter = begin;
+	}
+
+	private static int partition(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
+		int pivot = end;
+
+		int counter = begin;
 		for (int i = begin; i < end; i++) {
 			// compare either x or y
 			double compare1, compare2;
-			if(useX) {
+			if (useX) {
 				compare1 = array.get(i).x;
 				compare2 = array.get(pivot).x;
 			} else {
 				compare1 = array.get(i).y;
 				compare2 = array.get(pivot).y;
 			}
-			
+
 			if (compare1 < compare2) {
 				Point2D.Double temp = array.get(counter);
 				array.set(counter, array.get(i));
@@ -573,16 +613,15 @@ public class Convex {
 		array.set(counter, temp);
 
 		return counter;
-    }
+	}
 
-    private static void quickSort(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
-        if (end <= begin) return;
-        int pivot = partition(array, begin, end, useX);
-        quickSort(array, begin, pivot-1, useX);
-        quickSort(array, pivot+1, end, useX);
-    }
-    	
-
+	private static void quickSort(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
+		if (end <= begin)
+			return;
+		int pivot = partition(array, begin, end, useX);
+		quickSort(array, begin, pivot - 1, useX);
+		quickSort(array, pivot + 1, end, useX);
+	}
 
 	/* Loads control points from input file */
 	public Point2D.Double[] load(String filename) {
@@ -616,10 +655,9 @@ public class Convex {
 	}
 
 	public static void main(String[] argv) {
-		
+
 	}
 }
-
 
 /*
  * Under spokeHullIntersection
