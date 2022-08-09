@@ -162,10 +162,18 @@ public class Convex {
 			}
 
 			// sort intersection points
-			if (Math.abs(spoke.y) > 1e-8)
-				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size() - 1, true);
-			else
-				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size() - 1, false);
+			if (Math.abs(spoke.y) > 1e-8) {
+				ArrayList<Double> compare = new ArrayList<Double>();
+				for(Point2D.Double p : intersectionPoints)
+					compare.add(p.x);
+				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size() - 1);
+			}
+			else {
+				ArrayList<Double> compare = new ArrayList<Double>();
+				for(Point2D.Double p : intersectionPoints)
+					compare.add(p.y);
+				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size() - 1);
+			}
 
 			// construct segments to return
 			for (int index = 0; index < intersectionPoints.size() - 1; index++) {
@@ -369,10 +377,18 @@ public class Convex {
 			intersectionPoints.add(hullVertex[(edgeCount+1) % numHullVertex]);
 			
 			// sort points
-			if(Math.abs(edge.y) > 1e-8)
-				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size()-1, true);
-			else 
-				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size()-1, false);
+			if(Math.abs(edge.y) > 1e-8) {
+				ArrayList<Double> compare = new ArrayList<Double>();
+				for(Point2D.Double p : intersectionPoints)
+					compare.add(p.x);
+				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size()-1);
+			}
+			else  {
+				ArrayList<Double> compare = new ArrayList<Double>();
+				for(Point2D.Double p : intersectionPoints)
+					compare.add(p.x);
+				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size()-1);
+			}
 			
 			// add segments
 			for(int index = 0; index < intersectionPoints.size()-1; index++)
@@ -615,50 +631,70 @@ public class Convex {
 			return;
 
 		// determine if the set of points are colinear with a vertical line
-		if (Math.abs(points.get(0).y - points.get(1).y) <= 1e-8)
-			Convex.quickSort(points, 0, points.size() - 1, false);
-
+		ArrayList<Double> compare = new ArrayList<Double>();
+		if (Math.abs(points.get(0).y - points.get(1).y) <= 1e-8) {
+			for(Point2D.Double p : points)
+				compare.add(p.y);
+		} 
 		// otherwise, sort points by the x-coordinate
 		// we are ignoring any float-point errors that may occur here
-		Convex.quickSort(points, 0, points.size() - 1, true);
-
+		else {
+			for(Point2D.Double p : points)
+				compare.add(p.x);
+		}
+		Convex.quickSort(points, compare, 0, points.size() - 1);
 	}
 
-	private static int partition(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
+	private static int partition(ArrayList<Point2D.Double> array, ArrayList<Double> compare, int begin, int end) {
 		int pivot = end;
 
 		int counter = begin;
 		for (int i = begin; i < end; i++) {
 			// compare either x or y
-			double compare1, compare2;
-			if (useX) {
-				compare1 = array.get(i).x;
-				compare2 = array.get(pivot).x;
-			} else {
-				compare1 = array.get(i).y;
-				compare2 = array.get(pivot).y;
-			}
+			double compare1 = compare.get(i);
+			double compare2 = compare.get(pivot);
 
 			if (compare1 < compare2) {
+				// temp for both arrays
 				Point2D.Double temp = array.get(counter);
+				Double temp1 = compare.get(counter);
+				
+				// swap in array
 				array.set(counter, array.get(i));
 				array.set(i, temp);
+				
+				// swap in compare
+				compare.set(counter, compare.get(i));
+				compare.set(i, temp1);
+
 				counter++;
 			}
 		}
+		// temp for both arrays
 		Point2D.Double temp = array.get(pivot);
+		Double temp1 = compare.get(counter);
+
+		// swap in array
 		array.set(pivot, array.get(counter));
 		array.set(counter, temp);
+		
+		// swap in compare
+		compare.set(pivot, compare.get(counter));
+		compare.set(counter, temp1);
 
 		return counter;
 	}
 
-	private static void quickSort(ArrayList<Point2D.Double> array, int begin, int end, boolean useX) {
+	private static void quickSort(ArrayList<Point2D.Double> array, ArrayList<Double> compare, int begin, int end) {
+		// ensure that the two arrays are of the same length
+		if(array.size() != compare.size())
+			return;
+		
 		if (end <= begin)
 			return;
-		int pivot = partition(array, begin, end, useX);
-		quickSort(array, begin, pivot - 1, useX);
-		quickSort(array, pivot + 1, end, useX);
+		int pivot = partition(array, compare, begin, end);
+		quickSort(array, compare, begin, pivot - 1);
+		quickSort(array, compare,  pivot + 1, end);
 	}
 
 	/* Loads control points from input file */
