@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.List;
 
 import geometry.Convex;
+import geometry.KdTree;
+import geometry.Util;
 
 import trapmap.Segment;
 
@@ -78,13 +80,66 @@ public class ConvexTest {
 		c.addPoint(new Point2D.Double(54d, 3d));
 
 		Point2D.Double site = new Point2D.Double(24d, 14d);
+		Point2D.Double s1 = new Point2D.Double(27.6, 27.4);
 
 		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length - 1);
-		Point2D.Double[] siteVertices = new Point2D.Double[] {site};
+		Point2D.Double[] siteVertices = new Point2D.Double[] {site, s1};
 
-		List<Point2D.Double> intersectionPoints = c.spokeHullIntersection(hullVertices, siteVertices);
+		List<Segment> intersectionPoints = c.spokeHullIntersection(hullVertices, siteVertices);
 
 		System.out.println("finished");
+	}
+	
+	public static void createSectorGraph() {
+		Convex c = new Convex();
+		c.addPoint(new Point2D.Double(100d, 100d));
+		c.addPoint(new Point2D.Double(540d, 200d));
+		c.addPoint(new Point2D.Double(360d, 600));
+
+		Point2D.Double site1 = new Point2D.Double(404d, 253d);
+		Point2D.Double site2 = new Point2D.Double(349.5, 406d);
+		
+		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length -1);
+		Point2D.Double[] siteVertices = new Point2D.Double[] {site1, site2};
+		
+		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
+		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site2}, site1);
+		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1}, site2);
+		
+		// combine lists
+		List<Segment> allSegments = new ArrayList<Segment>();
+		allSegments.addAll(edgeSegments);
+		allSegments.addAll(site1Segments);
+		allSegments.addAll(site2Segments);
+		
+		// construct graph
+		KdTree<KdTree.XYZPoint> tree = new KdTree<KdTree.XYZPoint>(null, 2);
+		
+		// insert segments into graph
+		for(Segment s : allSegments) {
+			Point2D.Double left = Util.toPoint2D(s.getLeftPoint());
+			Point2D.Double right = Util.toPoint2D(s.getRightPoint());
+
+			KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(left));
+			if(node == null) {
+				tree.add(Util.toXYZPoint(left));
+				node = KdTree.getNode(tree, Util.toXYZPoint(left));
+			}
+
+			KdTree.XYZPoint point = node.getID();
+			point.addNeighbor(right);
+
+			node = KdTree.getNode(tree, Util.toXYZPoint(right));
+			if(node == null) {
+				tree.add(Util.toXYZPoint(right));
+				node = KdTree.getNode(tree, Util.toXYZPoint(right));
+			}
+
+			point = node.getID();
+			point.addNeighbor(left);
+		}
+		
+		// visualize results
 	}
 	
 	public static void testQuickSort() {

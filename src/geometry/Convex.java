@@ -267,81 +267,64 @@ public class Convex {
 	 * @param sitePoints
 	 * @return
 	 */
-	public List<Point2D.Double> spokeHullIntersection(Point2D.Double[] hullVertex, Point2D.Double[] sitePoints) {
-		// Separating out the hull points from site points
+	public List<Segment> spokeHullIntersection(Point2D.Double[] hullVertex, Point2D.Double[] sitePoints) {
+		// list of hold all intersection points
+		List<Segment> segs = new ArrayList<Segment>();
+		
+		// constants
 		int numHullVertex = hullVertex.length;
-		int numSites = sitePoints.length;
 
-		// Find hull edges segments
-		List<Segment> hullSegments = new ArrayList<Segment>((int) Math.ceil(numHullVertex / 2));
+		// compute convex hull edge equations
+		Point3d[] edge_lines = new Point3d[numHullVertex];
 		for (int hv = 0; hv < numHullVertex; hv++) {
-			float hullVertex1EndPt1 = (float) hullVertex[hv].x;
-			float hullVertex1EndPt2 = (float) hullVertex[hv].y;
-			float hullVertex2EndPt1 = (float) hullVertex[(hv + 1) % numHullVertex].x;
-			float hullVertex2EndPt2 = (float) hullVertex[(hv + 1) % numHullVertex].y;
-			Segment newHullEdgeSegment = new Segment(hullVertex1EndPt1, hullVertex1EndPt2, hullVertex2EndPt1,
-					hullVertex2EndPt2);
-			hullSegments.add(newHullEdgeSegment);
+			Point3d e1proj = HilbertGeometry.toHomogeneous(hullVertex[hv]);
+			Point3d e2proj = HilbertGeometry.toHomogeneous(hullVertex[(hv + 1) % numHullVertex]);
+			edge_lines[hv] = e1proj.crossProduct(e2proj);
 		}
-		int numHullSegments = hullSegments.size();
 
-		// Find site-edge spoke segments
-		List<Segment> siteHullEdgeSpoke = new ArrayList<Segment>(numHullVertex * numSites);
-		// Check intersection points between hull edges segments and site-edge spoke
-		List<Point2D.Double> spokeHullIntersects = new ArrayList<Point2D.Double>(numHullVertex * numSites);
-
-		for (int s = 0; s < numSites; s++) {
-			float sitePoint1 = (float) sitePoints[s].x;
-			float sitePoint2 = (float) sitePoints[s].y;
-			Point2D.Double site_i = sitePoints[numSites];
-
-			for (int h = 0; h < numHullVertex; h++) {
-				float hullVertexEndPoint1 = (float) hullVertex[h].x;
-				float hullVertexEndPoint2 = (float) hullVertex[h].y;
-				Point2D.Double hullVertex_i = hullVertex[numSites];
-
-				// Construct hull vertex site segments
-				Segment newSegment = new Segment(sitePoint1, sitePoint2, hullVertexEndPoint1, hullVertexEndPoint2);
-				siteHullEdgeSpoke.add(newSegment);
-
-				// Find spoke hull edge intersection and construct segment
-				Point3d s_i = HilbertGeometry.toHomogeneous(site_i);
-				Point3d hv_i = HilbertGeometry.toHomogeneous(hullVertex_i);
-				Point3d siteHullVertexLine = s_i.crossProduct(hv_i);
-
-				Point2D.Double segLeftPoint = null;
-				Point2D.Double segRightPoint = null;
-				for (Segment seg : hullSegments) {
-					PVector hullEdgeEndPoint1 = seg.getLeftPoint();
-					PVector hullEdgeEndPoint2 = seg.getRightPoint();
-					double heep1x = hullEdgeEndPoint1.x;
-					double heep1y = hullEdgeEndPoint1.y;
-					double heep2x = hullEdgeEndPoint2.x;
-					double heep2y = hullEdgeEndPoint2.y;
-					segLeftPoint.setLocation(heep1x, heep1y);
-					segRightPoint.setLocation(heep2x, heep2y);
-					Point3d heepl = HilbertGeometry.toHomogeneous(segLeftPoint);
-					Point3d heepr = HilbertGeometry.toHomogeneous(segRightPoint);
-					Point3d hullEdgeLine = heepl.crossProduct(heepr);
-
-					Point3d spokeHullEdgeIntersection3d = hullEdgeLine.crossProduct(siteHullVertexLine);
-					Point2D.Double spokeHullEdgeIntersection2d = HilbertGeometry
-							.toCartesian(spokeHullEdgeIntersection3d);
-
-					if (isOnConvexBoundary(spokeHullEdgeIntersection2d)) {
-						PVector v1 = new PVector();
-						PVector v2 = new PVector();
-						v1.set((float) sitePoint1, (float) sitePoint2);
-						v2.set((float) spokeHullEdgeIntersection2d.x, (float) spokeHullEdgeIntersection2d.y);
-						Segment spokeHullEdgeSegment = new Segment(v1, v2);
-					}
-					// segLeftPoint.setLocation(s2l.x, s2l.y);
-				}
+		// compute spoke equations
+		Point3d[] spokes = new Point3d[sitePoints.length * hullVertex.length];
+		for(int siteCount = 0; siteCount < sitePoints.length; siteCount++) {
+			Point2D.Double site = sitePoints[siteCount];
+			Point3d sproj = HilbertGeometry.toHomogeneous(site);
+			for(int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
+				Point2D.Double vertex = hullVertex[vertexCount];
+				Point3d vproj = HilbertGeometry.toHomogeneous(vertex);
+				spokes[siteCount * numHullVertex + vertexCount] = sproj.crossProduct(vproj);
 			}
 		}
-		int numSiteEdgeSegments = siteHullEdgeSpoke.size();
-
-		return spokeHullIntersects;
+		
+		// for each edge, compute the intersection points of all the spoikes
+		ArrayList<Point2D.Double> intersectionPoints = new ArrayList<Point2D.Double>();
+		List<Point2D.Double> vertices = Arrays.asList(hullVertex);
+		for(int edgeCount = 0; edgeCount < edge_lines.length; edgeCount++) {
+			Point3d edge = edge_lines[edgeCount];
+			intersectionPoints.clear();
+			for(Point3d s : spokes) {
+				// compute intersection point between spoke and edge
+				Point2D.Double intersect = HilbertGeometry.toCartesian(edge.crossProduct(s));
+				
+				// check if that intersection point is a convex hull point
+				if(this.isOnConvexBoundary(intersect) && !Convex.almostContainsElement(vertices, intersect))
+					intersectionPoints.add(intersect);
+			}
+			
+			// add edge vertex points
+			intersectionPoints.add(hullVertex[edgeCount]);
+			intersectionPoints.add(hullVertex[(edgeCount+1) % numHullVertex]);
+			
+			// sort points
+			if(Math.abs(edge.y) > 1e-8)
+				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size()-1, true);
+			else 
+				Convex.quickSort(intersectionPoints, 0, intersectionPoints.size()-1, false);
+			
+			// add segments
+			for(int index = 0; index < intersectionPoints.size()-1; index++)
+				segs.add(this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index+1)));
+		}
+		
+		return segs;
 	}
 
 	/*

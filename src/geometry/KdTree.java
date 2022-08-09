@@ -723,6 +723,10 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
         public boolean containsNeighbor(Point2D.Double p) {
         	return this.neighbors.contains(p);
         }
+        
+        public ArrayList<Point2D.Double> getNeighbors() {
+        	return this.neighbors;
+        }
 
         /**
          * Computes the Euclidean distance from this point to the other.
