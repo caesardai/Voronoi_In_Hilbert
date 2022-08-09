@@ -5,6 +5,8 @@ package geometry;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 
+import trapmap.Segment;
+
 import java.awt.geom.Point2D;
 
 import java.util.ArrayDeque;
@@ -647,6 +649,8 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
         
         // for Voronoi diagram
         protected ArrayList<Point2D.Double> neighbors;
+        protected ArrayList<Point2D.Double> sites;
+        protected ArrayList<Segment> edges;
 
         /**
          * z is defaulted to zero.
@@ -659,6 +663,8 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
             this.y = y;
             this.z = 0;
             this.neighbors = new ArrayList<Point2D.Double>();
+            this.sites = new ArrayList<Point2D.Double>();
+            this.edges = new ArrayList<Segment>();
         }
 
         /**
@@ -673,6 +679,8 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
             this.y = y;
             this.z = z;
             this.neighbors = new ArrayList<Point2D.Double>();
+            this.sites = new ArrayList<Point2D.Double>();
+            this.edges = new ArrayList<Segment>();
         }
 
         /**
@@ -685,6 +693,8 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
             y = cos(Math.toRadians(latitude)) * sin(Math.toRadians(longitude));
             z = sin(Math.toRadians(latitude));
             this.neighbors = new ArrayList<Point2D.Double>();
+            this.sites =  new ArrayList<Point2D.Double>();
+            this.edges =  new ArrayList<Segment>();
         }
 
         public double getX() {
@@ -703,8 +713,10 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
          * 
          * @param p point to add a directed edge from this object to p
          */
-        public void addNeighbor(Point2D.Double p) {
+        public void addNeighbor(Point2D.Double p, Point2D.Double site, Segment s) {
         	this.neighbors.add(p);
+        	this.sites.add(site);
+        	this.edges.add(s);
         }
         
         /**
@@ -726,6 +738,27 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
         
         public ArrayList<Point2D.Double> getNeighbors() {
         	return this.neighbors;
+        }
+        
+        public Point2D.Double getNeighbor(int index) {
+        	if(index < 0 || index >= this.neighbors.size())
+        		return null;
+        	else
+        		return this.neighbors.get(index);
+        }
+        
+        public Point2D.Double getSite(int index) {
+        	if(index < 0 || index >= this.neighbors.size())
+        		return null;
+        	else
+        		return this.sites.get(index);
+        }
+        
+        public Segment getEdge(int index) {
+        	if(index < 0 || index >= this.neighbors.size())
+        		return null;
+        	else
+        		return this.edges.get(index);
         }
 
         /**

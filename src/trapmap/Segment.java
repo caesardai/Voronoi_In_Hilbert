@@ -22,6 +22,9 @@ public class Segment {
 	// for TrapMap
 	private Point2D.Double site1;
 	private Point2D.Double site2;
+	
+	// for sector graph
+	private Segment edge;
 
 	public Segment(PVector one, PVector two) {
 		// we store the left, lower point as lpoint
@@ -67,6 +70,7 @@ public class Segment {
 		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
 		this.site1 = s1;
 		this.site2 = null;
+		this.edge = null;
 	}
 
 	/**
@@ -76,6 +80,7 @@ public class Segment {
 		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
 		this.site1 = s1;
 		this.site2 = s2;
+		this.edge = null;
 	}
 
 	/**
@@ -140,7 +145,7 @@ public class Segment {
 	 * 
 	 * @return site1 label
 	 */
-	Point2D.Double getSite1() {
+	public Point2D.Double getSite1() {
 		return this.site1;
 	}
 
@@ -149,7 +154,7 @@ public class Segment {
 	 * 
 	 * @return site2 label
 	 */
-	Point2D.Double getSite2() {
+	public Point2D.Double getSite2() {
 		return this.site2;
 	}
 
@@ -158,7 +163,7 @@ public class Segment {
 	 * 
 	 * @param p1, the new site to update site1
 	 */
-	void setSites(Point2D.Double p1) {
+	public void setSites(Point2D.Double p1) {
 		this.site1 = p1;
 	}
 
@@ -168,9 +173,17 @@ public class Segment {
 	 * @param p1, the new site to update site1
 	 * @param p2, the new site to update site2
 	 */
-	void setSites(Point2D.Double p1, Point2D.Double p2) {
+	public void setSites(Point2D.Double p1, Point2D.Double p2) {
 		this.site1 = p1;
 		this.site2 = p2;
+	}
+	
+	public Segment getEdge() {
+		return this.edge;
+	}
+	
+	public void setEdge(Segment s) {
+		this.edge = s;
 	}
 
 
