@@ -1,6 +1,7 @@
 package geometry;
 
 import java.awt.geom.Point2D;
+// import java.awt.geom.Point2D.Double;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.LinkedList;
@@ -191,35 +192,97 @@ public class Convex {
 	 * Construct sectors with given sites and segments
 	 * Each sector is associated with an edge and site
 	 */
-	public void constructSector(Point2D.Double site, KdTree<KdTree.XYZPoint> graph) {
+	public List<Sector> constructSector(Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
+		// returning list of sectors
+		List<Sector> sectors = new ArrayList<Sector>();
+		
 		// get all site's neighboring segment
+		KdTree.KdNode node = KdTree.getNode(graph, Util.toXYZPoint(site1));
+		KdTree.XYZPoint site1XYZ = node.getID();
+		ArrayList<Point2D.Double> endPoints1 = site1XYZ.getNeighbors();
+
+		node = KdTree.getNode(graph, Util.toXYZPoint(site2));
+		KdTree.XYZPoint site2XYZ = node.getID();
+		ArrayList<Point2D.Double> endPoints2 = site1XYZ.getNeighbors();
 		
-		KdTree.KdNode node = KdTree.getNode(graph, Util.toXYZPoint(site));
-		KdTree.XYZPoint siteXYZ = node.getID();
-		ArrayList<Point2D.Double> endPoints = siteXYZ.getNeighbors();
-		
-		ArrayList<Double> angles = new ArrayList<>();
-		for (int i = 0; i < endPoints.size(); i++) {
-			angles.add(Voronoi.spokeAngle(site, endPoints.get(i)));
+		ArrayList<Double> angles1 = new ArrayList<Double>();
+		for (int i = 0; i < endPoints1.size(); i++) {
+			angles1.add(Voronoi.spokeAngle(site1, endPoints1.get(i)));
 		}
-		// Assume quicksort works
+
+		ArrayList<Double> angles2 = new ArrayList<Double>();
+		for (int i = 0; i < endPoints2.size(); i++) {
+			angles2.add(Voronoi.spokeAngle(site2, endPoints2.get(i)));
+		}
+		
+		// quickSorting angles and spoke
+		ArrayList<Double> compare1 = new ArrayList<Double>();
+		for(Double theta : angles1)
+			compare1.add(theta);
+		Convex.quickSort(endPoints1, angles1, 0, angles1.size() - 1);
+
+		ArrayList<Double> compare2 = new ArrayList<Double>();
+		for(Double theta : angles2)
+			compare2.add(theta);
+		Convex.quickSort(endPoints2, angles2, 0, angles2.size() - 1);
 		
 		// Loop through all the neighbors and construct nearby sectors
-		int neighborSize = endPoints.size();
+		int neighborSize = endPoints1.size();
 		for (int i = 0; i < neighborSize; i++) {
-			Point2D.Double p1 = endPoints.get(i);
+			Point2D.Double p1 = endPoints1.get(i);
 			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
 			KdTree.XYZPoint p1XYZ = nodeP1.getID();
-			Point2D.Double p2 = endPoints.get((i+1) % neighborSize);
+			Point2D.Double p2 = endPoints1.get((i+1) % neighborSize);
 			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
 			KdTree.XYZPoint p2XYZ = nodeP2.getID();
 			
 			// 3 edge case
 			if (p1XYZ.containsNeighbor(p2)) {
+				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
+				vertices.add(site1);
+				vertices.add(p1);
+				vertices.add(p2);
+				int indexEdge1 = Convex.maxUpperBound(angles2, Voronoi.spokeAngle(site1, p1));
+				int indexEdge2 = Convex.minLowerBound(angles2, Voronoi.spokeAngle(site1, p2));
+				
+				Segment edge1 = site1XYZ.getEdge(i);
+				Segment edge2 = site1XYZ.getEdge((i+1) % neighborSize);
+				Segment edge3 = site2XYZ.getEdge(indexEdge1);
+				Segment edge4 = site2XYZ.getEdge(indexEdge2);
+				
+				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
+				sectors.add(sector);
+			} 
+			// 4 edge case
+			else {
+				// we need to determine the four point of the sector
+				Point2D.Double p3 = null;
+				ArrayList<Point2D.Double> p1Points = p1XYZ.getNeighbors();
+				ArrayList<Point2D.Double> p2Points = p2XYZ.getNeighbors();
+				
+				for(Point2D.Double p : p1Points) {
+					if(!p.equals(site1) && p2Points.contains(p)) {
+						p3 = p;
+						break;
+					}
+				}
+				
+				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
+				vertices.add(site1);
+				vertices.add(p1);
+				vertices.add(p2);
+				vertices.add(p3);
+				
+				Segment edge1 = site1XYZ.getEdge(i);
+				Segment edge2 = site1XYZ.getEdge((i+1) % neighborSize);
+				Segment edge3 = p1XYZ.getEdge(p1Points.indexOf(p3));
+				Segment edge4 = p2XYZ.getEdge(p2Points.indexOf(p3));
+				
+				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
+				sectors.add(sector);
 				
 			}
 			
-			// 4 edge case
 			
 			
 		}
@@ -231,9 +294,8 @@ public class Convex {
 		
 		
 		
-		Point2D.Double currNeighbor = null;
-		Point2D.Double nextNeighbor = null;
 		// loop through the segment endpoints i, i+1 and check whether there is an existing line segment
+		return sectors;
 	}
 
 	/*
@@ -379,8 +441,9 @@ public class Convex {
 			// sort points
 			if(Math.abs(edge.y) > 1e-8) {
 				ArrayList<Double> compare = new ArrayList<Double>();
-				for(Point2D.Double p : intersectionPoints)
+				for(Point2D.Double p : intersectionPoints) {
 					compare.add(p.x);
+				}
 				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size()-1);
 			}
 			else  {
@@ -695,6 +758,30 @@ public class Convex {
 		int pivot = partition(array, compare, begin, end);
 		quickSort(array, compare, begin, pivot - 1);
 		quickSort(array, compare,  pivot + 1, end);
+	}
+	
+	private static int maxUpperBound(ArrayList<Double> angles, double maxAngle) {
+		int index = 0;
+		Double currLargestAngle = angles.get(index);
+		for (int i = 1; i < angles.size(); i++) {
+			if (angles.get(i) < maxAngle && angles.get(i) > currLargestAngle) { 
+				index = i;
+				currLargestAngle = angles.get(i);
+			}
+		}
+		return index;
+	}
+	
+	private static int minLowerBound(ArrayList<Double> angles, double minAngle) {
+		int index = 0;
+		Double currSmallestAngle = angles.get(index);
+		for (int i = 1; i < angles.size(); i++) {
+			if (angles.get(i) > minAngle && angles.get(i) < currSmallestAngle) { 
+				index = i;
+				currSmallestAngle = angles.get(i);
+			}
+		}
+		return index;
 	}
 
 	/* Loads control points from input file */
