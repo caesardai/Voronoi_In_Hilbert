@@ -38,7 +38,7 @@ public class Convex {
 	}
 
 	/**
-	 * Inserting a site site and find the segments around it
+	 * Inserting a site and find the segments around it
 	 * 
 	 * @param hullVertex get information
 	 * @param site
@@ -157,7 +157,8 @@ public class Convex {
 
 				if (this.isOnConvexBoundary(p) && !Convex.almostContainsElement(vertices, p)) {
 					intersectionPoints.add(p);
-					edgeIntersect = this.constructSegment(hullVertex[vertexCount], hullVertex[(vertexCount + 1) % hullVertex.length]);
+					edgeIntersect = this.constructSegment(hullVertex[vertexCount],
+							hullVertex[(vertexCount + 1) % hullVertex.length]);
 					break;
 				}
 			}
@@ -165,136 +166,161 @@ public class Convex {
 			// sort intersection points
 			if (Math.abs(spoke.y) > 1e-8) {
 				ArrayList<Double> compare = new ArrayList<Double>();
-				for(Point2D.Double p : intersectionPoints)
+				for (Point2D.Double p : intersectionPoints)
 					compare.add(p.x);
 				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size() - 1);
-			}
-			else {
+			} else {
 				ArrayList<Double> compare = new ArrayList<Double>();
-				for(Point2D.Double p : intersectionPoints)
+				for (Point2D.Double p : intersectionPoints)
 					compare.add(p.y);
 				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size() - 1);
 			}
 
 			// construct segments to return
 			for (int index = 0; index < intersectionPoints.size() - 1; index++) {
-				Segment newSeg = this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index + 1));
+				Segment newSeg = this.constructSegment(intersectionPoints.get(index),
+						intersectionPoints.get(index + 1));
 				newSeg.setEdge(edgeIntersect);
 				newSeg.setSites(newSite);
 				segs.add(newSeg);
 			}
 		}
-
 		return segs;
 	}
-	
+
 	/*
-	 * Construct sectors with given sites and segments
-	 * Each sector is associated with an edge and site
+	 * Construct sectors with given sites and segments Each sector is associated
+	 * with an edge and site
 	 */
 	public List<Sector> constructSector(Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
 		// returning list of sectors
 		List<Sector> sectors = new ArrayList<Sector>();
-		
+
+		/*
+		 * SITE 1
+		 */
 		// get all site's neighboring segment
-		KdTree.KdNode node = KdTree.getNode(graph, Util.toXYZPoint(site1));
-		KdTree.XYZPoint site1XYZ = node.getID();
-		ArrayList<Point2D.Double> endPoints1 = site1XYZ.getNeighbors();
+		KdTree.XYZPoint s1XYZPoint = Util.toXYZPoint(site1);
+		// get site1 node
+		KdTree.KdNode s1Node = KdTree.getNode(graph, s1XYZPoint);
+		// get site1 ID
+		KdTree.XYZPoint s1Id = s1Node.getID();
+		// get all neighbor points for site 1
+		ArrayList<Point2D.Double> s1Endpoints = s1Id.getNeighbors();
 
-		node = KdTree.getNode(graph, Util.toXYZPoint(site2));
-		KdTree.XYZPoint site2XYZ = node.getID();
-		ArrayList<Point2D.Double> endPoints2 = site1XYZ.getNeighbors();
+		/*
+		 * SITE 2
+		 */
+		// get all site's neighboring segment
+		KdTree.XYZPoint s2XYZPoint = Util.toXYZPoint(site1);
+		// get site1 node
+		KdTree.KdNode s2Node = KdTree.getNode(graph, s2XYZPoint);
+		// get site1 ID
+		KdTree.XYZPoint s2Id = s2Node.getID();
+		// get all neighbor points for site 1
+		ArrayList<Point2D.Double> s2Endpoints = s2Id.getNeighbors();
 		
-		ArrayList<Double> angles1 = new ArrayList<Double>();
-		for (int i = 0; i < endPoints1.size(); i++) {
-			angles1.add(Voronoi.spokeAngle(site1, endPoints1.get(i)));
-		}
-
-		ArrayList<Double> angles2 = new ArrayList<Double>();
-		for (int i = 0; i < endPoints2.size(); i++) {
-			angles2.add(Voronoi.spokeAngle(site2, endPoints2.get(i)));
-		}
-		
-		// quickSorting angles and spoke
+		/*
+		 * For convenient to traverse through the segments 
+		 * sort the end points base on angles regarding to the site(origin)
+		 */
+		ArrayList<Double> s1Angles = new ArrayList<Double>();
 		ArrayList<Double> compare1 = new ArrayList<Double>();
-		for(Double theta : angles1)
+		// Calculate site 1 angles
+		for (int i = 0; i < s1Angles.size(); i++) {
+			s1Angles.add(Voronoi.spokeAngle(site1, s1Endpoints.get(i)));
+		}
+		// Sort through site 1 angles
+		for (Double theta : s1Angles)
 			compare1.add(theta);
-		Convex.quickSort(endPoints1, angles1, 0, angles1.size() - 1);
-
-		ArrayList<Double> compare2 = new ArrayList<Double>();
-		for(Double theta : angles2)
-			compare2.add(theta);
-		Convex.quickSort(endPoints2, angles2, 0, angles2.size() - 1);
+		Convex.quickSort(s1Endpoints, s1Angles, 0, s1Angles.size() - 1);
 		
-		// Loop through all the neighbors and construct nearby sectors
-		int neighborSize = endPoints1.size();
-		for (int i = 0; i < neighborSize; i++) {
-			Point2D.Double p1 = endPoints1.get(i);
+		ArrayList<Double> s2Angles = new ArrayList<Double>();
+		ArrayList<Double> compare2 = new ArrayList<Double>();
+		// Calculate site 2 angles
+		for (int i = 0; i < s2Angles.size(); i++) {
+			s2Angles.add(Voronoi.spokeAngle(site2, s2Endpoints.get(i)));
+		}
+		// Sort through site 2 angles
+		for (Double theta : s2Angles)
+			compare2.add(theta);
+		Convex.quickSort(s2Endpoints, s2Angles, 0, s2Angles.size() - 1);
+
+		/*
+		 * Loop through all site 1 end point to constrcut scetors
+		 */
+		int s1NumNeighbor = s1Endpoints.size();
+		for (int i = 0; i < s1NumNeighbor; i++) {
+			Point2D.Double p1 = s1Endpoints.get(i);
 			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
 			KdTree.XYZPoint p1XYZ = nodeP1.getID();
-			Point2D.Double p2 = endPoints1.get((i+1) % neighborSize);
+			Point2D.Double p2 = s2Endpoints.get((i + 1) % s1NumNeighbor);
 			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
 			KdTree.XYZPoint p2XYZ = nodeP2.getID();
-			
+		}
+		
+		// Loop through all the neighbors and construct nearby sectors
+		int neighborSize = s1Endpoints.size();
+		for (int i = 0; i < neighborSize; i++) {
+			Point2D.Double p1 = s1Endpoints.get(i);
+			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
+			KdTree.XYZPoint p1XYZ = nodeP1.getID();
+			Point2D.Double p2 = s1Endpoints.get((i + 1) % neighborSize);
+			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
+			KdTree.XYZPoint p2XYZ = nodeP2.getID();
+
 			// 3 edge case
 			if (p1XYZ.containsNeighbor(p2)) {
 				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
 				vertices.add(site1);
 				vertices.add(p1);
 				vertices.add(p2);
-				int indexEdge1 = Convex.maxUpperBound(angles2, Voronoi.spokeAngle(site1, p1));
-				int indexEdge2 = Convex.minLowerBound(angles2, Voronoi.spokeAngle(site1, p2));
-				
-				Segment edge1 = site1XYZ.getEdge(i);
-				Segment edge2 = site1XYZ.getEdge((i+1) % neighborSize);
-				Segment edge3 = site2XYZ.getEdge(indexEdge1);
-				Segment edge4 = site2XYZ.getEdge(indexEdge2);
-				
+				int indexEdge1 = Convex.maxUpperBound(s2Angles, Voronoi.spokeAngle(site1, p1));
+				int indexEdge2 = Convex.minLowerBound(s2Angles, Voronoi.spokeAngle(site1, p2));
+
+				Segment edge1 = p1XYZ.getEdge(i);
+				Segment edge2 = p1XYZ.getEdge((i + 1) % neighborSize);
+				Segment edge3 = p2XYZ.getEdge(indexEdge1);
+				Segment edge4 = p2XYZ.getEdge(indexEdge2);
+
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
-			} 
+			}
 			// 4 edge case
 			else {
 				// we need to determine the four point of the sector
 				Point2D.Double p3 = null;
 				ArrayList<Point2D.Double> p1Points = p1XYZ.getNeighbors();
 				ArrayList<Point2D.Double> p2Points = p2XYZ.getNeighbors();
-				
-				for(Point2D.Double p : p1Points) {
-					if(!p.equals(site1) && p2Points.contains(p)) {
+
+				for (Point2D.Double p : p1Points) {
+					if (!p.equals(site1) && p2Points.contains(p)) {
 						p3 = p;
 						break;
 					}
 				}
-				
+
 				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
 				vertices.add(site1);
 				vertices.add(p1);
 				vertices.add(p2);
 				vertices.add(p3);
-				
-				Segment edge1 = site1XYZ.getEdge(i);
-				Segment edge2 = site1XYZ.getEdge((i+1) % neighborSize);
-				Segment edge3 = p1XYZ.getEdge(p1Points.indexOf(p3));
+
+				Segment edge1 = p1XYZ.getEdge(i);
+				Segment edge2 = p1XYZ.getEdge((i + 1) % neighborSize);
+				Segment edge3 = p2XYZ.getEdge(p1Points.indexOf(p3));
 				Segment edge4 = p2XYZ.getEdge(p2Points.indexOf(p3));
-				
+
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
-				
+
 			}
-			
-			
-			
 		}
-		
-		
+
 		// if endPointt[i] has another endPoint where it is not the site
-		
-		
-		
-		
-		
-		// loop through the segment endpoints i, i+1 and check whether there is an existing line segment
+
+		// loop through the segment endpoints i, i+1 and check whether there is an
+		// existing line segment
 		return sectors;
 	}
 
@@ -315,12 +341,12 @@ public class Convex {
 		double spoke1y = spoke1.y;
 		double spoke2x = spoke1.x;
 		double spoke2y = spoke2.y;
-	
-		// Line equation formula: 
-		// a = y1 - y2 
-		// b = x2 - x1 
+
+		// Line equation formula:
+		// a = y1 - y2
+		// b = x2 - x1
 		// c = (x1 - x2) * y1 + (y2 - y1) * x1
-		 
+
 		// double seg_a = seg1y - seg2y;
 		double spoke_a = spoke1y - spoke2y;
 		// double seg_b = seg2x - seg1x;
@@ -395,7 +421,7 @@ public class Convex {
 	public List<Segment> spokeHullIntersection(Point2D.Double[] hullVertex, Point2D.Double[] sitePoints) {
 		// list of hold all intersection points
 		List<Segment> segs = new ArrayList<Segment>();
-		
+
 		// constants
 		int numHullVertex = hullVertex.length;
 
@@ -409,55 +435,54 @@ public class Convex {
 
 		// compute spoke equations
 		Point3d[] spokes = new Point3d[sitePoints.length * hullVertex.length];
-		for(int siteCount = 0; siteCount < sitePoints.length; siteCount++) {
+		for (int siteCount = 0; siteCount < sitePoints.length; siteCount++) {
 			Point2D.Double site = sitePoints[siteCount];
 			Point3d sproj = HilbertGeometry.toHomogeneous(site);
-			for(int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
+			for (int vertexCount = 0; vertexCount < hullVertex.length; vertexCount++) {
 				Point2D.Double vertex = hullVertex[vertexCount];
 				Point3d vproj = HilbertGeometry.toHomogeneous(vertex);
 				spokes[siteCount * numHullVertex + vertexCount] = sproj.crossProduct(vproj);
 			}
 		}
-		
+
 		// for each edge, compute the intersection points of all the spoikes
 		ArrayList<Point2D.Double> intersectionPoints = new ArrayList<Point2D.Double>();
 		List<Point2D.Double> vertices = Arrays.asList(hullVertex);
-		for(int edgeCount = 0; edgeCount < edge_lines.length; edgeCount++) {
+		for (int edgeCount = 0; edgeCount < edge_lines.length; edgeCount++) {
 			Point3d edge = edge_lines[edgeCount];
 			intersectionPoints.clear();
-			for(Point3d s : spokes) {
+			for (Point3d s : spokes) {
 				// compute intersection point between spoke and edge
 				Point2D.Double intersect = HilbertGeometry.toCartesian(edge.crossProduct(s));
-				
+
 				// check if that intersection point is a convex hull point
-				if(this.isOnConvexBoundary(intersect) && !Convex.almostContainsElement(vertices, intersect))
+				if (this.isOnConvexBoundary(intersect) && !Convex.almostContainsElement(vertices, intersect))
 					intersectionPoints.add(intersect);
 			}
-			
+
 			// add edge vertex points
 			intersectionPoints.add(hullVertex[edgeCount]);
-			intersectionPoints.add(hullVertex[(edgeCount+1) % numHullVertex]);
-			
+			intersectionPoints.add(hullVertex[(edgeCount + 1) % numHullVertex]);
+
 			// sort points
-			if(Math.abs(edge.y) > 1e-8) {
+			if (Math.abs(edge.y) > 1e-8) {
 				ArrayList<Double> compare = new ArrayList<Double>();
-				for(Point2D.Double p : intersectionPoints) {
+				for (Point2D.Double p : intersectionPoints) {
 					compare.add(p.x);
 				}
-				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size()-1);
-			}
-			else  {
+				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size() - 1);
+			} else {
 				ArrayList<Double> compare = new ArrayList<Double>();
-				for(Point2D.Double p : intersectionPoints)
+				for (Point2D.Double p : intersectionPoints)
 					compare.add(p.x);
-				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size()-1);
+				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size() - 1);
 			}
-			
+
 			// add segments
-			for(int index = 0; index < intersectionPoints.size()-1; index++)
-				segs.add(this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index+1)));
+			for (int index = 0; index < intersectionPoints.size() - 1; index++)
+				segs.add(this.constructSegment(intersectionPoints.get(index), intersectionPoints.get(index + 1)));
 		}
-		
+
 		return segs;
 	}
 
@@ -696,13 +721,13 @@ public class Convex {
 		// determine if the set of points are colinear with a vertical line
 		ArrayList<Double> compare = new ArrayList<Double>();
 		if (Math.abs(points.get(0).y - points.get(1).y) <= 1e-8) {
-			for(Point2D.Double p : points)
+			for (Point2D.Double p : points)
 				compare.add(p.y);
-		} 
+		}
 		// otherwise, sort points by the x-coordinate
 		// we are ignoring any float-point errors that may occur here
 		else {
-			for(Point2D.Double p : points)
+			for (Point2D.Double p : points)
 				compare.add(p.x);
 		}
 		Convex.quickSort(points, compare, 0, points.size() - 1);
@@ -721,11 +746,11 @@ public class Convex {
 				// temp for both arrays
 				Point2D.Double temp = array.get(counter);
 				Double temp1 = compare.get(counter);
-				
+
 				// swap in array
 				array.set(counter, array.get(i));
 				array.set(i, temp);
-				
+
 				// swap in compare
 				compare.set(counter, compare.get(i));
 				compare.set(i, temp1);
@@ -740,7 +765,7 @@ public class Convex {
 		// swap in array
 		array.set(pivot, array.get(counter));
 		array.set(counter, temp);
-		
+
 		// swap in compare
 		compare.set(pivot, compare.get(counter));
 		compare.set(counter, temp1);
@@ -750,33 +775,33 @@ public class Convex {
 
 	private static void quickSort(ArrayList<Point2D.Double> array, ArrayList<Double> compare, int begin, int end) {
 		// ensure that the two arrays are of the same length
-		if(array.size() != compare.size())
+		if (array.size() != compare.size())
 			return;
-		
+
 		if (end <= begin)
 			return;
 		int pivot = partition(array, compare, begin, end);
 		quickSort(array, compare, begin, pivot - 1);
-		quickSort(array, compare,  pivot + 1, end);
+		quickSort(array, compare, pivot + 1, end);
 	}
-	
+
 	private static int maxUpperBound(ArrayList<Double> angles, double maxAngle) {
 		int index = 0;
 		Double currLargestAngle = angles.get(index);
 		for (int i = 1; i < angles.size(); i++) {
-			if (angles.get(i) < maxAngle && angles.get(i) > currLargestAngle) { 
+			if (angles.get(i) < maxAngle && angles.get(i) > currLargestAngle) {
 				index = i;
 				currLargestAngle = angles.get(i);
 			}
 		}
 		return index;
 	}
-	
+
 	private static int minLowerBound(ArrayList<Double> angles, double minAngle) {
 		int index = 0;
 		Double currSmallestAngle = angles.get(index);
 		for (int i = 1; i < angles.size(); i++) {
-			if (angles.get(i) > minAngle && angles.get(i) < currSmallestAngle) { 
+			if (angles.get(i) > minAngle && angles.get(i) < currSmallestAngle) {
 				index = i;
 				currSmallestAngle = angles.get(i);
 			}
