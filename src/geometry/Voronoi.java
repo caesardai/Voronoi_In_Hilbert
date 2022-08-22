@@ -1,7 +1,9 @@
 package geometry;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +18,7 @@ import trapmap.Segment;
 
 public class Voronoi {
 	/* HG where we compute voronoi diagram */
-	private HilbertGeometry geometry;
+	protected HilbertGeometry geometry;
 	/* List of center points for the Voronoi diagram */
 	public LinkedList<Point2D.Double> centerPoints = new LinkedList<Point2D.Double>();
 	/*
@@ -410,11 +412,111 @@ public class Voronoi {
 		LinkedList<Point2D.Double> intersectionPoints = new LinkedList<Point2D.Double>();
 		
 		// for each line in the list, compute the intersection points
-		for(Double[] l : lines) {
-			intersectionPoints.addAll(b.intersectionPointsWithLine(c, l));
-		}
+//		for(Double[] l : lines) {
+//			intersectionPoints.addAll(b.intersectionPointsWithLine(c, l));
+//		}
 		
 		return intersectionPoints;
+	}
+	
+	/**
+	 * Determines the equidistance point between site1 and site2 with respect to the Hilbert Metric
+	 * 
+	 * @param site1 the first site
+	 * @param site2 the second site
+	 * @param spoke the spoke to trace and find the equidistant point. assume that this spoke is constructed from site1 and convex hull vertex
+	 * @return if an equidistant point is found, this returns the equidistant point. otherwise, this returns null
+	 */
+	public Point2D.Double findEquiDistancePoint(Point2D.Double site1, Point2D.Double site2, Point3d spoke) {
+		Convex c = this.geometry.convex;
+		
+		// determine which edge the spoke intersects with
+		Point2D.Double intersectionPoint = null;
+		Point2D.Double[] hullVertices = c.convexHull;
+		List<Point2D.Double> hvList = Arrays.asList(hullVertices);
+		for(int index = 0; index < hullVertices.length; index++) {
+			// compute line
+			Point3d e1 = HilbertGeometry.toHomogeneous(hullVertices[index]);
+			Point3d e2 = HilbertGeometry.toHomogeneous(hullVertices[(index+1) % hullVertices.length]);
+			Point3d edge = e1.crossProduct(e2);
+			Point2D.Double intersection = HilbertGeometry.toCartesian(spoke.crossProduct(edge));
+			if(c.isOnConvexBoundary(intersection)) {
+				// if spoke is not vertical
+				if(Math.abs(spoke.y) > 1e-8) {
+					if(site1.x < site2.x && intersection.x > site1.x) {
+						intersectionPoint = intersection;
+						break;
+					}
+					else if(site1.x > site2.x && intersection.x < site1.x) {
+						intersectionPoint = intersection;
+						break;
+					}
+				} else {
+					if(site1.y < site2.y && intersection.y > site1.y) {
+						intersectionPoint = intersection;
+						break;
+					}
+					else if(site1.y > site2.y && intersection.y > site1.y) {
+						intersectionPoint = intersection;
+						break;
+					}
+				}
+			}
+		}
+		
+		// break up the spoke into very small intervals by looking at the segment
+		// determine if the spoke is vertical or not
+		Double jump = 0d;
+		int divisions = 1000;
+		Point2D.Double first = site1;
+		Point2D.Double second = intersectionPoint;
+		boolean useX = true;
+		if( Math.abs(spoke.y) > 1e-8 ) { // horizontal
+			if(first.x > second.x) {
+				first = intersectionPoint;
+				second = site1;
+			}
+			jump = (second.x - first.x) / divisions;
+		} else { // vertical
+			if(first.y > second.y) {
+				first = intersectionPoint;
+				second = site1;
+			}
+			jump = (second.y - first.y) / divisions;
+			useX = false;
+		}
+		
+		// begin looking for an equidistant point
+		ArrayList<Point2D.Double> allPoints = new ArrayList<Point2D.Double>();
+		ArrayList<Double> differences = new ArrayList<Double>();
+		for(int intervalCount = 0; intervalCount < divisions; intervalCount++) {
+			double x = 0d;
+			double y = 0d;
+			if(useX) {
+				x = first.x + jump * intervalCount;
+				y = (-spoke.x / spoke.y) * x - spoke.z / spoke.y;
+			} else {
+				y = first.y + jump * intervalCount;
+				x = (-spoke.y / spoke.x) * y - spoke.z / spoke.x;
+			}
+				
+			Point2D.Double curr = new Point2D.Double(x, y);
+			allPoints.add(curr);
+			
+			// look at the distance between site1 and site2 with curr
+			// if their distance is within epsilon, then the point is equidistant to the two sites. return that point
+			double epsilon = 1e-3;
+			double diff = Math.abs(this.geometry.distance(site1, curr) - this.geometry.distance(site2, curr));
+			differences.add(diff);
+			if(diff <= epsilon)
+				return curr;
+		}
+		
+		// if no point was found, then return null
+		Double smallest = Collections.min(differences);
+		Point2D.Double point = null;
+		int count = differences.indexOf(smallest);
+		return null;
 	}
 
 	/*
@@ -443,12 +545,12 @@ public class Voronoi {
 			return;
 		
 		// if there is one Voronoi cells, make a trapmap using only the sides of the convex body
-		else if(this.centerPoints.size() == 1) {
-			LinkedList<Segment> edges = new LinkedList();
-			for(Segment s : this.geometry.convex.lineSegments)
-				edges.add(s);
-			this.voronoiCells = new TrapMap(edges);
-		}
+//		else if(this.centerPoints.size() == 1) {
+//			LinkedList<Segment> edges = new LinkedList();
+//			for(Segment s : this.geometry.convex.lineSegments)
+//				edges.add(s);
+//			this.voronoiCells = new TrapMap(edges);
+//		}
 		
 		// for cases where there are more than one site
 		else {

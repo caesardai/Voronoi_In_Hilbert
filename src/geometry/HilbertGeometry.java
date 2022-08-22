@@ -168,6 +168,11 @@ public class HilbertGeometry {
     double denom = line.scalarProduct(vectorPQ);
     if (denom == 0) return new Point3d();
     double t = - line.scalarProduct(q) / denom;
+    
+    // handle floating point error
+    if( t < 0 && t > -1e-15 )
+    	t = 0d;
+    
     if (t >= 0 && t <= 1) {
       double[] scalarCoeff = {t, 1-t};
       Point3d[] pointCoeff = {p, q};
@@ -261,11 +266,11 @@ public class HilbertGeometry {
     return result;
   }
   
-  protected static Point3d toHomogeneous(Point2D.Double p) {
+  public static Point3d toHomogeneous(Point2D.Double p) {
     return new Point3d(p.x, p.y, 1);
   }
   
-  protected static Point2D.Double toCartesian(Point3d p) {
+  public static Point2D.Double toCartesian(Point3d p) {
     if (p.z == 0) return null;
     return new Point2D.Double(p.x / p.z, p.y / p.z);
   }
