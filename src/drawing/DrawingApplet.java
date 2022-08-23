@@ -5,21 +5,19 @@ import javax.swing.*;
 import geometry.Convex;
 import geometry.KdTree;
 import geometry.Util;
+import geometry.Sector;
 
 import java.awt.*;
 import java.awt.event.*;
 
 import processing.core.PApplet;
 import processing.event.Event;
+import processing.core.PVector;
 
 import trapmap.Segment;
 import trapmap.Trapezoid;
 import trapmap.TrapMap;
 
-import java.awt.Button;
-import java.awt.Checkbox;
-import java.awt.CheckboxGroup;
-import java.awt.Panel;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
@@ -67,9 +65,10 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	private Checkbox drawConvex;
 	private Checkbox drawSpokes;
 	private Checkbox drawVoronoi;
-	
-	// DEBUGGING 
+
+	// DEBUGGING
 	KdTree<KdTree.XYZPoint> tree;
+	List<Sector> secs;
 
 	public static void main(String[] args) {
 		if (args != null) {
@@ -87,61 +86,73 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	public void setup() {
 		size(1060, 600);
 		initButton();
-		
-//		/* TEST SECTOR GRAPH */
-//		Convex c = new Convex();
-//		c.addPoint(new Point2D.Double(113d, 230d));
-//		c.addPoint(new Point2D.Double(558d, 125d));
-//		c.addPoint(new Point2D.Double(823d, 172d));
-//		c.addPoint(new Point2D.Double(837d, 581d));
-//
-//		Point2D.Double site1 = new Point2D.Double(623d, 370d);
-//		Point2D.Double site2 = new Point2D.Double(375d, 235d);
-//		Point2D.Double site3 = new Point2D.Double(691d, 225d);
-//		
-//		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length -1);
-//		Point2D.Double[] siteVertices = new Point2D.Double[] {site1, site2, site3};
-//		
-//		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
-//		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site2, site3}, site1);
-//		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1, site3}, site2);
-//		List<Segment> site3Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1, site2}, site3);
-//		
-//		// combine lists
-//		List<Segment> allSegments = new ArrayList<Segment>();
-//		allSegments.addAll(edgeSegments);
-//		allSegments.addAll(site1Segments);
-//		allSegments.addAll(site2Segments);
-//		allSegments.addAll(site3Segments);
-//		
-//		// construct graph
-//		this.tree = new KdTree<KdTree.XYZPoint>(null, 2);
-//		
-//		// insert segments into graph
-//		for(Segment s : allSegments) {
-//			Point2D.Double left = Util.toPoint2D(s.getLeftPoint());
-//			Point2D.Double right = Util.toPoint2D(s.getRightPoint());
-//
-//			KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(left));
-//			if(node == null) {
-//				tree.add(Util.toXYZPoint(left));
-//				node = KdTree.getNode(tree, Util.toXYZPoint(left));
-//			}
-//
-//			KdTree.XYZPoint point = node.getID();
-//			point.addNeighbor(right, s.getSite1(), s.getEdge());
-//
-//			node = KdTree.getNode(tree, Util.toXYZPoint(right));
-//			if(node == null) {
-//				tree.add(Util.toXYZPoint(right));
-//				node = KdTree.getNode(tree, Util.toXYZPoint(right));
-//			}
-//
-//			point = node.getID();
-//			point.addNeighbor(left, s.getSite1(), s.getEdge());
-//		}
-//		/* ----------------- */
-		
+
+		/* TEST SECTOR GRAPH */
+		Convex c = new Convex();
+		c.addPoint(new Point2D.Double(113d, 230d));
+		c.addPoint(new Point2D.Double(558d, 125d));
+		c.addPoint(new Point2D.Double(823d, 172d));
+		c.addPoint(new Point2D.Double(837d, 581d));
+
+		Point2D.Double site1 = new Point2D.Double(623d, 370d);
+		Point2D.Double site2 = new Point2D.Double(375d, 235d);
+		// Point2D.Double site3 = new Point2D.Double(691d, 225d);
+
+		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length - 1);
+		Point2D.Double[] siteVertices = new Point2D.Double[] { site1, site2 }; // , site3
+
+		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
+		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] { site2/* , site3 */ },
+				site1);
+		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] { site1/* , site3 */ },
+				site2);
+		// List<Segment> site3Segments = c.spokeIntersects(hullVertices, new
+		// Point2D.Double[] {site1, site2}, site3);
+
+		// combine lists
+		List<Segment> allSegments = new ArrayList<Segment>();
+		allSegments.addAll(edgeSegments);
+		allSegments.addAll(site1Segments);
+		allSegments.addAll(site2Segments);
+		// allSegments.addAll(site3Segments);
+
+		// construct graph
+		this.tree = new KdTree<KdTree.XYZPoint>(null, 2);
+
+		// insert segments into graph
+		for (Segment s : allSegments) {
+			Point2D.Double left = Util.toPoint2D(s.getLeftPoint());
+			Point2D.Double right = Util.toPoint2D(s.getRightPoint());
+
+			KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(left));
+			if (node == null) {
+				tree.add(Util.toXYZPoint(left));
+				node = KdTree.getNode(tree, Util.toXYZPoint(left));
+			}
+
+			KdTree.XYZPoint point = node.getID();
+			point.addNeighbor(right, s.getSite1(), s.getEdge());
+
+			node = KdTree.getNode(tree, Util.toXYZPoint(right));
+			if (node == null) {
+				tree.add(Util.toXYZPoint(right));
+				node = KdTree.getNode(tree, Util.toXYZPoint(right));
+			}
+
+			point = node.getID();
+			point.addNeighbor(left, s.getSite1(), s.getEdge());
+		}
+
+		// Constructing scetors
+		secs = Convex.constructSector(site1, site2, tree);
+
+		/*
+		 * traverse through all sectors for each sector => call all edges => color each
+		 * sector with a random color
+		 */
+
+		/* ----------------- */
+
 		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
 		if (FILENAME_VORONOI != null)
 			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
@@ -231,18 +242,19 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		background(220);
 		textFont(createFont("Arial", 12, true), 12); // font used
 		fill(0); // font color
-		
-//		/* TEST SECTOR GRAPH */
-//		Point2D.Double p1 = new Point2D.Double(113d, 230d);
-//		Point2D.Double p2 = new Point2D.Double(558d, 125d);
-//		Point2D.Double p3 = new Point2D.Double(823d, 172d);
-//		Point2D.Double p4 = new Point2D.Double(837d, 581d);
-//		
-//		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
-//		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
-//		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
-//		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
-//		
+
+		/* TEST SECTOR GRAPH */
+		Point2D.Double p1 = new Point2D.Double(113d, 230d);
+		Point2D.Double p2 = new Point2D.Double(558d, 125d);
+		Point2D.Double p3 = new Point2D.Double(823d, 172d);
+		Point2D.Double p4 = new Point2D.Double(837d, 581d);
+
+		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
+		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
+		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
+		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
+
+		// Coloring spokes with different colors
 //		ArrayList<KdTree.XYZPoint> endPoints = this.tree.getAllNodes();
 //		for(KdTree.XYZPoint p : endPoints) {
 //			// draw segment from point p to its neighbors
@@ -262,7 +274,66 @@ public class DrawingApplet extends PApplet implements ActionListener {
 //				DrawUtil.drawSegment(Util.toPoint2D(p), q, this);
 //			}
 //		}
-//		/* ----------------- */
+
+		/*
+		 * Color sectors
+		 */
+		
+		for (Sector sec : secs) {
+//			Segment seg1 = sec.getEdge1();
+//			Segment seg2 = sec.getEdge2();
+//			Segment seg3 = sec.getEdge3();
+//			Segment seg4 = sec.getEdge4();
+//			
+//			PVector s1x = seg1.getLeftPoint();
+//			PVector s1y = seg1.getRightPoint();
+//			PVector s2x = seg2.getLeftPoint();
+//			PVector s2y = seg1.getRightPoint();
+//			PVector s3x = seg3.getLeftPoint();
+//			PVector s3y = seg3.getRightPoint();
+//			PVector s4x = seg4.getLeftPoint();
+//			PVector s4y = seg4.getRightPoint();
+
+			// Find random color
+	
+			Color c = null;
+			int colorNum = (int) Math.random() * 8 + 0;
+			if (colorNum == 0)
+				c = DrawUtil.DEFAULT;
+			if (colorNum == 1)
+				c = DrawUtil.RED;
+			if (colorNum == 2)
+				c = DrawUtil.BLUE;
+			if (colorNum == 3)
+				c = DrawUtil.GREEN;
+			if (colorNum == 4)
+				c = DrawUtil.PURPLE;
+			if (colorNum == 5)
+				c = DrawUtil.BLACK;
+			if (colorNum == 6)
+				c = DrawUtil.GREY;
+			if (colorNum == 7)
+				c = DrawUtil.WHITE;
+
+			this.fill((float) c.getRed(), (float) c.getGreen(), (float) c.getBlue());
+			
+			int numPoints = sec.sector.convexHull.length;
+			if (numPoints == 3) {
+				this.quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
+						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
+						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
+						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y);
+			}
+			
+			if (numPoints == 4) {
+				quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
+						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
+						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
+						(float) sec.sector.convexHull[3].x, (float) sec.sector.convexHull[3].y);
+			}
+		}
+
+		/* ----------------- */
 
 		if (this.geometry.convex.convexHull.length < 3)
 			return; // no convex Hull to display.
@@ -281,7 +352,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		}
 		this.indexOfSelectedPoint = -1;
 	}
-
+	
 	/*
 	 * Determines if a point is within EPSILON distance away from some point on a
 	 * list Q: What is the rationale for choosing the value of EPSILON?

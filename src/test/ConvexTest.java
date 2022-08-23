@@ -143,30 +143,51 @@ public class ConvexTest {
 	}
 	
 	public static void testQuickSort() {
-		ArrayList<Point2D.Double> colinear = new ArrayList<Point2D.Double>();
-		colinear.add(new Point2D.Double(57.671, 19.282));
-		colinear.add(new Point2D.Double(-11.746, -1.521));
-		colinear.add(new Point2D.Double(-54.158, -14.231));
-		colinear.add(new Point2D.Double(16.7, 7.004));
-		colinear.add(new Point2D.Double(-28.002, -6.392));
-		colinear.add(new Point2D.Double(58.951, 19.666));
-		colinear.add(new Point2D.Double(51.668, 17.484));
-		colinear.add(new Point2D.Double(-52.655, -13.78));
-		colinear.add(new Point2D.Double(40.823, 14.234));
-		colinear.add(new Point2D.Double(-9.526, -0.855));
-      	
-		for(int i = 0; i < 10; i++) 
-			colinear.add(new Point2D.Double(1d, Math.random() * 200 - 100));
-		
-		System.out.println("before");
-		
-		// Convex.quickSort(colinear, 0, colinear.size()-1, false);
-		
-		System.out.println("after");
-	}
+        ArrayList<Point2D.Double> colinear = new ArrayList<Point2D.Double>();
+        colinear.add(new Point2D.Double(57.671, 19.282));
+        colinear.add(new Point2D.Double(-11.746, -1.521));
+        colinear.add(new Point2D.Double(-54.158, -14.231));
+        colinear.add(new Point2D.Double(16.7, 7.004));
+        colinear.add(new Point2D.Double(-28.002, -6.392));
+        colinear.add(new Point2D.Double(58.951, 19.666));
+        colinear.add(new Point2D.Double(51.668, 17.484));
+        colinear.add(new Point2D.Double(-52.655, -13.78));
+        colinear.add(new Point2D.Double(40.823, 14.234));
+        colinear.add(new Point2D.Double(-9.526, -0.855));
+
+        ArrayList<Double> compare = new ArrayList<Double>();
+        for(Point2D.Double p : colinear)
+            compare.add(p.x);
+
+        System.out.println("before");
+        System.out.println(compare);
+
+        Convex.quickSort(colinear, compare, 0, colinear.size()-1);
+
+        System.out.println("after");
+        System.out.println(compare);
+
+        colinear.clear();
+        compare.clear();
+
+        for(int i = 0; i < 10; i++) 
+            colinear.add(new Point2D.Double(1d, Math.random() * 200 - 100));
+        for(Point2D.Double p : colinear)
+            compare.add(p.y);
+
+        System.out.println("before");
+        System.out.println(compare);
+
+        Convex.quickSort(colinear, compare, 0, colinear.size()-1);
+
+        System.out.println("after");
+        System.out.println(compare);
+
+    }
+
 	
 	public static void main(String[] argv) {
-		ConvexTest.testSpokeHullIntersect();
+		ConvexTest.testQuickSort();
 	}
 }
 

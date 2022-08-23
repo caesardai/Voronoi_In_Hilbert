@@ -192,7 +192,7 @@ public class Convex {
 	 * Construct sectors with given sites and segments Each sector is associated
 	 * with an edge and site
 	 */
-	public List<Sector> constructSector(Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
+	public static List<Sector> constructSector(Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
 		// returning list of sectors
 		List<Sector> sectors = new ArrayList<Sector>();
 
@@ -226,7 +226,7 @@ public class Convex {
 		 */
 		ArrayList<Double> s1Angles = new ArrayList<Double>();
 		// Calculate site 1 angles
-		for (int i = 0; i < s1Angles.size(); i++) {
+		for (int i = 0; i < s1Endpoints.size(); i++) {
 			s1Angles.add(Voronoi.spokeAngle(site1, s1Endpoints.get(i)));
 		}
 		// Sort through site 1 angles
@@ -234,7 +234,7 @@ public class Convex {
 
 		ArrayList<Double> s2Angles = new ArrayList<Double>();
 		// Calculate site 2 angles
-		for (int i = 0; i < s2Angles.size(); i++) {
+		for (int i = 0; i < s2Endpoints.size(); i++) {
 			s2Angles.add(Voronoi.spokeAngle(site2, s2Endpoints.get(i)));
 		}
 
@@ -296,7 +296,6 @@ public class Convex {
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
-
 			}
 		}
 
@@ -716,58 +715,133 @@ public class Convex {
 		Convex.quickSort(points, compare, 0, points.size() - 1);
 	}
 
-	private static int partition(ArrayList<Point2D.Double> array, ArrayList<Double> compare, int begin, int end) {
-		int pivot = end;
+//	private static int partition(ArrayList<Point2D.Double> array, ArrayList<Double> compare, int begin, int end) {
+//		int pivot = end;
+//
+//		int counter = begin;
+//		for (int i = begin; i < end; i++) {
+//			// compare either x or y
+//			double compare1 = compare.get(i);
+//			double compare2 = compare.get(pivot);
+//
+//			if (compare1 < compare2) {
+//				// temp for both arrays
+//				Point2D.Double temp = array.get(counter);
+//				Double temp1 = compare.get(counter);
+//
+//				// swap in array
+//				array.set(counter, array.get(i));
+//				array.set(i, temp);
+//
+//				// swap in compare
+//				compare.set(counter, compare.get(i));
+//				compare.set(i, temp1);
+//
+//				counter++;
+//			}
+//		}
+//		// temp for both arrays
+//		Point2D.Double temp = array.get(pivot);
+//		Double temp1 = compare.get(counter);
+//
+//		// swap in array
+//		array.set(pivot, array.get(counter));
+//		array.set(counter, temp);
+//
+//		// swap in compare
+//		compare.set(pivot, compare.get(counter));
+//		compare.set(counter, temp1);
+//
+//		return counter;
+//	}
+//
+//	private static void quickSort(ArrayList<Point2D.Double> array, ArrayList<Double> compare, int begin, int end) {
+//		// ensure that the two arrays are of the same length
+//		if (array.size() != compare.size())
+//			return;
+//
+//		if (end <= begin)
+//			return;
+//		
+//		int pivot = partition(array, compare, begin, end);
+//		quickSort(array, compare, begin, pivot - 1);
+//		quickSort(array, compare, pivot + 1, end);
+//	}
 
-		int counter = begin;
-		for (int i = begin; i < end; i++) {
-			// compare either x or y
-			double compare1 = compare.get(i);
-			double compare2 = compare.get(pivot);
+	
+	// A utility function to swap two elements
+	static <T> void swap(ArrayList<T> arr, int i, int j)
+	{
+		T temp = arr.get(i);
+		arr.set(j, arr.get(i));
+		arr.set(i, temp);
+	}
 
-			if (compare1 < compare2) {
-				// temp for both arrays
-				Point2D.Double temp = array.get(counter);
-				Double temp1 = compare.get(counter);
+	/* This function takes last element as pivot, places
+	the pivot element at its correct position in sorted
+	array, and places all smaller (smaller than pivot)
+	to left of pivot and all greater elements to right
+	of pivot */
+	static int partition(ArrayList<Point2D.Double> arr, ArrayList<Double> compare, int low, int high)
+	{
+		
+		// pivot
+		Double pivot = compare.get(high);
+		
+		// Index of smaller element and
+		// indicates the right position
+		// of pivot found so far
+		int i = (low - 1);
 
-				// swap in array
-				array.set(counter, array.get(i));
-				array.set(i, temp);
-
-				// swap in compare
-				compare.set(counter, compare.get(i));
-				compare.set(i, temp1);
-
-				counter++;
+		for(int j = low; j <= high - 1; j++)
+		{
+			
+			// If current element is smaller
+			// than the pivot
+			if (compare.get(j)< pivot)
+			{
+				// Increment index of
+				// smaller element
+				i++;
+				swap(arr, i, j);
+				swap(compare, i, j);
 			}
 		}
-		// temp for both arrays
-		Point2D.Double temp = array.get(pivot);
-		Double temp1 = compare.get(counter);
-
-		// swap in array
-		array.set(pivot, array.get(counter));
-		array.set(counter, temp);
-
-		// swap in compare
-		compare.set(pivot, compare.get(counter));
-		compare.set(counter, temp1);
-
-		return counter;
+		swap(arr, i + 1, high);
+		swap(compare, i + 1, high);
+		return (i + 1);
 	}
 
-	private static void quickSort(ArrayList<Point2D.Double> array, ArrayList<Double> compare, int begin, int end) {
-		// ensure that the two arrays are of the same length
-		if (array.size() != compare.size())
-			return;
+	/* The main function that implements QuickSort
+			arr[] --> Array to be sorted,
+			low --> Starting index,
+			high --> Ending index
+	*/
+	public static void quickSort(ArrayList<Point2D.Double> arr, ArrayList<Double> compare, int low, int high)
+	{
+		if (low < high)
+		{
+			
+			// pi is partitioning index, arr[p]
+			// is now at right place
+			int pi = partition(arr, compare, low, high);
 
-		if (end <= begin)
-			return;
-		int pivot = partition(array, compare, begin, end);
-		quickSort(array, compare, begin, pivot - 1);
-		quickSort(array, compare, pivot + 1, end);
+			// Separately sort elements before
+			// partition and after partition
+			quickSort(arr, compare, low, pi - 1);
+			quickSort(arr, compare, pi + 1, high);
+		}
 	}
-
+//
+//	// Function to print an array
+//	static void printArray(int[] arr, int size)
+//	{
+//		for(int i = 0; i < size; i++)
+//			System.out.print(arr[i] + " ");
+//			
+//		System.out.println();
+//	}	
+	
 	private static int maxUpperBound(ArrayList<Double> angles, double maxAngle) {
 		int index = 0;
 		Double currLargestAngle = angles.get(index);
