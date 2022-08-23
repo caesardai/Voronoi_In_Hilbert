@@ -86,7 +86,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	public void setup() {
 		size(1060, 600);
 		initButton();
-<<<<<<< HEAD
 
 		/* TEST SECTOR GRAPH */
 		Convex c = new Convex();
@@ -154,16 +153,13 @@ public class DrawingApplet extends PApplet implements ActionListener {
 
 		/* ----------------- */
 
-=======
-		
->>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
+
 		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
 		if (FILENAME_VORONOI != null)
 			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
 		else
 			this.voronoi = new VoronoiDraw(geometry, this);
-<<<<<<< HEAD
-=======
+
 
 //		/* TEST SECTOR GRAPH */
 //		// ensure that convex hull has no vertices
@@ -225,7 +221,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 //			point.addNeighbor(left, s.getSite1(), s.getEdge());
 //		}
 //		/* ----------------- */
->>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
 
 		// set starting mode
 		this.currentMode = 0;
@@ -310,34 +305,22 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		background(220);
 		textFont(createFont("Arial", 12, true), 12); // font used
 		fill(0); // font color
-<<<<<<< HEAD
+
 
 		/* TEST SECTOR GRAPH */
-		Point2D.Double p1 = new Point2D.Double(113d, 230d);
-		Point2D.Double p2 = new Point2D.Double(558d, 125d);
-		Point2D.Double p3 = new Point2D.Double(823d, 172d);
-		Point2D.Double p4 = new Point2D.Double(837d, 581d);
+		// Coloring spokes with different colors
 
+		/* TEST SECTOR GRAPH */
+		Point2D.Double p1 = this.geometry.convex.convexHull[0];
+		Point2D.Double p2 = this.geometry.convex.convexHull[1];
+		Point2D.Double p3 = this.geometry.convex.convexHull[2];
+		Point2D.Double p4 = this.geometry.convex.convexHull[3];
+      	
 		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
 		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
 		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
-
-		// Coloring spokes with different colors
-=======
 		
-//		/* TEST SECTOR GRAPH */
-//		Point2D.Double p1 = this.geometry.convex.convexHull[0];
-//		Point2D.Double p2 = this.geometry.convex.convexHull[1];
-//		Point2D.Double p3 = this.geometry.convex.convexHull[2];
-//		Point2D.Double p4 = this.geometry.convex.convexHull[3];
-//      	
-//		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
-//		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
-//		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
-//		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
-//		
->>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
 //		ArrayList<KdTree.XYZPoint> endPoints = this.tree.getAllNodes();
 //		for(KdTree.XYZPoint p : endPoints) {
 //			// draw segment from point p to its neighbors
@@ -363,22 +346,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		 */
 		
 		for (Sector sec : secs) {
-//			Segment seg1 = sec.getEdge1();
-//			Segment seg2 = sec.getEdge2();
-//			Segment seg3 = sec.getEdge3();
-//			Segment seg4 = sec.getEdge4();
-//			
-//			PVector s1x = seg1.getLeftPoint();
-//			PVector s1y = seg1.getRightPoint();
-//			PVector s2x = seg2.getLeftPoint();
-//			PVector s2y = seg1.getRightPoint();
-//			PVector s3x = seg3.getLeftPoint();
-//			PVector s3y = seg3.getRightPoint();
-//			PVector s4x = seg4.getLeftPoint();
-//			PVector s4y = seg4.getRightPoint();
-
 			// Find random color
-	
 			Color c = null;
 			int colorNum = (int) Math.random() * 8 + 0;
 			if (colorNum == 0)
