@@ -204,9 +204,9 @@ public class Convex {
 		// get site1 node
 		KdTree.KdNode s1Node = KdTree.getNode(graph, s1XYZPoint);
 		// get site1 ID
-		KdTree.XYZPoint s1Id = s1Node.getID();
+		KdTree.XYZPoint s1ID = s1Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<Point2D.Double> s1Endpoints = s1Id.getNeighbors();
+		ArrayList<Point2D.Double> s1Endpoints = s1ID.getNeighbors();
 
 		/*
 		 * SITE 2
@@ -215,50 +215,32 @@ public class Convex {
 		KdTree.XYZPoint s2XYZPoint = Util.toXYZPoint(site1);
 		// get site1 node
 		KdTree.KdNode s2Node = KdTree.getNode(graph, s2XYZPoint);
-		// get site1 ID
-		KdTree.XYZPoint s2Id = s2Node.getID();
+		// get site2 ID
+		KdTree.XYZPoint s2ID = s1Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<Point2D.Double> s2Endpoints = s2Id.getNeighbors();
-		
+		ArrayList<Point2D.Double> s2Endpoints = s2ID.getNeighbors();
+
 		/*
-		 * For convenient to traverse through the segments 
-		 * sort the end points base on angles regarding to the site(origin)
+		 * For convenient to traverse through the segments sort the end points base on
+		 * angles regarding to the site(origin)
 		 */
 		ArrayList<Double> s1Angles = new ArrayList<Double>();
-		ArrayList<Double> compare1 = new ArrayList<Double>();
 		// Calculate site 1 angles
 		for (int i = 0; i < s1Angles.size(); i++) {
 			s1Angles.add(Voronoi.spokeAngle(site1, s1Endpoints.get(i)));
 		}
 		// Sort through site 1 angles
-		for (Double theta : s1Angles)
-			compare1.add(theta);
 		Convex.quickSort(s1Endpoints, s1Angles, 0, s1Angles.size() - 1);
-		
+
 		ArrayList<Double> s2Angles = new ArrayList<Double>();
-		ArrayList<Double> compare2 = new ArrayList<Double>();
 		// Calculate site 2 angles
 		for (int i = 0; i < s2Angles.size(); i++) {
 			s2Angles.add(Voronoi.spokeAngle(site2, s2Endpoints.get(i)));
 		}
+
 		// Sort through site 2 angles
-		for (Double theta : s2Angles)
-			compare2.add(theta);
 		Convex.quickSort(s2Endpoints, s2Angles, 0, s2Angles.size() - 1);
 
-		/*
-		 * Loop through all site 1 end point to constrcut scetors
-		 */
-		int s1NumNeighbor = s1Endpoints.size();
-		for (int i = 0; i < s1NumNeighbor; i++) {
-			Point2D.Double p1 = s1Endpoints.get(i);
-			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
-			KdTree.XYZPoint p1XYZ = nodeP1.getID();
-			Point2D.Double p2 = s2Endpoints.get((i + 1) % s1NumNeighbor);
-			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
-			KdTree.XYZPoint p2XYZ = nodeP2.getID();
-		}
-		
 		// Loop through all the neighbors and construct nearby sectors
 		int neighborSize = s1Endpoints.size();
 		for (int i = 0; i < neighborSize; i++) {
@@ -278,14 +260,15 @@ public class Convex {
 				int indexEdge1 = Convex.maxUpperBound(s2Angles, Voronoi.spokeAngle(site1, p1));
 				int indexEdge2 = Convex.minLowerBound(s2Angles, Voronoi.spokeAngle(site1, p2));
 
-				Segment edge1 = p1XYZ.getEdge(i);
-				Segment edge2 = p1XYZ.getEdge((i + 1) % neighborSize);
-				Segment edge3 = p2XYZ.getEdge(indexEdge1);
-				Segment edge4 = p2XYZ.getEdge(indexEdge2);
+				Segment edge1 = s1ID.getEdge(i);
+				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
+				Segment edge3 = s2ID.getEdge(indexEdge1);
+				Segment edge4 = s2ID.getEdge(indexEdge2);
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
 			}
+
 			// 4 edge case
 			else {
 				// we need to determine the four point of the sector
@@ -306,10 +289,10 @@ public class Convex {
 				vertices.add(p2);
 				vertices.add(p3);
 
-				Segment edge1 = p1XYZ.getEdge(i);
-				Segment edge2 = p1XYZ.getEdge((i + 1) % neighborSize);
-				Segment edge3 = p2XYZ.getEdge(p1Points.indexOf(p3));
-				Segment edge4 = p2XYZ.getEdge(p2Points.indexOf(p3));
+				Segment edge1 = s1ID.getEdge(i);
+				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
+				Segment edge3 = s2ID.getEdge(p1Points.indexOf(p3));
+				Segment edge4 = s2ID.getEdge(p2Points.indexOf(p3));
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
