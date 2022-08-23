@@ -88,8 +88,19 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		size(1060, 600);
 		initButton();
 		
+		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
+		if (FILENAME_VORONOI != null)
+			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
+		else
+			this.voronoi = new VoronoiDraw(geometry, this);
+
 //		/* TEST SECTOR GRAPH */
-//		Convex c = new Convex();
+//		// ensure that convex hull has no vertices
+//		Convex c = this.geometry.convex;
+//		c.points = new Point2D.Double[0];
+//		c.convexHull = new Point2D.Double[0];
+//		
+//		// add vertices to the convex hull
 //		c.addPoint(new Point2D.Double(113d, 230d));
 //		c.addPoint(new Point2D.Double(558d, 125d));
 //		c.addPoint(new Point2D.Double(823d, 172d));
@@ -97,22 +108,24 @@ public class DrawingApplet extends PApplet implements ActionListener {
 //
 //		Point2D.Double site1 = new Point2D.Double(623d, 370d);
 //		Point2D.Double site2 = new Point2D.Double(375d, 235d);
-//		Point2D.Double site3 = new Point2D.Double(691d, 225d);
+//		this.voronoi.addPoint(site1);
+//		this.voronoi.addPoint(site2);
+////		Point2D.Double site3 = new Point2D.Double(691d, 225d);
 //		
 //		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length -1);
-//		Point2D.Double[] siteVertices = new Point2D.Double[] {site1, site2, site3};
+//		Point2D.Double[] siteVertices = new Point2D.Double[] {site1, site2/*, site3*/};
 //		
 //		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
-//		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site2, site3}, site1);
-//		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1, site3}, site2);
-//		List<Segment> site3Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1, site2}, site3);
+//		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site2}, site1);
+//		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1}, site2);
+////		List<Segment> site3Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1, site2}, site3);
 //		
 //		// combine lists
 //		List<Segment> allSegments = new ArrayList<Segment>();
 //		allSegments.addAll(edgeSegments);
 //		allSegments.addAll(site1Segments);
 //		allSegments.addAll(site2Segments);
-//		allSegments.addAll(site3Segments);
+////		allSegments.addAll(site3Segments);
 //		
 //		// construct graph
 //		this.tree = new KdTree<KdTree.XYZPoint>(null, 2);
@@ -141,12 +154,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 //			point.addNeighbor(left, s.getSite1(), s.getEdge());
 //		}
 //		/* ----------------- */
-		
-		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
-		if (FILENAME_VORONOI != null)
-			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
-		else
-			this.voronoi = new VoronoiDraw(geometry, this);
 
 		// set starting mode
 		this.currentMode = 0;
@@ -233,11 +240,11 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		fill(0); // font color
 		
 //		/* TEST SECTOR GRAPH */
-//		Point2D.Double p1 = new Point2D.Double(113d, 230d);
-//		Point2D.Double p2 = new Point2D.Double(558d, 125d);
-//		Point2D.Double p3 = new Point2D.Double(823d, 172d);
-//		Point2D.Double p4 = new Point2D.Double(837d, 581d);
-//		
+//		Point2D.Double p1 = this.geometry.convex.convexHull[0];
+//		Point2D.Double p2 = this.geometry.convex.convexHull[1];
+//		Point2D.Double p3 = this.geometry.convex.convexHull[2];
+//		Point2D.Double p4 = this.geometry.convex.convexHull[3];
+//      	
 //		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
 //		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
 //		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
