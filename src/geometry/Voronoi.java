@@ -536,6 +536,53 @@ public class Voronoi {
 		return thetaRayTrace(null, line, site);
 	}
 	
+	public KdTree<KdTree.XYZPoint> constructGraph(Point2D.Double s1, Point2D.Double s2) {
+		// get arrays of hull and site vertices
+		Convex c = this.geometry.convex;
+		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length -1);
+		Point2D.Double[] siteVertices = new Point2D.Double[] {s1, s2};
+		
+		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
+		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {s2}, s1);
+		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {s1}, s2);
+		
+		// combine lists
+		List<Segment> allSegments = new ArrayList<Segment>();
+		allSegments.addAll(edgeSegments);
+		allSegments.addAll(site1Segments);
+		allSegments.addAll(site2Segments);
+		
+		// construct graph
+		KdTree<KdTree.XYZPoint> tree = new KdTree<KdTree.XYZPoint>(null, 2);
+		
+		// insert segments into graph
+		for(Segment s : allSegments) {
+			Point2D.Double left = Util.toPoint2D(s.getLeftPoint());
+			Point2D.Double right = Util.toPoint2D(s.getRightPoint());
+
+			KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(left));
+			if(node == null) {
+				tree.add(Util.toXYZPoint(left));
+				node = KdTree.getNode(tree, Util.toXYZPoint(left));
+			}
+
+			KdTree.XYZPoint point = node.getID();
+			point.addNeighbor(right, s.getSite1(), s.getEdge());
+
+			node = KdTree.getNode(tree, Util.toXYZPoint(right));
+			if(node == null) {
+				tree.add(Util.toXYZPoint(right));
+				node = KdTree.getNode(tree, Util.toXYZPoint(right));
+			}
+
+			point = node.getID();
+			point.addNeighbor(left, s.getSite1(), s.getEdge());
+		}
+		
+		// return the graph
+		return tree;
+	}
+	
 	/*
 	 * Construct the Trapezoidal map for all Voronoi cells
 	 */

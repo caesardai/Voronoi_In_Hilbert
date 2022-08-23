@@ -86,6 +86,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	public void setup() {
 		size(1060, 600);
 		initButton();
+<<<<<<< HEAD
 
 		/* TEST SECTOR GRAPH */
 		Convex c = new Convex();
@@ -153,11 +154,78 @@ public class DrawingApplet extends PApplet implements ActionListener {
 
 		/* ----------------- */
 
+=======
+		
+>>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
 		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
 		if (FILENAME_VORONOI != null)
 			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
 		else
 			this.voronoi = new VoronoiDraw(geometry, this);
+<<<<<<< HEAD
+=======
+
+//		/* TEST SECTOR GRAPH */
+//		// ensure that convex hull has no vertices
+//		Convex c = this.geometry.convex;
+//		c.points = new Point2D.Double[0];
+//		c.convexHull = new Point2D.Double[0];
+//		
+//		// add vertices to the convex hull
+//		c.addPoint(new Point2D.Double(113d, 230d));
+//		c.addPoint(new Point2D.Double(558d, 125d));
+//		c.addPoint(new Point2D.Double(823d, 172d));
+//		c.addPoint(new Point2D.Double(837d, 581d));
+//
+//		Point2D.Double site1 = new Point2D.Double(623d, 370d);
+//		Point2D.Double site2 = new Point2D.Double(375d, 235d);
+//		this.voronoi.addPoint(site1);
+//		this.voronoi.addPoint(site2);
+////		Point2D.Double site3 = new Point2D.Double(691d, 225d);
+//		
+//		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length -1);
+//		Point2D.Double[] siteVertices = new Point2D.Double[] {site1, site2/*, site3*/};
+//		
+//		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
+//		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site2}, site1);
+//		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1}, site2);
+////		List<Segment> site3Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1, site2}, site3);
+//		
+//		// combine lists
+//		List<Segment> allSegments = new ArrayList<Segment>();
+//		allSegments.addAll(edgeSegments);
+//		allSegments.addAll(site1Segments);
+//		allSegments.addAll(site2Segments);
+////		allSegments.addAll(site3Segments);
+//		
+//		// construct graph
+//		this.tree = new KdTree<KdTree.XYZPoint>(null, 2);
+//		
+//		// insert segments into graph
+//		for(Segment s : allSegments) {
+//			Point2D.Double left = Util.toPoint2D(s.getLeftPoint());
+//			Point2D.Double right = Util.toPoint2D(s.getRightPoint());
+//
+//			KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(left));
+//			if(node == null) {
+//				tree.add(Util.toXYZPoint(left));
+//				node = KdTree.getNode(tree, Util.toXYZPoint(left));
+//			}
+//
+//			KdTree.XYZPoint point = node.getID();
+//			point.addNeighbor(right, s.getSite1(), s.getEdge());
+//
+//			node = KdTree.getNode(tree, Util.toXYZPoint(right));
+//			if(node == null) {
+//				tree.add(Util.toXYZPoint(right));
+//				node = KdTree.getNode(tree, Util.toXYZPoint(right));
+//			}
+//
+//			point = node.getID();
+//			point.addNeighbor(left, s.getSite1(), s.getEdge());
+//		}
+//		/* ----------------- */
+>>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
 
 		// set starting mode
 		this.currentMode = 0;
@@ -242,6 +310,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		background(220);
 		textFont(createFont("Arial", 12, true), 12); // font used
 		fill(0); // font color
+<<<<<<< HEAD
 
 		/* TEST SECTOR GRAPH */
 		Point2D.Double p1 = new Point2D.Double(113d, 230d);
@@ -255,6 +324,20 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
 
 		// Coloring spokes with different colors
+=======
+		
+//		/* TEST SECTOR GRAPH */
+//		Point2D.Double p1 = this.geometry.convex.convexHull[0];
+//		Point2D.Double p2 = this.geometry.convex.convexHull[1];
+//		Point2D.Double p3 = this.geometry.convex.convexHull[2];
+//		Point2D.Double p4 = this.geometry.convex.convexHull[3];
+//      	
+//		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
+//		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
+//		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
+//		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
+//		
+>>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
 //		ArrayList<KdTree.XYZPoint> endPoints = this.tree.getAllNodes();
 //		for(KdTree.XYZPoint p : endPoints) {
 //			// draw segment from point p to its neighbors

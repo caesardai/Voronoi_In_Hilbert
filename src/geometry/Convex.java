@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 // import java.awt.geom.Point2D.Double;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.*;
 import java.util.List;
@@ -257,8 +258,19 @@ public class Convex {
 				vertices.add(site1);
 				vertices.add(p1);
 				vertices.add(p2);
-				int indexEdge1 = Convex.maxUpperBound(s2Angles, Voronoi.spokeAngle(site1, p1));
-				int indexEdge2 = Convex.minLowerBound(s2Angles, Voronoi.spokeAngle(site1, p2));
+				
+				// compute the angular coordinate of points site1, p1, and p2 with respect to the polar coordinate system centered at site2
+				ArrayList<Double> verticesToSite2Angles = new ArrayList<Double>();
+				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, site1));
+				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p1));
+				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p2));
+				
+				// find the smallest and largest angular coordinate from the arraylist above
+				Double smallestAngle = Collections.min(verticesToSite2Angles);
+				Double largestAngle = Collections.min(verticesToSite2Angles);
+				
+				int indexEdge1 = Convex.getMin(s2Angles, smallestAngle);
+				int indexEdge2 = Convex.getMax(s2Angles, largestAngle);
 
 				Segment edge1 = s1ID.getEdge(i);
 				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
@@ -832,6 +844,7 @@ public class Convex {
 			quickSort(arr, compare, pi + 1, high);
 		}
 	}
+<<<<<<< HEAD
 //
 //	// Function to print an array
 //	static void printArray(int[] arr, int size)
@@ -843,6 +856,10 @@ public class Convex {
 //	}	
 	
 	private static int maxUpperBound(ArrayList<Double> angles, double maxAngle) {
+=======
+
+	private static int getMax(ArrayList<Double> angles, double maxAngle) {
+>>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
 		int index = 0;
 		Double currLargestAngle = angles.get(index);
 		for (int i = 1; i < angles.size(); i++) {
@@ -854,7 +871,7 @@ public class Convex {
 		return index;
 	}
 
-	private static int minLowerBound(ArrayList<Double> angles, double minAngle) {
+	private static int getMin(ArrayList<Double> angles, double minAngle) {
 		int index = 0;
 		Double currSmallestAngle = angles.get(index);
 		for (int i = 1; i < angles.size(); i++) {
