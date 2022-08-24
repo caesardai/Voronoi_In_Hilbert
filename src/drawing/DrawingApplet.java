@@ -87,63 +87,26 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		size(1060, 600);
 		initButton();
 
+		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
+		if (FILENAME_VORONOI != null)
+			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
+		else
+			this.voronoi = new VoronoiDraw(geometry, this);
+
 		/* TEST SECTOR GRAPH */
-		Convex c = new Convex();
-		c.addPoint(new Point2D.Double(113d, 230d));
-		c.addPoint(new Point2D.Double(558d, 125d));
-		c.addPoint(new Point2D.Double(823d, 172d));
-		c.addPoint(new Point2D.Double(837d, 581d));
+		// placing all input parameters to construct tree
+		Convex c = this.geometry.convex;
+		c.addPoint(new Point2D.Double(154d, 620d));
+		c.addPoint(new Point2D.Double(67d, 190d));
+		c.addPoint(new Point2D.Double(406d, 20d));
+		c.addPoint(new Point2D.Double(488d, 500d));
+		Point2D.Double site1 = new Point2D.Double(253d, 170d);
+		Point2D.Double site2 = new Point2D.Double(343d, 500d);
 
-		Point2D.Double site1 = new Point2D.Double(623d, 370d);
-		Point2D.Double site2 = new Point2D.Double(375d, 235d);
-		// Point2D.Double site3 = new Point2D.Double(691d, 225d);
+		// construct tree
+		KdTree<KdTree.XYZPoint> tree = this.voronoi.constructGraph(site1, site2);
 
-		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length - 1);
-		Point2D.Double[] siteVertices = new Point2D.Double[] { site1, site2 }; // , site3
-
-		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
-		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] { site2/* , site3 */ },
-				site1);
-		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] { site1/* , site3 */ },
-				site2);
-		// List<Segment> site3Segments = c.spokeIntersects(hullVertices, new
-		// Point2D.Double[] {site1, site2}, site3);
-
-		// combine lists
-		List<Segment> allSegments = new ArrayList<Segment>();
-		allSegments.addAll(edgeSegments);
-		allSegments.addAll(site1Segments);
-		allSegments.addAll(site2Segments);
-		// allSegments.addAll(site3Segments);
-
-		// construct graph
-		this.tree = new KdTree<KdTree.XYZPoint>(null, 2);
-
-		// insert segments into graph
-		for (Segment s : allSegments) {
-			Point2D.Double left = Util.toPoint2D(s.getLeftPoint());
-			Point2D.Double right = Util.toPoint2D(s.getRightPoint());
-
-			KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(left));
-			if (node == null) {
-				tree.add(Util.toXYZPoint(left));
-				node = KdTree.getNode(tree, Util.toXYZPoint(left));
-			}
-
-			KdTree.XYZPoint point = node.getID();
-			point.addNeighbor(right, s.getSite1(), s.getEdge());
-
-			node = KdTree.getNode(tree, Util.toXYZPoint(right));
-			if (node == null) {
-				tree.add(Util.toXYZPoint(right));
-				node = KdTree.getNode(tree, Util.toXYZPoint(right));
-			}
-
-			point = node.getID();
-			point.addNeighbor(left, s.getSite1(), s.getEdge());
-		}
-
-		// Constructing scetors
+		// Constructing sectors
 		secs = Convex.constructSector(site1, site2, tree);
 
 		/*
@@ -152,75 +115,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		 */
 
 		/* ----------------- */
-
-
-		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
-		if (FILENAME_VORONOI != null)
-			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
-		else
-			this.voronoi = new VoronoiDraw(geometry, this);
-
-
-//		/* TEST SECTOR GRAPH */
-//		// ensure that convex hull has no vertices
-//		Convex c = this.geometry.convex;
-//		c.points = new Point2D.Double[0];
-//		c.convexHull = new Point2D.Double[0];
-//		
-//		// add vertices to the convex hull
-//		c.addPoint(new Point2D.Double(113d, 230d));
-//		c.addPoint(new Point2D.Double(558d, 125d));
-//		c.addPoint(new Point2D.Double(823d, 172d));
-//		c.addPoint(new Point2D.Double(837d, 581d));
-//
-//		Point2D.Double site1 = new Point2D.Double(623d, 370d);
-//		Point2D.Double site2 = new Point2D.Double(375d, 235d);
-//		this.voronoi.addPoint(site1);
-//		this.voronoi.addPoint(site2);
-////		Point2D.Double site3 = new Point2D.Double(691d, 225d);
-//		
-//		Point2D.Double[] hullVertices = Arrays.copyOfRange(c.convexHull, 0, c.convexHull.length -1);
-//		Point2D.Double[] siteVertices = new Point2D.Double[] {site1, site2/*, site3*/};
-//		
-//		List<Segment> edgeSegments = c.spokeHullIntersection(hullVertices, siteVertices);
-//		List<Segment> site1Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site2}, site1);
-//		List<Segment> site2Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1}, site2);
-////		List<Segment> site3Segments = c.spokeIntersects(hullVertices, new Point2D.Double[] {site1, site2}, site3);
-//		
-//		// combine lists
-//		List<Segment> allSegments = new ArrayList<Segment>();
-//		allSegments.addAll(edgeSegments);
-//		allSegments.addAll(site1Segments);
-//		allSegments.addAll(site2Segments);
-////		allSegments.addAll(site3Segments);
-//		
-//		// construct graph
-//		this.tree = new KdTree<KdTree.XYZPoint>(null, 2);
-//		
-//		// insert segments into graph
-//		for(Segment s : allSegments) {
-//			Point2D.Double left = Util.toPoint2D(s.getLeftPoint());
-//			Point2D.Double right = Util.toPoint2D(s.getRightPoint());
-//
-//			KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(left));
-//			if(node == null) {
-//				tree.add(Util.toXYZPoint(left));
-//				node = KdTree.getNode(tree, Util.toXYZPoint(left));
-//			}
-//
-//			KdTree.XYZPoint point = node.getID();
-//			point.addNeighbor(right, s.getSite1(), s.getEdge());
-//
-//			node = KdTree.getNode(tree, Util.toXYZPoint(right));
-//			if(node == null) {
-//				tree.add(Util.toXYZPoint(right));
-//				node = KdTree.getNode(tree, Util.toXYZPoint(right));
-//			}
-//
-//			point = node.getID();
-//			point.addNeighbor(left, s.getSite1(), s.getEdge());
-//		}
-//		/* ----------------- */
 
 		// set starting mode
 		this.currentMode = 0;
@@ -348,7 +242,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		for (Sector sec : secs) {
 			// Find random color
 			Color c = null;
-			int colorNum = (int) Math.random() * 8 + 0;
+			int colorNum = (int) (Math.random() * 8);
 			if (colorNum == 0)
 				c = DrawUtil.DEFAULT;
 			if (colorNum == 1)
@@ -368,7 +262,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 
 			this.fill((float) c.getRed(), (float) c.getGreen(), (float) c.getBlue());
 			
-			int numPoints = sec.sector.convexHull.length;
+			int numPoints = sec.sector.convexHull.length - 1;
 			if (numPoints == 3) {
 				this.quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
 						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,

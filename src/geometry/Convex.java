@@ -213,11 +213,11 @@ public class Convex {
 		 * SITE 2
 		 */
 		// get all site's neighboring segment
-		KdTree.XYZPoint s2XYZPoint = Util.toXYZPoint(site1);
+		KdTree.XYZPoint s2XYZPoint = Util.toXYZPoint(site2);
 		// get site1 node
 		KdTree.KdNode s2Node = KdTree.getNode(graph, s2XYZPoint);
 		// get site2 ID
-		KdTree.XYZPoint s2ID = s1Node.getID();
+		KdTree.XYZPoint s2ID = s2Node.getID();
 		// get all neighbor points for site 1
 		ArrayList<Point2D.Double> s2Endpoints = s2ID.getNeighbors();
 
@@ -782,11 +782,26 @@ public class Convex {
 
 	
 	// A utility function to swap two elements
-	static <T> void swap(ArrayList<T> arr, int i, int j)
-	{
-		T temp = arr.get(i);
-		arr.set(j, arr.get(i));
-		arr.set(i, temp);
+	@SuppressWarnings("unchecked")
+	static <T> void swap(ArrayList<T> arr, int i, int j) {
+		T obj_i = arr.get(i);
+		T obj_j = arr.get(j);
+
+		// determine type T
+		if(obj_i instanceof Point2D.Double) {
+			Point2D.Double temp_i = (Point2D.Double) ((Point2D.Double) obj_i).clone();
+			Point2D.Double temp_j = (Point2D.Double) ((Point2D.Double) obj_j).clone();
+			arr.set(i, (T) temp_j);
+			arr.set(j, (T) temp_i);
+		} else if(obj_i instanceof Double) {
+			Double temp_i = (Double) obj_i;
+			Double temp_j = (Double) obj_j;
+			arr.set(i, (T) temp_j);
+			arr.set(j, (T) temp_i);
+		} else {
+			// error has occurred if we have reached here
+			return;
+		}
 	}
 
 	/* This function takes last element as pivot, places
@@ -829,10 +844,8 @@ public class Convex {
 			low --> Starting index,
 			high --> Ending index
 	*/
-	public static void quickSort(ArrayList<Point2D.Double> arr, ArrayList<Double> compare, int low, int high)
-	{
-		if (low < high)
-		{
+	public static void quickSort(ArrayList<Point2D.Double> arr, ArrayList<Double> compare, int low, int high) {
+		if (low < high) {
 			
 			// pi is partitioning index, arr[p]
 			// is now at right place
@@ -844,22 +857,8 @@ public class Convex {
 			quickSort(arr, compare, pi + 1, high);
 		}
 	}
-<<<<<<< HEAD
-//
-//	// Function to print an array
-//	static void printArray(int[] arr, int size)
-//	{
-//		for(int i = 0; i < size; i++)
-//			System.out.print(arr[i] + " ");
-//			
-//		System.out.println();
-//	}	
 	
-	private static int maxUpperBound(ArrayList<Double> angles, double maxAngle) {
-=======
-
 	private static int getMax(ArrayList<Double> angles, double maxAngle) {
->>>>>>> 108dafac5e512b0766565ecb97c957a2c1e8212d
 		int index = 0;
 		Double currLargestAngle = angles.get(index);
 		for (int i = 1; i < angles.size(); i++) {
@@ -912,10 +911,6 @@ public class Convex {
 
 		in.close();
 		return controlPoints;
-	}
-
-	public static void main(String[] argv) {
-
 	}
 }
 

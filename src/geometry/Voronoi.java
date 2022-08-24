@@ -136,34 +136,42 @@ public class Voronoi {
 	 * Calculate spoke angle
 	 */
 	public static double spokeAngle(Point2D.Double site, Point2D.Double hull) {
-		double deltaX = site.getX() - hull.getX();
-		double deltaY = site.getY() - hull.getY();
-		double angle = Math.atan(Math.abs(deltaY) / Math.abs(deltaX));
+		double deltaX = hull.getX() - site.getX();
+		double deltaY = hull.getY() - site.getY();
+		double angle = Math.atan(deltaY / deltaX);
+		
+		if(deltaX < 0) {
+			angle += Math.PI;
+		} else if(deltaY < 0) {
+			angle = 2 * Math.PI + angle;
+		}
+		
+		return angle;
 
-		// positive horizontal line
-		if (hull.y == site.y && hull.x > site.x)
-			return 0;
-		// negative horizontal line
-		else if (hull.y == site.y && hull.x < site.x)
-			return Math.PI;
-		// positive vertical line
-		else if (hull.y > site.y && hull.x == site.x)
-			return Math.PI / 2;
-		// negative vertical line
-		else if (hull.y < site.y && hull.x == site.x)
-			return 3 * Math.PI / 2;
-		// quadrant 1
-		else if (hull.x > site.x && hull.y > site.y)
-			return angle;
-		// quadtant 2
-		else if (hull.x < site.x && hull.y > site.y)
-			return Math.PI - angle;
-		// quadrant 3
-		else if (hull.x < site.x && hull.y < site.y)
-			return Math.PI + angle;
-		// quadrant 4
-		else
-			return 2 * Math.PI - angle; // (hull.x > site.x && hull.y < site.y)
+//		// positive horizontal line
+//		if (hull.y == site.y && hull.x > site.x)
+//			return 0;
+//		// negative horizontal line
+//		else if (hull.y == site.y && hull.x < site.x)
+//			return Math.PI;
+//		// positive vertical line
+//		else if (hull.y > site.y && hull.x == site.x)
+//			return Math.PI / 2;
+//		// negative vertical line
+//		else if (hull.y < site.y && hull.x == site.x)
+//			return 3 * Math.PI / 2;
+//		// quadrant 1
+//		else if (hull.x > site.x && hull.y > site.y)
+//			return angle;
+//		// Quadrant 2
+//		else if (hull.x < site.x && hull.y > site.y)
+//			return Math.PI - angle;
+//		// quadrant 3
+//		else if (hull.x < site.x && hull.y < site.y)
+//			return Math.PI + angle;
+//		// quadrant 4
+//		else
+//			return 2 * Math.PI - angle; // (hull.x > site.x && hull.y < site.y)
 	}
 
 	/*
@@ -536,6 +544,13 @@ public class Voronoi {
 		return thetaRayTrace(null, line, site);
 	}
 	
+	/**
+	 * Given a convex hull and two sites, this method a construct the graph whose nodes are either the sites or intersection points between a spoke and another spoke or edge. Two points are connected in the graph if the line segment between the two points is contained in either spoke or edge. The line segment cannot contain another intersection point from another spoke/edge
+	 * 
+	 * @param s1 first site
+	 * @param s2 second site
+	 * @return returns the graph of the sites and all intersection points between any pair of spokes or edges
+	 */
 	public KdTree<KdTree.XYZPoint> constructGraph(Point2D.Double s1, Point2D.Double s2) {
 		// get arrays of hull and site vertices
 		Convex c = this.geometry.convex;

@@ -1,5 +1,6 @@
 package drawing;
 
+import geometry.KdTree;
 import geometry.Point3d;
 import geometry.Voronoi;
 
@@ -137,6 +138,17 @@ public class VoronoiDraw {
 	public void colorPoint(Point2D.Double p) {
 		int nearestPoint = this.voronoi.nearestPoint(p);
 		this.voronoi.voronoiPoints.put(p, nearestPoint);
+	}
+	
+	/**
+	 * Given a convex hull and two sites, this method a construct the graph whose nodes are either the sites or intersection points between a spoke and another spoke or edge. Two points are connected in the graph if the line segment between the two points is contained in either spoke or edge. The line segment cannot contain another intersection point from another spoke/edge
+	 * 
+	 * @param s1 first site
+	 * @param s2 second site
+	 * @return returns the graph of the sites and all intersection points between any pair of spokes or edges
+	 */
+	public KdTree<KdTree.XYZPoint> constructGraph(Point2D.Double s1, Point2D.Double s2) {
+		return this.voronoi.constructGraph(s1, s2);
 	}
 
 	/* Loads Voronoi points from input file */
