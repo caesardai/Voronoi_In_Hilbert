@@ -207,7 +207,7 @@ public class Convex {
 		// get site1 ID
 		KdTree.XYZPoint s1ID = s1Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<Point2D.Double> s1Endpoints = s1ID.getNeighbors();
+		ArrayList<EdgeData> s1Endpoints = s1ID.getNeighbors();
 
 		/*
 		 * SITE 2
@@ -219,7 +219,7 @@ public class Convex {
 		// get site2 ID
 		KdTree.XYZPoint s2ID = s2Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<Point2D.Double> s2Endpoints = s2ID.getNeighbors();
+		ArrayList<EdgeData> s2Endpoints = s2ID.getNeighbors();
 
 		/*
 		 * For convenient to traverse through the segments sort the end points base on
@@ -228,7 +228,7 @@ public class Convex {
 		ArrayList<Double> s1Angles = new ArrayList<Double>();
 		// Calculate site 1 angles
 		for (int i = 0; i < s1Endpoints.size(); i++) {
-			s1Angles.add(Voronoi.spokeAngle(site1, s1Endpoints.get(i)));
+			s1Angles.add(Voronoi.spokeAngle(site1, s1Endpoints.get(i).otherNode));
 		}
 		// Sort through site 1 angles
 		Convex.quickSort(s1Endpoints, s1Angles, 0, s1Angles.size() - 1);
@@ -236,7 +236,7 @@ public class Convex {
 		ArrayList<Double> s2Angles = new ArrayList<Double>();
 		// Calculate site 2 angles
 		for (int i = 0; i < s2Endpoints.size(); i++) {
-			s2Angles.add(Voronoi.spokeAngle(site2, s2Endpoints.get(i)));
+			s2Angles.add(Voronoi.spokeAngle(site2, s2Endpoints.get(i).otherNode));
 		}
 
 		// Sort through site 2 angles
@@ -245,10 +245,10 @@ public class Convex {
 		// Loop through all the neighbors and construct nearby sectors
 		int neighborSize = s1Endpoints.size();
 		for (int i = 0; i < neighborSize; i++) {
-			Point2D.Double p1 = s1Endpoints.get(i);
+			Point2D.Double p1 = s1Endpoints.get(i).otherNode;
 			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
 			KdTree.XYZPoint p1XYZ = nodeP1.getID();
-			Point2D.Double p2 = s1Endpoints.get((i + 1) % neighborSize);
+			Point2D.Double p2 = s1Endpoints.get((i + 1) % neighborSize).otherNode;
 			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
 			KdTree.XYZPoint p2XYZ = nodeP2.getID();
 
@@ -285,12 +285,12 @@ public class Convex {
 			else {
 				// we need to determine the four point of the sector
 				Point2D.Double p3 = null;
-				ArrayList<Point2D.Double> p1Points = p1XYZ.getNeighbors();
-				ArrayList<Point2D.Double> p2Points = p2XYZ.getNeighbors();
+				ArrayList<EdgeData> p1Points = p1XYZ.getNeighbors();
+				ArrayList<EdgeData> p2Points = p2XYZ.getNeighbors();
 
-				for (Point2D.Double p : p1Points) {
-					if (!p.equals(site1) && p2Points.contains(p)) {
-						p3 = p;
+				for (EdgeData e : p1Points) {
+					if (!e.otherNode.equals(site1) && p2XYZ.containsNeighbor(e.otherNode)) {
+						p3 = e.otherNode;
 						break;
 					}
 				}
@@ -303,8 +303,8 @@ public class Convex {
 
 				Segment edge1 = s1ID.getEdge(i);
 				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
-				Segment edge3 = s2ID.getEdge(p1Points.indexOf(p3));
-				Segment edge4 = s2ID.getEdge(p2Points.indexOf(p3));
+				Segment edge3 = s2ID.getEdge(p1XYZ.indexOf(p3));
+				Segment edge4 = s2ID.getEdge(p2XYZ.indexOf(p3));
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
@@ -788,7 +788,13 @@ public class Convex {
 		T obj_j = arr.get(j);
 
 		// determine type T
-		if(obj_i instanceof Point2D.Double) {
+		if(obj_i instanceof EdgeData) {
+			EdgeData temp_i = (EdgeData) ((EdgeData) obj_i).clone();
+			EdgeData temp_j = (EdgeData) ((EdgeData) obj_j).clone();
+			arr.set(i, (T) temp_j);
+			arr.set(j, (T) temp_i);
+			
+		} else if(obj_i instanceof Point2D.Double) {
 			Point2D.Double temp_i = (Point2D.Double) ((Point2D.Double) obj_i).clone();
 			Point2D.Double temp_j = (Point2D.Double) ((Point2D.Double) obj_j).clone();
 			arr.set(i, (T) temp_j);
@@ -809,7 +815,7 @@ public class Convex {
 	array, and places all smaller (smaller than pivot)
 	to left of pivot and all greater elements to right
 	of pivot */
-	static int partition(ArrayList<Point2D.Double> arr, ArrayList<Double> compare, int low, int high)
+	static <T> int partition(ArrayList<T> arr, ArrayList<Double> compare, int low, int high)
 	{
 		
 		// pivot
@@ -844,7 +850,7 @@ public class Convex {
 			low --> Starting index,
 			high --> Ending index
 	*/
-	public static void quickSort(ArrayList<Point2D.Double> arr, ArrayList<Double> compare, int low, int high) {
+	public static <T> void quickSort(ArrayList<T> arr, ArrayList<Double> compare, int low, int high) {
 		if (low < high) {
 			
 			// pi is partitioning index, arr[p]
