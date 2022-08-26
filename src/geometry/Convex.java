@@ -267,10 +267,10 @@ public class Convex {
 				
 				// find the smallest and largest angular coordinate from the arraylist above
 				Double smallestAngle = Collections.min(verticesToSite2Angles);
-				Double largestAngle = Collections.min(verticesToSite2Angles);
+				Double largestAngle = Collections.max(verticesToSite2Angles);
 				
-				int indexEdge1 = Convex.getMin(s2Angles, smallestAngle);
-				int indexEdge2 = Convex.getMax(s2Angles, largestAngle);
+				int indexEdge1 = Convex.getMax(s2Angles, smallestAngle);
+				int indexEdge2 = Convex.getMin(s2Angles, largestAngle);
 
 				Segment edge1 = s1ID.getEdge(i);
 				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
@@ -303,8 +303,8 @@ public class Convex {
 
 				Segment edge1 = s1ID.getEdge(i);
 				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
-				Segment edge3 = s2ID.getEdge(p1XYZ.indexOf(p3));
-				Segment edge4 = s2ID.getEdge(p2XYZ.indexOf(p3));
+				Segment edge3 = p1XYZ.getEdge(p1XYZ.indexOf(p3));
+				Segment edge4 = p2XYZ.getEdge(p2XYZ.indexOf(p3));
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
@@ -868,7 +868,7 @@ public class Convex {
 		int index = 0;
 		Double currLargestAngle = angles.get(index);
 		for (int i = 1; i < angles.size(); i++) {
-			if (angles.get(i) < maxAngle && angles.get(i) > currLargestAngle) {
+			if (castDecimal(angles.get(i), 4) <= castDecimal(maxAngle, 4) && angles.get(i) > currLargestAngle) {
 				index = i;
 				currLargestAngle = angles.get(i);
 			}
@@ -877,15 +877,19 @@ public class Convex {
 	}
 
 	private static int getMin(ArrayList<Double> angles, double minAngle) {
-		int index = 0;
+		int index = angles.size() - 1;
 		Double currSmallestAngle = angles.get(index);
-		for (int i = 1; i < angles.size(); i++) {
-			if (angles.get(i) > minAngle && angles.get(i) < currSmallestAngle) {
+		for (int i = 0; i < angles.size() - 1; i++) {
+			if (castDecimal(angles.get(i), 4) >= castDecimal(minAngle, 4) && angles.get(i) < currSmallestAngle) {
 				index = i;
 				currSmallestAngle = angles.get(i);
 			}
 		}
 		return index;
+	}
+	
+	private static Double castDecimal(Double n, int numDecimalPlace) {
+		return (int) (n * Math.pow(10, numDecimalPlace)) / Math.pow(10, numDecimalPlace);
 	}
 
 	/* Loads control points from input file */
