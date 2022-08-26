@@ -272,10 +272,10 @@ public class Convex {
 				int indexEdge1 = Convex.getMax(s2Angles, smallestAngle);
 				int indexEdge2 = Convex.getMin(s2Angles, largestAngle);
 
-				Segment edge1 = s1ID.getEdge(i);
+				Segment edge1 = s2ID.getEdge(indexEdge2);
 				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
 				Segment edge3 = s2ID.getEdge(indexEdge1);
-				Segment edge4 = s2ID.getEdge(indexEdge2);
+				Segment edge4 = s1ID.getEdge(i);
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
@@ -301,10 +301,10 @@ public class Convex {
 				vertices.add(p2);
 				vertices.add(p3);
 
-				Segment edge1 = s1ID.getEdge(i);
+				Segment edge1 = p2XYZ.getEdge(p2XYZ.indexOf(p3));
 				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
 				Segment edge3 = p1XYZ.getEdge(p1XYZ.indexOf(p3));
-				Segment edge4 = p2XYZ.getEdge(p2XYZ.indexOf(p3));
+				Segment edge4 = s1ID.getEdge(i);
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
 				sectors.add(sector);
@@ -888,7 +888,7 @@ public class Convex {
 		return index;
 	}
 	
-	private static Double castDecimal(Double n, int numDecimalPlace) {
+	public static Double castDecimal(Double n, int numDecimalPlace) {
 		return (int) (n * Math.pow(10, numDecimalPlace)) / Math.pow(10, numDecimalPlace);
 	}
 

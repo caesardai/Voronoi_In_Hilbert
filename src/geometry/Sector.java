@@ -16,6 +16,11 @@ public class Sector {
 	// sites
 	Point2D.Double site1, site2;
 
+	// for each segment that makes up the sector, store whether that segment comes a
+	// site's spoke or null if it is on an edge
+	// MAYBE THIS SHOULD BE A SEGMENT TO STORE CONVEX HULL EDGE INFO
+	private Point2D.Double[] segmentOrigin;
+
 	// Edges
 	private Segment edge1;
 	private Segment edge2;
@@ -23,7 +28,8 @@ public class Sector {
 	private Segment edge4;
 
 	public Sector(Point2D.Double site1, Point2D.Double site2, Segment edge1, Segment edge2, Segment edge3,
-			Segment edge4, ArrayList<Point2D.Double> points) {
+			Segment edge4, ArrayList<Segment> segs) {
+
 		this.site1 = site1;
 		this.site2 = site2;
 		this.edge1 = edge1;
@@ -32,8 +38,12 @@ public class Sector {
 		this.edge4 = edge4;
 
 		sector = new Convex();
-		for (Point2D.Double p : points)
-			sector.addPoint(p);
+		this.segmentOrigin = new Point2D.Double[segs.size()];
+		for (int i = 0; i < segs.size(); i++) {
+			Segment seg = segs.get(i);
+			sector.addPoint(Util.toPoint2D(seg.getLeftPoint()));
+			this.segmentOrigin[i] = seg.getSite1();
+		}
 	}
 
 	/*
@@ -77,12 +87,42 @@ public class Sector {
 	public Segment getEdge4() {
 		return this.edge4;
 	}
-
+	
+	/**
+	 * @return The number of edges that make up the sector
+	 */
+	public int getNumEdges() {
+		return this.sector.convexHull.length - 1;
+	}
+	
+	/**
+	 * @param index the index of the i-th vertex
+	 * @return returns the i-th and (i+1)%N-th line segment
+	 */
+	public Segment getEdge(int index) {
+		Point2D.Double[] vertices = this.sector.convexHull;
+		return new Segment((float) vertices[index].x, 
+				(float) vertices[index].y,
+				(float) vertices[(index + 1) % vertices.length].x,
+				(float) vertices[(index + 1) % vertices.length].y);
+	}
+	
 	/*
 	 * Check if given query point is in the convex object
 	 */
 	public boolean isInSector(Point2D.Double p) {
 		return this.sector.isInConvex(p);
+	}
+	
+	/**
+	 * @param index the index to query from the vertex array
+	 * @return Returns the i-th vertex of the sector
+	 */
+	public Point2D.Double getEdgeSite(int index) {
+		if(index < 0 || index >= this.segmentOrigin.length)
+			return null;
+
+		return this.segmentOrigin[index];
 	}
 
 	/**
