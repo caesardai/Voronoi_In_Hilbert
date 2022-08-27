@@ -4,12 +4,7 @@ import java.awt.geom.Point2D;
 // import java.awt.geom.Point2D.Double;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.Collections;
-import java.util.LinkedList;
 import java.util.*;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
 
 import trapmap.Segment;
 import processing.core.PVector;
@@ -193,7 +188,7 @@ public class Convex {
 	 * Construct sectors with given sites and segments Each sector is associated
 	 * with an edge and site
 	 */
-	public static List<Sector> constructSector(Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
+	public List<Sector> constructSector(Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
 		// returning list of sectors
 		List<Sector> sectors = new ArrayList<Sector>();
 
@@ -229,6 +224,7 @@ public class Convex {
 		// Calculate site 1 angles
 		for (int i = 0; i < s1Endpoints.size(); i++) {
 			s1Angles.add(Voronoi.spokeAngle(site1, s1Endpoints.get(i).otherNode));
+
 		}
 		// Sort through site 1 angles
 		Convex.quickSort(s1Endpoints, s1Angles, 0, s1Angles.size() - 1);
@@ -253,7 +249,7 @@ public class Convex {
 			KdTree.XYZPoint p2XYZ = nodeP2.getID();
 
 			// 3 edge case
-			if (p1XYZ.containsNeighbor(p2)) {				
+			if (p1XYZ.containsNeighbor(p2)) {
 				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
 				vertices.add(site1);
 				vertices.add(p1);
@@ -263,24 +259,53 @@ public class Convex {
 				sites.add(s1ID.getNeighbor(s1ID.indexOf(p1)).site);
 				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p2)).site);
 				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(site1)).site);
-				
-				// compute the angular coordinate of points site1, p1, and p2 with respect to the polar coordinate system centered at site2
-				ArrayList<Double> verticesToSite2Angles = new ArrayList<Double>();
-				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, site1));
-				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p1));
-				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p2));
-				
-				// find the smallest and largest angular coordinate from the arraylist above
-				Double smallestAngle = Collections.min(verticesToSite2Angles);
-				Double largestAngle = Collections.max(verticesToSite2Angles);
-				
-				int indexEdge1 = Convex.getMax(s2Angles, smallestAngle);
-				int indexEdge2 = Convex.getMin(s2Angles, largestAngle);
 
-				Segment edge1 = s2ID.getEdge(indexEdge2);
-				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
-				Segment edge3 = s2ID.getEdge(indexEdge1);
-				Segment edge4 = s1ID.getEdge(i);
+				Double angle1 = s1Angles.get(i);
+				Double angle2 = s1Angles.get((i + 1) % neighborSize);
+				Double midAngle = Math.abs(angle2 - angle1) / 2 + angle1;
+
+				Point2D.Double midPoint = Voronoi.rotatePoint(site1, midAngle);
+				Point2D.Double[] p = Util.intersectionPoints(site1, midPoint, this);
+
+				ArrayList<Point2D.Double> directionLinePoints = (ArrayList<Point2D.Double>) Arrays.asList(p);
+				directionLinePoints.add(site1);
+				directionLinePoints.add(midPoint);
+				sortColinearPoints(directionLinePoints);
+
+				// Forward
+				Segment[] directionSegs = new Segment[2];
+				for (int i = 0; i < this.convexHull.length - 1; i++) {
+					if (Math.abs(this.convexHull[i].scalarProduct(HilbertGeometry.toHomogeneous(points1.get(i)))) < 1e-14) {
+						break;
+					}
+				}
+
+				if (directionLinePoints.get(2).equals(site1)) {
+
+				}
+
+				// Backward
+				else {
+
+				}
+
+//				// compute the angular coordinate of points site1, p1, and p2 with respect to the polar coordinate system centered at site2
+//				ArrayList<Double> verticesToSite2Angles = new ArrayList<Double>();
+//				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, site1));
+//				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p1));
+//				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p2));
+//				
+//				// find the smallest and largest angular coordinate from the arraylist above
+//				Double smallestAngle = Collections.min(verticesToSite2Angles);
+//				Double largestAngle = Collections.max(verticesToSite2Angles);
+//				
+//				int indexEdge1 = Convex.getMax(s2Angles, smallestAngle);
+//				int indexEdge2 = Convex.getMin(s2Angles, largestAngle);
+//
+//				Segment edge1 = s2ID.getEdge(indexEdge2);
+//				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
+//				Segment edge3 = s2ID.getEdge(indexEdge1);
+//				Segment edge4 = s1ID.getEdge(i);
 
 				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices, sites);
 				sectors.add(sector);
@@ -305,7 +330,7 @@ public class Convex {
 				vertices.add(p1);
 				vertices.add(p2);
 				vertices.add(p3);
-				
+
 				ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
 				sites.add(s1ID.getNeighbor(s1ID.indexOf(p1)).site);
 				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p3)).site);
@@ -791,7 +816,6 @@ public class Convex {
 //		quickSort(array, compare, pivot + 1, end);
 //	}
 
-	
 	// A utility function to swap two elements
 	@SuppressWarnings("unchecked")
 	static <T> void swap(ArrayList<T> arr, int i, int j) {
@@ -799,18 +823,18 @@ public class Convex {
 		T obj_j = arr.get(j);
 
 		// determine type T
-		if(obj_i instanceof EdgeData) {
+		if (obj_i instanceof EdgeData) {
 			EdgeData temp_i = (EdgeData) ((EdgeData) obj_i).clone();
 			EdgeData temp_j = (EdgeData) ((EdgeData) obj_j).clone();
 			arr.set(i, (T) temp_j);
 			arr.set(j, (T) temp_i);
-			
-		} else if(obj_i instanceof Point2D.Double) {
+
+		} else if (obj_i instanceof Point2D.Double) {
 			Point2D.Double temp_i = (Point2D.Double) ((Point2D.Double) obj_i).clone();
 			Point2D.Double temp_j = (Point2D.Double) ((Point2D.Double) obj_j).clone();
 			arr.set(i, (T) temp_j);
 			arr.set(j, (T) temp_i);
-		} else if(obj_i instanceof Double) {
+		} else if (obj_i instanceof Double) {
 			Double temp_i = (Double) obj_i;
 			Double temp_j = (Double) obj_j;
 			arr.set(i, (T) temp_j);
@@ -821,29 +845,26 @@ public class Convex {
 		}
 	}
 
-	/* This function takes last element as pivot, places
-	the pivot element at its correct position in sorted
-	array, and places all smaller (smaller than pivot)
-	to left of pivot and all greater elements to right
-	of pivot */
-	static <T> int partition(ArrayList<T> arr, ArrayList<Double> compare, int low, int high)
-	{
-		
+	/*
+	 * This function takes last element as pivot, places the pivot element at its
+	 * correct position in sorted array, and places all smaller (smaller than pivot)
+	 * to left of pivot and all greater elements to right of pivot
+	 */
+	static <T> int partition(ArrayList<T> arr, ArrayList<Double> compare, int low, int high) {
+
 		// pivot
 		Double pivot = compare.get(high);
-		
+
 		// Index of smaller element and
 		// indicates the right position
 		// of pivot found so far
 		int i = (low - 1);
 
-		for(int j = low; j <= high - 1; j++)
-		{
-			
+		for (int j = low; j <= high - 1; j++) {
+
 			// If current element is smaller
 			// than the pivot
-			if (compare.get(j)< pivot)
-			{
+			if (compare.get(j) < pivot) {
 				// Increment index of
 				// smaller element
 				i++;
@@ -856,14 +877,13 @@ public class Convex {
 		return (i + 1);
 	}
 
-	/* The main function that implements QuickSort
-			arr[] --> Array to be sorted,
-			low --> Starting index,
-			high --> Ending index
-	*/
+	/*
+	 * The main function that implements QuickSort arr[] --> Array to be sorted, low
+	 * --> Starting index, high --> Ending index
+	 */
 	public static <T> void quickSort(ArrayList<T> arr, ArrayList<Double> compare, int low, int high) {
 		if (low < high) {
-			
+
 			// pi is partitioning index, arr[p]
 			// is now at right place
 			int pi = partition(arr, compare, low, high);
@@ -874,7 +894,7 @@ public class Convex {
 			quickSort(arr, compare, pi + 1, high);
 		}
 	}
-	
+
 	private static int getMax(ArrayList<Double> angles, double maxAngle) {
 		int index = 0;
 		Double currLargestAngle = angles.get(index);
@@ -898,7 +918,7 @@ public class Convex {
 		}
 		return index;
 	}
-	
+
 	public static Double castDecimal(Double n, int numDecimalPlace) {
 		return (int) (n * Math.pow(10, numDecimalPlace)) / Math.pow(10, numDecimalPlace);
 	}

@@ -749,7 +749,7 @@ public class Bisector {
 	 * computes coefficients of the equations of two given points
 	 * 
 	 * @param p1 the first point on the line
-	 * @param p2 the second point on the line
+	 * @param p2 the second point on the lines
 	 * @return, Point3d that contains the coefficients c1, c2, c3 of the line c1 x + c2 y + c3 = 0
 	 */
 	public static Point3d computeLineEquation(Point2D.Double p1, Point2D.Double p2) {

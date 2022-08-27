@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import Jama.Matrix;
 
 import drawing.DrawingApplet;
 import drawing.DrawUtil;
@@ -173,11 +174,12 @@ public class Voronoi {
 //		else
 //			return 2 * Math.PI - angle; // (hull.x > site.x && hull.y < site.y)
 	}
+	
 
 	/*
 	 * Rotates point p by some angle theta
 	 */
-	private static Point2D.Double rotationMatrix(Point2D.Double p, double theta) { // deleted static
+	public static Point2D.Double rotationMatrix(Point2D.Double p, double theta) { // deleted static
 		Double[][] R = new Double[2][2];
 		R[0][0] = Math.cos(theta);
 		R[1][1] = R[0][0];
@@ -186,6 +188,19 @@ public class Voronoi {
 
 		return new Point2D.Double(R[0][0] * p.x + R[0][1] * p.y, R[1][0] * p.x + R[1][1] * p.y);
 	}
+	
+	/**
+	 * 
+	 * @param center
+	 * @param theta
+	 * @return
+	 */
+	public static Point2D.Double rotatePoint(Point2D.Double center, double theta) {
+        Matrix v = new Matrix(new double[] {1, 0}, 2);
+        Matrix rotation = new Matrix(new double[] {Math.cos(theta), Math.sin(theta), -Math.sin(theta), Math.cos(theta)}, 2);
+        Matrix vRotated = rotation.times(v);
+        return new Point2D.Double(vRotated.get(0, 0) + center.x, vRotated.get(1, 0) + center.y);
+    }
 
 	/*
 	 * Return coefficients of all lines that intersect the Voronoi site and rotated

@@ -163,7 +163,7 @@ public class HilbertGeometry {
   }
   
   /* Computes intersection point in homogeneous coordinates between line and segment [PQ] */ 
-  private Point3d intersection(Point3d line, Point3d p, Point3d q) {
+  protected static Point3d intersection(Point3d line, Point3d p, Point3d q) {
     Point3d vectorPQ = new Point3d(p.x - q.x, p.y - q.y, p.z - q.z);
     double denom = line.scalarProduct(vectorPQ);
     if (denom == 0) return new Point3d();
