@@ -253,11 +253,16 @@ public class Convex {
 			KdTree.XYZPoint p2XYZ = nodeP2.getID();
 
 			// 3 edge case
-			if (p1XYZ.containsNeighbor(p2)) {
+			if (p1XYZ.containsNeighbor(p2)) {				
 				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
 				vertices.add(site1);
 				vertices.add(p1);
 				vertices.add(p2);
+
+				ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
+				sites.add(s1ID.getNeighbor(s1ID.indexOf(p1)).site);
+				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p2)).site);
+				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(site1)).site);
 				
 				// compute the angular coordinate of points site1, p1, and p2 with respect to the polar coordinate system centered at site2
 				ArrayList<Double> verticesToSite2Angles = new ArrayList<Double>();
@@ -277,7 +282,7 @@ public class Convex {
 				Segment edge3 = s2ID.getEdge(indexEdge1);
 				Segment edge4 = s1ID.getEdge(i);
 
-				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
+				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices, sites);
 				sectors.add(sector);
 			}
 
@@ -300,13 +305,19 @@ public class Convex {
 				vertices.add(p1);
 				vertices.add(p2);
 				vertices.add(p3);
+				
+				ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
+				sites.add(s1ID.getNeighbor(s1ID.indexOf(p1)).site);
+				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p3)).site);
+				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(p3)).site);
+				sites.add(s1ID.getNeighbor(s1ID.indexOf(p2)).site);
 
 				Segment edge1 = p2XYZ.getEdge(p2XYZ.indexOf(p3));
 				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
 				Segment edge3 = p1XYZ.getEdge(p1XYZ.indexOf(p3));
 				Segment edge4 = s1ID.getEdge(i);
 
-				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices);
+				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices, sites);
 				sectors.add(sector);
 			}
 		}

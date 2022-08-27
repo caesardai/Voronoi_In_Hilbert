@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import geometry.Convex;
 import trapmap.Segment;
 
 public class Sector {
@@ -28,7 +26,7 @@ public class Sector {
 	private Segment edge4;
 
 	public Sector(Point2D.Double site1, Point2D.Double site2, Segment edge1, Segment edge2, Segment edge3,
-			Segment edge4, ArrayList<Segment> segs) {
+			Segment edge4, ArrayList<Point2D.Double> vertices, ArrayList<Point2D.Double> sites) {
 
 		this.site1 = site1;
 		this.site2 = site2;
@@ -38,11 +36,10 @@ public class Sector {
 		this.edge4 = edge4;
 
 		sector = new Convex();
-		this.segmentOrigin = new Point2D.Double[segs.size()];
-		for (int i = 0; i < segs.size(); i++) {
-			Segment seg = segs.get(i);
-			sector.addPoint(Util.toPoint2D(seg.getLeftPoint()));
-			this.segmentOrigin[i] = seg.getSite1();
+		this.segmentOrigin = new Point2D.Double[vertices.size()];
+		for (int i = 0; i < vertices.size(); i++) {
+			sector.addPoint(vertices.get(i));
+			this.segmentOrigin[i] = sites.get(i);
 		}
 	}
 
@@ -134,24 +131,24 @@ public class Sector {
 	public void sortEdges(Voronoi v) {
 		// find a spoke on the sector that is associated with a site
 		int spokeIndex = 0;
-		while (this.sector.getEdgeSite(spokeIndex) == null || spokeIndex >= this.sector.getNumEdges())
+		while (this.segmentOrigin[spokeIndex] == null || spokeIndex >= this.getNumEdges())
 			spokeIndex++;
 
 		// if an error occurs (all sector should contain one edge
-		if (spokeIndex == this.sector.getNumEdges()) {
+		if (spokeIndex == this.getNumEdges()) {
 			System.out.println("Error: sector is only composed of edges from the convex hull's boundary.");
 			return;
 		}
 
 		// compute spoke
-		Segment edge = this.sector.getEdge(spokeIndex);
+		Segment edge = this.getEdge(spokeIndex);
 		Point3d spoke = HilbertGeometry.toHomogeneous(Util.toPoint2D(edge.getLeftPoint()))
 				.crossProduct(HilbertGeometry.toHomogeneous(Util.toPoint2D(edge.getRightPoint())));
 
 		// compute the bisector
 		// we assume that the spoke above comes site1 or site2. anything else is an
 		// error
-		Point2D.Double s1 = this.sector.getEdgeSite(spokeIndex);
+		Point2D.Double s1 = this.segmentOrigin[spokeIndex];
 		Point2D.Double s2 = this.site1;
 		if (Util.samePoints(s1, this.site1))
 			s2 = this.site2;
