@@ -280,7 +280,7 @@ public class Convex {
 //				Segment edge3 = s2ID.getEdge(indexEdge1);
 //				Segment edge4 = s1ID.getEdge(i);
 
-				Sector sector = new Sector(site1, site2, edges[1], edges[2], edges[3], edges[4], vertices, sites);
+				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
 				sectors.add(sector);
 			}
 
@@ -312,7 +312,7 @@ public class Convex {
 
 				Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
 
-				Sector sector = new Sector(site1, site2, edges[1], edges[2], edges[3], edges[4], vertices, sites);
+				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
 				sectors.add(sector);
 			}
 		}
@@ -338,7 +338,9 @@ public class Convex {
 		Point2D.Double midPoint = Voronoi.rotatePoint(site1, midAngle);
 		Point2D.Double[] p = Util.intersectionPoints(site1, midPoint, this);
 
-		ArrayList<Point2D.Double> directionLinePoints = (ArrayList<Point2D.Double>) Arrays.asList(p);
+		List<Point2D.Double> dlp = (List<Point2D.Double>) Arrays.asList(p);
+		ArrayList<Point2D.Double> directionLinePoints = new ArrayList<Point2D.Double>(dlp);
+		
 		directionLinePoints.add(site1);
 		directionLinePoints.add(midPoint);
 		sortColinearPoints(directionLinePoints);
@@ -355,7 +357,7 @@ public class Convex {
 				Point3d hv2 = HilbertGeometry.toHomogeneous(v2);
 				Point3d line = hv1.crossProduct(hv2);
 				
-				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[i]))) < 1e-14) {
+				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[index]))) < 1e-4) {
 					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
 					break;
 				}
@@ -364,21 +366,22 @@ public class Convex {
 
 		// Forward
 		if (directionLinePoints.get(2).equals(site1)) {
-			edges[2] = directionSegs[1];
-			edges[4] = directionSegs[0];
+			edges[1] = directionSegs[1];
+			edges[3] = directionSegs[0];
 		}
 
 		// Backward
 		else {
-			edges[2] = directionSegs[0];
-			edges[4] = directionSegs[1];
+			edges[1] = directionSegs[0];
+			edges[3] = directionSegs[1];
 		}
 		
 		// compute convex hull intersection point from line above
 		intersectionPoints = Util.intersectionPoints(site1, site2, this);
 		
 		directionLinePoints.clear();
-		directionLinePoints = (ArrayList<Point2D.Double>) Arrays.asList(intersectionPoints);
+		List<Point2D.Double> dlp1 = (List<Point2D.Double>) Arrays.asList(intersectionPoints);
+		directionLinePoints = new ArrayList<Point2D.Double>(dlp1);
 		directionLinePoints.add(site1);
 		directionLinePoints.add(site2);
 		sortColinearPoints(directionLinePoints);
@@ -395,7 +398,7 @@ public class Convex {
 				Point3d hv2 = HilbertGeometry.toHomogeneous(v2);
 				Point3d line = hv1.crossProduct(hv2);
 				
-				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[i]))) < 1e-14) {
+				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[index]))) < 1e-4) {
 					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
 					break;
 				}
@@ -404,14 +407,14 @@ public class Convex {
 
 		// Forward
 		if (directionLinePoints.get(2).equals(site2)) {
-			edges[1] = directionSegs[0];
-			edges[3] = directionSegs[1];
+			edges[0] = directionSegs[0];
+			edges[2] = directionSegs[1];
 		}
 
 		// Backward
 		else {
-			edges[1] = directionSegs[1];
-			edges[3] = directionSegs[0];
+			edges[0] = directionSegs[1];
+			edges[2] = directionSegs[0];
 		}
 		
 		return edges;

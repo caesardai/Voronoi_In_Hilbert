@@ -107,7 +107,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		KdTree<KdTree.XYZPoint> tree = this.voronoi.constructGraph(site1, site2);
 
 		// Constructing sectors
-		// secs = c.constructSector(site1, site2, tree);
+		secs = c.constructSector(site1, site2, tree);
 
 		/*
 		 * traverse through all sectors for each sector => call all edges => color each
