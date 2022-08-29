@@ -107,7 +107,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		KdTree<KdTree.XYZPoint> tree = this.voronoi.constructGraph(site1, site2);
 
 		// Constructing sectors
-		secs = Convex.constructSector(site1, site2, tree);
+		// secs = c.constructSector(site1, site2, tree);
 
 		/*
 		 * traverse through all sectors for each sector => call all edges => color each
@@ -205,15 +205,15 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		// Coloring spokes with different colors
 
 		/* TEST SECTOR GRAPH */
-		Point2D.Double p1 = this.geometry.convex.convexHull[0];
-		Point2D.Double p2 = this.geometry.convex.convexHull[1];
-		Point2D.Double p3 = this.geometry.convex.convexHull[2];
-		Point2D.Double p4 = this.geometry.convex.convexHull[3];
-      	
-		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
-		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
-		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
-		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
+//		Point2D.Double p1 = this.geometry.convex.convexHull[0];
+//		Point2D.Double p2 = this.geometry.convex.convexHull[1];
+//		Point2D.Double p3 = this.geometry.convex.convexHull[2];
+//		Point2D.Double p4 = this.geometry.convex.convexHull[3];
+//      	
+//		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
+//		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
+//		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
+//		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
 		
 //		ArrayList<KdTree.XYZPoint> endPoints = this.tree.getAllNodes();
 //		for(KdTree.XYZPoint p : endPoints) {
@@ -239,44 +239,44 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		 * Color sectors
 		 */
 		
-		for (Sector sec : secs) {
-			// Find random color
-			Color c = null;
-			int colorNum = (int) (Math.random() * 8);
-			if (colorNum == 0)
-				c = DrawUtil.DEFAULT;
-			if (colorNum == 1)
-				c = DrawUtil.RED;
-			if (colorNum == 2)
-				c = DrawUtil.BLUE;
-			if (colorNum == 3)
-				c = DrawUtil.GREEN;
-			if (colorNum == 4)
-				c = DrawUtil.PURPLE;
-			if (colorNum == 5)
-				c = DrawUtil.BLACK;
-			if (colorNum == 6)
-				c = DrawUtil.GREY;
-			if (colorNum == 7)
-				c = DrawUtil.WHITE;
-
-			this.fill((float) c.getRed(), (float) c.getGreen(), (float) c.getBlue());
-			
-			int numPoints = sec.sector.convexHull.length - 1;
-			if (numPoints == 3) {
-				this.quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
-						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
-						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
-						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y);
-			}
-			
-			if (numPoints == 4) {
-				quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
-						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
-						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
-						(float) sec.sector.convexHull[3].x, (float) sec.sector.convexHull[3].y);
-			}
-		}
+//		for (Sector sec : secs) {
+//			// Find random color
+//			Color c = null;
+//			int colorNum = (int) (Math.random() * 8);
+//			if (colorNum == 0)
+//				c = DrawUtil.DEFAULT;
+//			if (colorNum == 1)
+//				c = DrawUtil.RED;
+//			if (colorNum == 2)
+//				c = DrawUtil.BLUE;
+//			if (colorNum == 3)
+//				c = DrawUtil.GREEN;
+//			if (colorNum == 4)
+//				c = DrawUtil.PURPLE;
+//			if (colorNum == 5)
+//				c = DrawUtil.BLACK;
+//			if (colorNum == 6)
+//				c = DrawUtil.GREY;
+//			if (colorNum == 7)
+//				c = DrawUtil.WHITE;
+//
+//			this.fill((float) c.getRed(), (float) c.getGreen(), (float) c.getBlue());
+//			
+//			int numPoints = sec.sector.convexHull.length - 1;
+//			if (numPoints == 3) {
+//				this.quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
+//						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
+//						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
+//						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y);
+//			}
+//			
+//			if (numPoints == 4) {
+//				quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
+//						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
+//						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
+//						(float) sec.sector.convexHull[3].x, (float) sec.sector.convexHull[3].y);
+//			}
+//		}
 
 		/* ----------------- */
 

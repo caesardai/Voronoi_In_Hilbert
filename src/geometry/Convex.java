@@ -260,34 +260,7 @@ public class Convex {
 				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p2)).site);
 				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(site1)).site);
 
-				Double angle1 = s1Angles.get(i);
-				Double angle2 = s1Angles.get((i + 1) % neighborSize);
-				Double midAngle = Math.abs(angle2 - angle1) / 2 + angle1;
-
-				Point2D.Double midPoint = Voronoi.rotatePoint(site1, midAngle);
-				Point2D.Double[] p = Util.intersectionPoints(site1, midPoint, this);
-
-				ArrayList<Point2D.Double> directionLinePoints = (ArrayList<Point2D.Double>) Arrays.asList(p);
-				directionLinePoints.add(site1);
-				directionLinePoints.add(midPoint);
-				sortColinearPoints(directionLinePoints);
-
-				// Forward
-				Segment[] directionSegs = new Segment[2];
-				for (int i = 0; i < this.convexHull.length - 1; i++) {
-					if (Math.abs(this.convexHull[i].scalarProduct(HilbertGeometry.toHomogeneous(points1.get(i)))) < 1e-14) {
-						break;
-					}
-				}
-
-				if (directionLinePoints.get(2).equals(site1)) {
-
-				}
-
-				// Backward
-				else {
-
-				}
+				Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
 
 //				// compute the angular coordinate of points site1, p1, and p2 with respect to the polar coordinate system centered at site2
 //				ArrayList<Double> verticesToSite2Angles = new ArrayList<Double>();
@@ -307,7 +280,7 @@ public class Convex {
 //				Segment edge3 = s2ID.getEdge(indexEdge1);
 //				Segment edge4 = s1ID.getEdge(i);
 
-				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices, sites);
+				Sector sector = new Sector(site1, site2, edges[1], edges[2], edges[3], edges[4], vertices, sites);
 				sectors.add(sector);
 			}
 
@@ -337,12 +310,9 @@ public class Convex {
 				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(p3)).site);
 				sites.add(s1ID.getNeighbor(s1ID.indexOf(p2)).site);
 
-				Segment edge1 = p2XYZ.getEdge(p2XYZ.indexOf(p3));
-				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
-				Segment edge3 = p1XYZ.getEdge(p1XYZ.indexOf(p3));
-				Segment edge4 = s1ID.getEdge(i);
+				Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
 
-				Sector sector = new Sector(site1, site2, edge1, edge2, edge3, edge4, vertices, sites);
+				Sector sector = new Sector(site1, site2, edges[1], edges[2], edges[3], edges[4], vertices, sites);
 				sectors.add(sector);
 			}
 		}
@@ -352,6 +322,99 @@ public class Convex {
 		// loop through the segment endpoints i, i+1 and check whether there is an
 		// existing line segment
 		return sectors;
+	}
+	
+	public Segment[] determineEdges(Point2D.Double site1, Point2D.Double site2, ArrayList<Double> s1Angles, int i) {
+		// Segments to return
+		Segment[] edges = new Segment[4]; 
+		
+		// constants
+		int neighborSize = s1Angles.size();
+		
+		Double angle1 = s1Angles.get(i);
+		Double angle2 = s1Angles.get((i + 1) % neighborSize);
+		Double midAngle = Math.abs(angle2 - angle1) / 2 + angle1;
+
+		Point2D.Double midPoint = Voronoi.rotatePoint(site1, midAngle);
+		Point2D.Double[] p = Util.intersectionPoints(site1, midPoint, this);
+
+		ArrayList<Point2D.Double> directionLinePoints = (ArrayList<Point2D.Double>) Arrays.asList(p);
+		directionLinePoints.add(site1);
+		directionLinePoints.add(midPoint);
+		sortColinearPoints(directionLinePoints);
+
+		// determine the edge convex hull intersection points are located
+		Point2D.Double[] intersectionPoints = new Point2D.Double[] {directionLinePoints.get(0), directionLinePoints.get(3)};
+		Segment[] directionSegs = new Segment[2];
+		for (int index = 0; index < intersectionPoints.length; index++) {
+			for(int edgeCount = 0; edgeCount < this.convexHull.length - 1; edgeCount++) {
+				// get line equation for current edge
+				Point2D.Double v1 = this.convexHull[edgeCount];
+				Point2D.Double v2 = this.convexHull[edgeCount + 1];
+				Point3d hv1 = HilbertGeometry.toHomogeneous(v1);
+				Point3d hv2 = HilbertGeometry.toHomogeneous(v2);
+				Point3d line = hv1.crossProduct(hv2);
+				
+				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[i]))) < 1e-14) {
+					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
+					break;
+				}
+			}
+		}
+
+		// Forward
+		if (directionLinePoints.get(2).equals(site1)) {
+			edges[2] = directionSegs[1];
+			edges[4] = directionSegs[0];
+		}
+
+		// Backward
+		else {
+			edges[2] = directionSegs[0];
+			edges[4] = directionSegs[1];
+		}
+		
+		// compute convex hull intersection point from line above
+		intersectionPoints = Util.intersectionPoints(site1, site2, this);
+		
+		directionLinePoints.clear();
+		directionLinePoints = (ArrayList<Point2D.Double>) Arrays.asList(intersectionPoints);
+		directionLinePoints.add(site1);
+		directionLinePoints.add(site2);
+		sortColinearPoints(directionLinePoints);
+
+		// determine the edge convex hull intersection points are located
+		intersectionPoints = new Point2D.Double[] {directionLinePoints.get(0), directionLinePoints.get(3)};
+		directionSegs = new Segment[2];
+		for (int index = 0; index < intersectionPoints.length; index++) {
+			for(int edgeCount = 0; edgeCount < this.convexHull.length - 1; edgeCount++) {
+				// get line equation for current edge
+				Point2D.Double v1 = this.convexHull[edgeCount];
+				Point2D.Double v2 = this.convexHull[edgeCount + 1];
+				Point3d hv1 = HilbertGeometry.toHomogeneous(v1);
+				Point3d hv2 = HilbertGeometry.toHomogeneous(v2);
+				Point3d line = hv1.crossProduct(hv2);
+				
+				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[i]))) < 1e-14) {
+					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
+					break;
+				}
+			}
+		}
+
+		// Forward
+		if (directionLinePoints.get(2).equals(site2)) {
+			edges[1] = directionSegs[0];
+			edges[3] = directionSegs[1];
+		}
+
+		// Backward
+		else {
+			edges[1] = directionSegs[1];
+			edges[3] = directionSegs[0];
+		}
+		
+		return edges;
 	}
 
 	/*

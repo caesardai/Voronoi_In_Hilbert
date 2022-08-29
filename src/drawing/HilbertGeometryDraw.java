@@ -136,52 +136,59 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
 		for (int index = 0; index < this.convex.convexHull.length - 1; index++) {
 			Point2D.Double q = this.convex.convexHull[index];
-			LinkedList<Point2D.Double> r = this.frame.voronoi.augustAlgoWeak(q, p);
+			// LinkedList<Point2D.Double> r = this.frame.voronoi.augustAlgoWeak(q, p);
 			DrawUtil.changeColor(this.frame, DrawUtil.WHITE);
 
 			// Draw spoke from hull to hull
 			Point2D.Double[] edgePoints = intersectionPoints(p, q);
-			if (Util.samePoints(edgePoints[0], edgePoints[1])) {
-				System.out.println("are the same points");
-			}
-
-			// If the spoke end point is not on bisector
-			if (r.size() == 0) {
-				DrawUtil.drawSegment(edgePoints[0], edgePoints[1], this.frame);
-			}
-
-			// Draw spoke from hull vertex to bisector
-			if (r.size() == 1) {
-				Point2D.Double leftPoint, rightPoint;
-				if (edgePoints[0].x < edgePoints[1].x) {
-					leftPoint = edgePoints[0];
-					rightPoint = edgePoints[1];
-				} else {
-					leftPoint = edgePoints[1];
-					rightPoint = edgePoints[0];
-				}
-
-				// hull vertex - bisector
-				if (p.x < r.get(0).x) {
-					DrawUtil.drawSegment(leftPoint, r.get(0), this.frame);
-				}
-				// hull - bisector
-				else {
-					DrawUtil.drawSegment(rightPoint, r.get(0), this.frame);
-//					// Print statement for testing
-//					System.out.print("left: " + Util.printCoordinate(leftPoint) + "; ");
-//					System.out.print("bisector: " + Util.printCoordinate(r.get(0)) + "; ");
-//					System.out.print("site: " + Util.printCoordinate(p) + "; ");
-//					System.out.println("right: " + Util.printCoordinate(rightPoint));
-				}
-			}
-			
-			// Draw spoke from bisector to bisector
-			if (r.size() == 2 && r.get(0) != null && r.get(1) != null) {
-				DrawUtil.drawSegment(r.get(0), r.get(1), this.frame);
-			}
-		}
+			DrawUtil.drawSegment(edgePoints[0], edgePoints[1], this.frame);
+//			if (Util.samePoints(edgePoints[0], edgePoints[1])) {
+//				System.out.println("are the same points");
+//			}
+//
+//			// If the spoke end point is not on bisector
+//			if (r.size() == 0) {
+//				DrawUtil.drawSegment(edgePoints[0], edgePoints[1], this.frame);
+//			}
+//
+//			// Draw spoke from hull vertex to bisector
+//			if (r.size() == 1) {
+//				Point2D.Double leftPoint, rightPoint;
+//				if (edgePoints[0].x < edgePoints[1].x) {
+//					leftPoint = edgePoints[0];
+//					rightPoint = edgePoints[1];
+//				} else {
+//					leftPoint = edgePoints[1];
+//					rightPoint = edgePoints[0];
+//				}
+//
+//				// hull vertex - bisector
+//				if (p.x < r.get(0).x) {
+//					DrawUtil.drawSegment(leftPoint, r.get(0), this.frame);
+//				}
+//				// hull - bisector
+//				else {
+//					DrawUtil.drawSegment(rightPoint, r.get(0), this.frame);
+////					// Print statement for testing
+////					System.out.print("left: " + Util.printCoordinate(leftPoint) + "; ");
+////					System.out.print("bisector: " + Util.printCoordinate(r.get(0)) + "; ");
+////					System.out.print("site: " + Util.printCoordinate(p) + "; ");
+////					System.out.println("right: " + Util.printCoordinate(rightPoint));
+//				}
+//			}
+//			
+//			// Draw spoke from bisector to bisector
+//			if (r.size() == 2 && r.get(0) != null && r.get(1) != null) {
+//				DrawUtil.drawSegment(r.get(0), r.get(1), this.frame);
+//			}
+//		}
 		
+//		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
+		}
+	}
+}
+
+// MAYBE UNNECESSARY SOURCE CODE
 		/*
 		 * Approximating Hilbert Voronoi bisector
 		 */
@@ -226,7 +233,3 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 //			DrawUtil.drawSegment(q, intersection, this.frame);
 //			
 //		}
-
-		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
-	}
-}
