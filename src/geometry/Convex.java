@@ -333,6 +333,9 @@ public class Convex {
 		
 		Double angle1 = s1Angles.get(i);
 		Double angle2 = s1Angles.get((i + 1) % neighborSize);
+		// if angle1 lays in quad 4 and angle2 lays in quad 1
+		if(angle1 > angle2)
+			angle1 -= 2 * Math.PI;
 		Double midAngle = Math.abs(angle2 - angle1) / 2 + angle1;
 
 		Point2D.Double midPoint = Voronoi.rotatePoint(site1, midAngle);
