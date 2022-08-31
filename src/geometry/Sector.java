@@ -39,7 +39,8 @@ public class Sector {
 		this.segmentOrigin = new Point2D.Double[vertices.size()];
 		for (int i = 0; i < vertices.size(); i++) {
 			sector.addPoint(vertices.get(i));
-			this.segmentOrigin[i] = sites.get(i);
+			if(sites != null)
+				this.segmentOrigin[i] = sites.get(i);
 		}
 	}
 

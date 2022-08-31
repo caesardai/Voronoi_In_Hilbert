@@ -188,10 +188,22 @@ public class Convex {
 	 * Construct sectors with given sites and segments Each sector is associated
 	 * with an edge and site
 	 */
-	public List<Sector> constructSector(Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
+	public List<Sector> constructSector(Point2D.Double centerPoint,  Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
 		// returning list of sectors
 		List<Sector> sectors = new ArrayList<Sector>();
 
+		/*
+		 * CENTERPOINT
+		 */
+		// get all center point's neighboring segment
+		KdTree.XYZPoint centerXYZPoint = Util.toXYZPoint(centerPoint);
+		// get site1 node
+		KdTree.KdNode centerNode = KdTree.getNode(graph, centerXYZPoint);
+		// get site1 ID
+		KdTree.XYZPoint centerID = centerNode.getID();
+		// get all neighbor points for site 1
+		ArrayList<EdgeData> centerEndpoints = centerID.getNeighbors();
+		
 		/*
 		 * SITE 1
 		 */
@@ -216,103 +228,115 @@ public class Convex {
 		// get all neighbor points for site 1
 		ArrayList<EdgeData> s2Endpoints = s2ID.getNeighbors();
 
-		/*
-		 * For convenient to traverse through the segments sort the end points base on
-		 * angles regarding to the site(origin)
-		 */
-		ArrayList<Double> s1Angles = new ArrayList<Double>();
-		// Calculate site 1 angles
-		for (int i = 0; i < s1Endpoints.size(); i++) {
-			s1Angles.add(Voronoi.spokeAngle(site1, s1Endpoints.get(i).otherNode));
-
-		}
-		// Sort through site 1 angles
-		Convex.quickSort(s1Endpoints, s1Angles, 0, s1Angles.size() - 1);
-
-		ArrayList<Double> s2Angles = new ArrayList<Double>();
-		// Calculate site 2 angles
-		for (int i = 0; i < s2Endpoints.size(); i++) {
-			s2Angles.add(Voronoi.spokeAngle(site2, s2Endpoints.get(i).otherNode));
-		}
-
-		// Sort through site 2 angles
-		Convex.quickSort(s2Endpoints, s2Angles, 0, s2Angles.size() - 1);
-
+		// compute the angular coordinates of site1 and site2's nearest neighbors
+		ArrayList<Double> centerAngles = this.computeAngles(centerEndpoints, centerPoint);
+		ArrayList<Double> s1Angles = this.computeAngles(s1Endpoints, site1);
+		ArrayList<Double> s2Angles = this.computeAngles(s2Endpoints, site2);
+		
 		// Loop through all the neighbors and construct nearby sectors
-		int neighborSize = s1Endpoints.size();
+		int neighborSize = centerEndpoints.size();
 		for (int i = 0; i < neighborSize; i++) {
-			Point2D.Double p1 = s1Endpoints.get(i).otherNode;
+			Point2D.Double p1 = centerEndpoints.get(i).otherNode;
 			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
 			KdTree.XYZPoint p1XYZ = nodeP1.getID();
-			Point2D.Double p2 = s1Endpoints.get((i + 1) % neighborSize).otherNode;
+			Point2D.Double p2 = centerEndpoints.get((i + 1) % neighborSize).otherNode;
 			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
 			KdTree.XYZPoint p2XYZ = nodeP2.getID();
+			
+			// get the neighbors of the points above
+			ArrayList<EdgeData> p1Neighbors = (ArrayList<EdgeData>) p1XYZ.neighbors;
+			ArrayList<EdgeData> p2Neighbors = (ArrayList<EdgeData>) p2XYZ.neighbors;
+			
+			// sort points by angular coordinates
+			this.computeAngles(p1Neighbors, p1);
+			this.computeAngles(p2Neighbors, p2);
 
-			// 3 edge case
-			if (p1XYZ.containsNeighbor(p2)) {
+			// find best candidates for points of interest
+			ArrayList<Point2D.Double> candidates1 = this.findClosestAngles(p1Neighbors, centerPoint);
+			ArrayList<Point2D.Double> candidates2 = this.findClosestAngles(p2Neighbors, centerPoint);
+
+			// 3 edge case; candidates1 contains p2 and candidates2 contains p1
+			if (candidates1.contains(p2) && candidates2.contains(p1)) {
 				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
-				vertices.add(site1);
+				vertices.add(centerPoint);
 				vertices.add(p1);
 				vertices.add(p2);
 
 				ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
-				sites.add(s1ID.getNeighbor(s1ID.indexOf(p1)).site);
+				sites.add(centerID.getNeighbor(centerID.indexOf(p1)).site);
 				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p2)).site);
-				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(site1)).site);
+				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(centerPoint)).site);
 
-				Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
-
-//				// compute the angular coordinate of points site1, p1, and p2 with respect to the polar coordinate system centered at site2
-//				ArrayList<Double> verticesToSite2Angles = new ArrayList<Double>();
-//				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, site1));
-//				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p1));
-//				verticesToSite2Angles.add(Voronoi.spokeAngle(site2, p2));
-//				
-//				// find the smallest and largest angular coordinate from the arraylist above
-//				Double smallestAngle = Collections.min(verticesToSite2Angles);
-//				Double largestAngle = Collections.max(verticesToSite2Angles);
-//				
-//				int indexEdge1 = Convex.getMax(s2Angles, smallestAngle);
-//				int indexEdge2 = Convex.getMin(s2Angles, largestAngle);
-//
-//				Segment edge1 = s2ID.getEdge(indexEdge2);
-//				Segment edge2 = s1ID.getEdge((i + 1) % neighborSize);
-//				Segment edge3 = s2ID.getEdge(indexEdge1);
-//				Segment edge4 = s1ID.getEdge(i);
+				// Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
+				Segment[] edges = new Segment[4];
 
 				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
 				sectors.add(sector);
 			}
 
-			// 4 edge case
-			else {
+			// 4 edge case; both arrays contains a common point that is not the center point
+			else if(candidates1.contains(candidates2.get(0)) || candidates1.contains(candidates2.get(1))) {
 				// we need to determine the four point of the sector
 				Point2D.Double p3 = null;
 				ArrayList<EdgeData> p1Points = p1XYZ.getNeighbors();
 				ArrayList<EdgeData> p2Points = p2XYZ.getNeighbors();
 
 				for (EdgeData e : p1Points) {
-					if (!e.otherNode.equals(site1) && p2XYZ.containsNeighbor(e.otherNode)) {
+					if (!e.otherNode.equals(centerPoint) && p2XYZ.containsNeighbor(e.otherNode)) {
 						p3 = e.otherNode;
 						break;
 					}
 				}
 
 				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
-				vertices.add(site1);
+				vertices.add(centerPoint);
 				vertices.add(p1);
 				vertices.add(p2);
 				vertices.add(p3);
 
 				ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
-				sites.add(s1ID.getNeighbor(s1ID.indexOf(p1)).site);
+				sites.add(centerID.getNeighbor(centerID.indexOf(p1)).site);
 				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p3)).site);
 				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(p3)).site);
-				sites.add(s1ID.getNeighbor(s1ID.indexOf(p2)).site);
+				sites.add(centerID.getNeighbor(centerID.indexOf(p2)).site);
 
-				Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
+				// Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
+				Segment[] edges = new Segment[4];
 
 				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
+				sectors.add(sector);
+			}
+			
+			// 5 edge case; look at neighbors of all 4 pairing of the candidates above
+			else {
+				ArrayList<Point2D.Double> vertices = null;
+				boolean isSearching = true;
+				int i1 = 0, i2 = 0;
+				while(isSearching && i1 < candidates1.size()) {
+					while(isSearching && i2 < candidates2.size()) {
+						// get neighbors
+						KdTree.XYZPoint c1XYZ = Util.toXYZPoint(candidates1.get(i1));
+						KdTree.XYZPoint c2XYZ = Util.toXYZPoint(candidates2.get(i2));
+						KdTree.XYZPoint c1 = KdTree.getNode(graph, c1XYZ).getID();
+						KdTree.XYZPoint c2 = KdTree.getNode(graph, c2XYZ).getID();
+						
+						// check if c1 and c2 are each others neighbors
+						if(c1.containsNeighbor(Util.toPoint2D(c2)) && c2.containsNeighbor(Util.toPoint2D(c1))) {
+							// found all vertices
+							vertices = new ArrayList<Point2D.Double>();
+							vertices.add(centerPoint);
+							vertices.add(p1);
+							vertices.add(p2);
+							vertices.add(candidates1.get(i1));
+							vertices.add(candidates2.get(i2));
+							isSearching = false;
+						}
+						i2++;
+					}
+					i1++;
+				}
+				
+				Sector sector = new Sector(site1, site2, null, null, null, null, vertices, null);
 				sectors.add(sector);
 			}
 		}
@@ -322,6 +346,63 @@ public class Convex {
 		// loop through the segment endpoints i, i+1 and check whether there is an
 		// existing line segment
 		return sectors;
+	}
+	
+	/**
+	 * For convenient to traverse through the segments sort the end points base on
+	 * angles regarding to the site(origin)
+	 * 
+	 * @param endPoints the nearest points to the center point
+	 * @param center the center point 
+	 * @return the sorted angular coordinates of the center point's nearest neighbors on the graph
+	 */
+	private ArrayList<Double> computeAngles(ArrayList<EdgeData> endPoints, Point2D.Double center) {
+		/*
+		 */
+		ArrayList<Double> angles = new ArrayList<Double>();
+		// Calculate site 1 angles
+		for (int i = 0; i < endPoints.size(); i++) {
+			angles.add(Voronoi.spokeAngle(center, endPoints.get(i).otherNode));
+
+		}
+		// Sort through site 1 angles
+		Convex.quickSort(endPoints, angles, 0, angles.size() - 1);
+		
+		// return all angles
+		return angles;
+	}
+	
+	/**
+	 * 
+	 * @param points polar coordinates of interest; sorted based on the angular coordinates
+	 * @param center the point of interest. should be contained in the points ArrayList
+	 * @return the two points with the closest angle to input angle
+	 */
+	private ArrayList<Point2D.Double> findClosestAngles(ArrayList<EdgeData> points, Point2D.Double center) {
+		// array to store our results
+		ArrayList<Point2D.Double> closestPoints = new ArrayList<Point2D.Double>(2);
+		
+		// get index of center
+		int angleSize = points.size();
+		int index = 0;
+		for(int i = 0; i < angleSize; i++) {
+			if(Util.samePoints(center, points.get(i).otherNode)) {
+				index = i;
+				break;
+			}
+		}
+
+		// assign valid points
+		int lowerIndex = index - 1;
+		if(lowerIndex < 0)
+			lowerIndex += angleSize;
+		
+		// populate results
+		closestPoints.add(0, (Point2D.Double) points.get(lowerIndex).otherNode.clone());
+		closestPoints.add(1, (Point2D.Double) points.get((index + 1) % angleSize).otherNode.clone());
+		
+		// return results
+		return closestPoints;
 	}
 	
 	public Segment[] determineEdges(Point2D.Double site1, Point2D.Double site2, ArrayList<Double> s1Angles, int i) {
