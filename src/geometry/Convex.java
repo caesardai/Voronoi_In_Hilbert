@@ -188,7 +188,7 @@ public class Convex {
 	 * Construct sectors with given sites and segments Each sector is associated
 	 * with an edge and site
 	 */
-	public List<Sector> constructSector(Point2D.Double centerPoint,  Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
+	public List<Sector> constructSector(Point2D.Double centerPoint, Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
 		// returning list of sectors
 		List<Sector> sectors = new ArrayList<Sector>();
 
@@ -262,10 +262,7 @@ public class Convex {
 				vertices.add(p1);
 				vertices.add(p2);
 
-				ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
-				sites.add(centerID.getNeighbor(centerID.indexOf(p1)).site);
-				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p2)).site);
-				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(centerPoint)).site);
+				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
 
 				// Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
 				Segment[] edges = new Segment[4];
@@ -294,11 +291,7 @@ public class Convex {
 				vertices.add(p2);
 				vertices.add(p3);
 
-				ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
-				sites.add(centerID.getNeighbor(centerID.indexOf(p1)).site);
-				sites.add(p1XYZ.getNeighbor(p1XYZ.indexOf(p3)).site);
-				sites.add(p2XYZ.getNeighbor(p2XYZ.indexOf(p3)).site);
-				sites.add(centerID.getNeighbor(centerID.indexOf(p2)).site);
+				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
 
 				// Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
 				Segment[] edges = new Segment[4];
@@ -335,8 +328,10 @@ public class Convex {
 					}
 					i1++;
 				}
+
+				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
 				
-				Sector sector = new Sector(site1, site2, null, null, null, null, vertices, null);
+				Sector sector = new Sector(site1, site2, null, null, null, null, vertices, sites);
 				sectors.add(sector);
 			}
 		}
@@ -405,15 +400,39 @@ public class Convex {
 		return closestPoints;
 	}
 	
-	public Segment[] determineEdges(Point2D.Double site1, Point2D.Double site2, ArrayList<Double> s1Angles, int i) {
+	private Point2D.Double[] findNearestPoints(ArrayList<Double> angles, double angleOfInterest) {
+		
+	}
+	
+	private ArrayList<Point2D.Double> getSegSites(ArrayList<Point2D.Double> vertices, KdTree<KdTree.XYZPoint> graph) {
+		ArrayList<Point2D.Double> sites = new ArrayList<Point2D.Double>();
+		for(int index = 0; index < vertices.size(); index++) {
+			// the naming is arbitrary. don't make fun of me for my weird naming convention
+			Point2D.Double c1 = vertices.get(index);
+			Point2D.Double c2 = vertices.get((index+1) % vertices.size());
+			
+			KdTree.XYZPoint c1XYZ = KdTree.getNode(graph, Util.toXYZPoint(c1)).getID();
+			Point2D.Double segSiteOrigin = c1XYZ.getSite(c1XYZ.indexOf(c2));
+			sites.add(segSiteOrigin);
+		}
+		return sites;
+	}
+	
+	public Segment[] determineEdges(ArrayList<Point2D.Double> centerNeighbors, int i, Point2D.Double site1, Point2D.Double site2,
+			ArrayList<Double> s1Angles, ArrayList<Double> s2Angles) {
 		// Segments to return
 		Segment[] edges = new Segment[4]; 
 		
 		// constants
 		int neighborSize = s1Angles.size();
 		
-		Double angle1 = s1Angles.get(i);
-		Double angle2 = s1Angles.get((i + 1) % neighborSize);
+		
+		// fetch two points on the vertex of the sector
+		Point2D.Double v1 = centerNeighbors.get(i);
+		Point2D.Double v2 = centerNeighbors.get((i+1) % centerNeighbors.size());
+		
+		// determine angle coordinates of v1 and v2 with respect to site1 and site2
+
 		// if angle1 lays in quad 4 and angle2 lays in quad 1
 		if(angle1 > angle2)
 			angle1 -= 2 * Math.PI;
