@@ -387,6 +387,8 @@ public class Convex {
 			}
 		}
 
+		// add comment to check if i can push this change remotely
+		
 		// assign valid points
 		int lowerIndex = index - 1;
 		if(lowerIndex < 0)
