@@ -400,7 +400,38 @@ public class Convex {
 		return closestPoints;
 	}
 	
-	private Point2D.Double[] findNearestPoints(ArrayList<Double> angles, double angleOfInterest) {
+	private Point2D.Double[] findNearestPoint(ArrayList<Point2D.Double> points, ArrayList<Double> angles, double a11, double a12) {
+		// indices to return
+		int lowerIndex = -1, upperIndex = -1;
+		
+		// determine which input angle is smaller 
+		double a1 = a11;
+		double a2 = a12;
+		if(a2 < a1) {
+			double temp = a1;
+			a1 = a2;
+			a2 = a1;
+		}
+
+		// loop through angles and find the interval angleOfInterest lays in
+		// if the angle of interest is contained by angles, then return that angle
+		int currIndex = 0;
+		boolean loop = true;
+		while(loop && currIndex < points.size() - 1) {
+			if(a1 >= angles.get(currIndex) && a1 <= angles.get(currIndex)) {
+				lowerIndex = currIndex;
+			}
+
+			if(a2 >= angles.get(currIndex) && a2 <= angles.get(currIndex)) {
+				upperIndex = currIndex;
+			}
+			
+			if(lowerIndex >= 0 && upperIndex >= 0) {
+				loop = false;
+			}
+		}
+		
+		return new Point2D.Double[] {points.get(lowerIndex), points.get(upperIndex)};
 		
 	}
 	
