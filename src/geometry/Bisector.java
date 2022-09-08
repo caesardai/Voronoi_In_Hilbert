@@ -760,32 +760,6 @@ public class Bisector {
 	}
 	
 	/**
-	 * Converts point p into a matrix that corresponds the homogeneous coordinate corresponds to p 
-	 * 
-	 * @param p, the intended Point2D.Double point to being converted
-	 * @return a (n+1) x 1 matrix that corresponds the homogeneous coordinates of p
-	 */
-	private static Matrix convertToMatrix(Point2D.Double p) {
-		return new Matrix(new double[][] {{p.x}, {p.y}, {1}});
-	}
-
-	/**
-	 * Converts matrix m that corresponds the homogeneous coordinate p back into an Point object
-	 * 
-	 * @param m the matrix m intended to be converted into homogeneous coordinate 
-	 * @return the homogeneous coordinate p that corresponds to m
-	 */
-	private static Point2D.Double convertToPoint2D(Matrix m) {
-		if(m.getRowDimension() != 3 && m.getColumnDimension() != 1)
-			return null;
-		
-		if(m.get(2, 0) == 0)
-			return new Point2D.Double(Integer.MAX_VALUE, Integer.MAX_VALUE);
-		else
-			return new Point2D.Double(m.get(0, 0) / m.get(2, 0), m.get(1, 0) / m.get(2, 0));
-	}
-	
-	/**
 	 * Computes the number of unique edges
 	 */
 	private void numUniqueEdges() {

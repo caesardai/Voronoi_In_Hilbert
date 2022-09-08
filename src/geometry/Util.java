@@ -2,6 +2,7 @@ package geometry;
 
 import java.awt.geom.Point2D;
 import processing.core.PVector;
+import Jama.Matrix;
 
 public class Util {
 	final static double epsilon = 10d;
@@ -67,6 +68,50 @@ public class Util {
 
 	public static Point2D.Double toPoint2D(KdTree.XYZPoint p) {
 		return new Point2D.Double(p.x, p.y);
+	}
+
+	/**
+	 * Converts matrix m that corresponds the homogeneous coordinate p back into an Point object
+	 * 
+	 * @param m the matrix m intended to be converted into homogeneous coordinate 
+	 * @return the homogeneous coordinate p that corresponds to m
+	 */
+	public static Point2D.Double homogenousToPoint2D(Matrix m) {
+		if(m.getRowDimension() != 3 && m.getColumnDimension() != 1)
+			return null;
+		
+		if(m.get(2, 0) == 0)
+			return new Point2D.Double(Integer.MAX_VALUE, Integer.MAX_VALUE);
+		else
+			return new Point2D.Double(m.get(0, 0) / m.get(2, 0), m.get(1, 0) / m.get(2, 0));
+	}
+
+	/**
+	 * Converts matrix m that corresponds the coordinate p back into an Point object
+	 * 
+	 * @param m the matrix m intended to be converted into standard coordinate 
+	 * @return the coordinate p that corresponds to m
+	 */
+	public static Point2D.Double toPoint2D(Matrix m) {
+		if(m.getRowDimension() != 2 && m.getColumnDimension() != 1)
+			return null;
+		else
+			return new Point2D.Double(m.get(0, 0), m.get(1, 0));
+	}
+
+	/**
+	 * Converts point p into a matrix that corresponds the homogeneous coordinate corresponds to p 
+	 * 
+	 * @param p, the intended Point2D.Double point to being converted
+	 * @return a (n+1) x 1 matrix that corresponds the homogeneous coordinates of p
+	 */
+	public static Matrix toMatrix(Point2D.Double p) {
+		return new Matrix(new double[][] {{p.x}, {p.y}, {1}});
+	}
+	
+	public static void addToPoint(Point2D.Double returnPoint, Point2D.Double addVector) {
+		returnPoint.x += addVector.x;
+		returnPoint.y += addVector.y;
 	}
 
 	public static KdTree.XYZPoint toXYZPoint(Point2D.Double p) {

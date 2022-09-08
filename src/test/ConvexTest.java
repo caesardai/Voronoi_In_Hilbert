@@ -127,7 +127,7 @@ public class ConvexTest {
 			}
 
 			KdTree.XYZPoint point = node.getID();
-			point.addNeighbor(right);
+			point.addNeighbor(right, s.getSite1(), s.getEdge());
 
 			node = KdTree.getNode(tree, Util.toXYZPoint(right));
 			if(node == null) {
@@ -136,7 +136,7 @@ public class ConvexTest {
 			}
 
 			point = node.getID();
-			point.addNeighbor(left);
+			point.addNeighbor(left, s.getSite1(), s.getEdge());
 		}
 		
 		// visualize results

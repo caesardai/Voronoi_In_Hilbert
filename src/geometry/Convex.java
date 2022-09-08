@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.*;
 
+import Jama.Matrix;
 import trapmap.Segment;
 import processing.core.PVector;
 
@@ -264,8 +265,8 @@ public class Convex {
 
 				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
 
-				// Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
-				Segment[] edges = new Segment[4];
+				Segment[] edges = this.determineEdges(vertices, site1, site2);
+//				Segment[] edges = new Segment[4];
 
 				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
 				sectors.add(sector);
@@ -293,8 +294,8 @@ public class Convex {
 
 				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
 
-				// Segment[] edges = this.determineEdges(site1, site2, s1Angles, i);
-				Segment[] edges = new Segment[4];
+				Segment[] edges = this.determineEdges(vertices, site1, site2);
+//				Segment[] edges = new Segment[4];
 
 				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
 				sectors.add(sector);
@@ -329,9 +330,14 @@ public class Convex {
 					i1++;
 				}
 
+				// get sites
 				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
 				
-				Sector sector = new Sector(site1, site2, null, null, null, null, vertices, sites);
+				// get edges
+				Segment[] edges = this.determineEdges(vertices, site1, site2);
+				
+				// populate sector
+				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
 				sectors.add(sector);
 			}
 		}
@@ -355,11 +361,11 @@ public class Convex {
 		/*
 		 */
 		ArrayList<Double> angles = new ArrayList<Double>();
-		// Calculate site 1 angles
+		// Calculate site angles
 		for (int i = 0; i < endPoints.size(); i++) {
 			angles.add(Voronoi.spokeAngle(center, endPoints.get(i).otherNode));
-
 		}
+
 		// Sort through site 1 angles
 		Convex.quickSort(endPoints, angles, 0, angles.size() - 1);
 		
@@ -387,9 +393,7 @@ public class Convex {
 			}
 		}
 
-		// add comment to check if i can push this change remotely
 		
-		// assign valid points
 		int lowerIndex = index - 1;
 		if(lowerIndex < 0)
 			lowerIndex += angleSize;
@@ -451,40 +455,67 @@ public class Convex {
 		return sites;
 	}
 	
-	public Segment[] determineEdges(ArrayList<Point2D.Double> centerNeighbors, int i, Point2D.Double site1, Point2D.Double site2,
-			ArrayList<Double> s1Angles, ArrayList<Double> s2Angles) {
+	public Segment[] determineEdges(ArrayList<Point2D.Double> sectorVertices, Point2D.Double site1, Point2D.Double site2) {
 		// Segments to return
 		Segment[] edges = new Segment[4]; 
 		
-		// constants
-		int neighborSize = s1Angles.size();
-		
-		
-		// fetch two points on the vertex of the sector
-		Point2D.Double v1 = centerNeighbors.get(i);
-		Point2D.Double v2 = centerNeighbors.get((i+1) % centerNeighbors.size());
-		
-		// determine angle coordinates of v1 and v2 with respect to site1 and site2
+		// compute angular coordinate of vertices with respect to site1
+		ArrayList<Double> s1Angles = new ArrayList<Double>(sectorVertices.size());
+		for(Point2D.Double p : sectorVertices) {
+			if(p.distance(site1) > 1e-10)
+				s1Angles.add(Voronoi.spokeAngle(site1, p));
+		}
 
-		// if angle1 lays in quad 4 and angle2 lays in quad 1
-		if(angle1 > angle2)
-			angle1 -= 2 * Math.PI;
-		Double midAngle = Math.abs(angle2 - angle1) / 2 + angle1;
-
-		Point2D.Double midPoint = Voronoi.rotatePoint(site1, midAngle);
-		Point2D.Double[] p = Util.intersectionPoints(site1, midPoint, this);
-
-		List<Point2D.Double> dlp = (List<Point2D.Double>) Arrays.asList(p);
-		ArrayList<Point2D.Double> directionLinePoints = new ArrayList<Point2D.Double>(dlp);
+		// compute angular coordinate of vertices with respect to site2
+		ArrayList<Double> s2Angles = new ArrayList<Double>(sectorVertices.size());
+		for(Point2D.Double p : sectorVertices) {
+			if(p.distance(site2) > 1e-10)
+				s2Angles.add(Voronoi.spokeAngle(site2, p));
+		}
 		
-		directionLinePoints.add(site1);
-		directionLinePoints.add(midPoint);
-		sortColinearPoints(directionLinePoints);
+		// find the min and max angle of the ArrayList above for site1 angles
+		double s1MinAngle = Collections.min(s1Angles);
+		double s1MaxAngle = Collections.max(s1Angles);
 
-		// determine the edge convex hull intersection points are located
-		Point2D.Double[] intersectionPoints = new Point2D.Double[] {directionLinePoints.get(0), directionLinePoints.get(3)};
+		// find the min and max angle of the ArrayList above for site2 angles
+		double s2MinAngle = Collections.min(s2Angles);
+		double s2MaxAngle = Collections.max(s2Angles);
+		
+		// compute midpoint angle of the min and max for each site
+		if(s1MinAngle > s1MaxAngle)
+			s1MaxAngle -= 2 * Math.PI;
+		double s1MidAngle = Math.abs(s1MaxAngle - s1MinAngle) / 2 + s1MinAngle;
+		if(s1MidAngle < 0)
+			s1MidAngle += 2 * Math.PI;
+
+		if(s2MinAngle > s2MaxAngle)
+			s2MaxAngle -= 2 * Math.PI;
+		double s2MidAngle = Math.abs(s2MaxAngle - s2MinAngle) / 2 + s2MinAngle;
+		if(s2MidAngle < 0)
+			s2MidAngle += 2 * Math.PI;
+		
+		// compute the point that lays on the line we desire to construct
+		Matrix s1Rotation = new Matrix(new double[] {Math.cos(s1MidAngle), Math.sin(s1MidAngle), -Math.sin(s1MidAngle), Math.cos(s1MidAngle)}, 2);
+		Matrix s2Rotation = new Matrix(new double[] {Math.cos(s2MidAngle), Math.sin(s2MidAngle), -Math.sin(s2MidAngle), Math.cos(s2MidAngle)}, 2);
+		Matrix nearOrigin = new Matrix(new double[] {100d, 0d}, 2);
+		Point2D.Double s1LinePoint = Util.toPoint2D(s1Rotation.times(nearOrigin));
+		Point2D.Double s2LinePoint = Util.toPoint2D(s2Rotation.times(nearOrigin));
+		Util.addToPoint(s1LinePoint, site1);
+		Util.addToPoint(s2LinePoint, site2);
+		
+		// determine intersection points against the convex hull boundary and sort them
+		ArrayList<Point2D.Double> s1ColinearPoints = new ArrayList<Point2D.Double>(4);
+		Point2D.Double[] intersectionPoints = Util.intersectionPoints(s1LinePoint, site1, this);
+		s1ColinearPoints.add(site1);
+		s1ColinearPoints.add(s1LinePoint);
+		s1ColinearPoints.add(intersectionPoints[0]);
+		s1ColinearPoints.add(intersectionPoints[1]);
+		Convex.sortColinearPoints(s1ColinearPoints);
+		
+		// determine what edges the intersection points lay on
+		Point2D.Double[] ip = new Point2D.Double[] {s1ColinearPoints.get(0), s1ColinearPoints.get(3)};
 		Segment[] directionSegs = new Segment[2];
-		for (int index = 0; index < intersectionPoints.length; index++) {
+		for (int index = 0; index < ip.length; index++) {
 			for(int edgeCount = 0; edgeCount < this.convexHull.length - 1; edgeCount++) {
 				// get line equation for current edge
 				Point2D.Double v1 = this.convexHull[edgeCount];
@@ -493,7 +524,7 @@ public class Convex {
 				Point3d hv2 = HilbertGeometry.toHomogeneous(v2);
 				Point3d line = hv1.crossProduct(hv2);
 				
-				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[index]))) < 1e-4) {
+				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(ip[index]))) < 1e-4) {
 					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
 					break;
 				}
@@ -501,7 +532,7 @@ public class Convex {
 		}
 
 		// Forward
-		if (directionLinePoints.get(2).equals(site1)) {
+		if (s1ColinearPoints.get(2).equals(site1)) {
 			edges[1] = directionSegs[1];
 			edges[3] = directionSegs[0];
 		}
@@ -512,20 +543,19 @@ public class Convex {
 			edges[3] = directionSegs[1];
 		}
 		
-		// compute convex hull intersection point from line above
-		intersectionPoints = Util.intersectionPoints(site1, site2, this);
+		// determine intersection points against the convex hull boundary and sort them
+		ArrayList<Point2D.Double> s2ColinearPoints = new ArrayList<Point2D.Double>(4);
+		intersectionPoints = Util.intersectionPoints(s2LinePoint, site2, this);
+		s2ColinearPoints.add(site2);
+		s2ColinearPoints.add(s2LinePoint);
+		s2ColinearPoints.add(intersectionPoints[0]);
+		s2ColinearPoints.add(intersectionPoints[1]);
+		Convex.sortColinearPoints(s2ColinearPoints);
 		
-		directionLinePoints.clear();
-		List<Point2D.Double> dlp1 = (List<Point2D.Double>) Arrays.asList(intersectionPoints);
-		directionLinePoints = new ArrayList<Point2D.Double>(dlp1);
-		directionLinePoints.add(site1);
-		directionLinePoints.add(site2);
-		sortColinearPoints(directionLinePoints);
-
 		// determine the edge convex hull intersection points are located
-		intersectionPoints = new Point2D.Double[] {directionLinePoints.get(0), directionLinePoints.get(3)};
+		ip = new Point2D.Double[] {s2ColinearPoints.get(0), s2ColinearPoints.get(3)};
 		directionSegs = new Segment[2];
-		for (int index = 0; index < intersectionPoints.length; index++) {
+		for (int index = 0; index < ip.length; index++) {
 			for(int edgeCount = 0; edgeCount < this.convexHull.length - 1; edgeCount++) {
 				// get line equation for current edge
 				Point2D.Double v1 = this.convexHull[edgeCount];
@@ -534,7 +564,7 @@ public class Convex {
 				Point3d hv2 = HilbertGeometry.toHomogeneous(v2);
 				Point3d line = hv1.crossProduct(hv2);
 				
-				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(intersectionPoints[index]))) < 1e-4) {
+				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(ip[index]))) < 1e-4) {
 					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
 					break;
 				}
@@ -542,7 +572,7 @@ public class Convex {
 		}
 
 		// Forward
-		if (directionLinePoints.get(2).equals(site2)) {
+		if (s2ColinearPoints.get(2).equals(site2)) {
 			edges[0] = directionSegs[0];
 			edges[2] = directionSegs[1];
 		}
