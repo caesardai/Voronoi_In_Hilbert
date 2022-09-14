@@ -559,6 +559,45 @@ public class Voronoi {
 		return thetaRayTrace(null, line, site);
 	}
 	
+	/*
+	 * REAL Auguste Algorithm Pseudo Code
+	 */
+	
+	/*
+	 * realAugusteAlgo(site1, site2)
+	 * 
+	 * 
+	 * 
+	 * findEquidistantPoint(site1, site2) {
+	 * 
+	 * equidistancePoint[] = new[];
+	 * 
+	 * find line L(h_[0], site1)
+	 * 		trace line {
+	 * 			
+	 * 			equidistancePoint = Bisector(site1, site2, edge1, edge2, edge3, edge4, leftEndPoint, rightEndPoint);
+	 * 		}
+	 * 		find centerPoint 
+	 * 		sectors = constructSectors()
+	 * 			
+	 * 		for each sector {
+	 * 			check if the equidistancePoint is in sector
+	 * 		}			
+	 * 
+	 * 		determineEdges();
+	 *		draw line between h[0] and equiDistancePoint;
+	 *		
+	 *		for each hullVertex in h[1] to h[n] {
+	 *			equidistancePoint[i] = Bisector(site1, site2, edge1, edge2, edge3, edge4, leftEndPoint, rightEndPoint);
+	 *		}				
+	 *
+	 *		find the segment on the bisector/sector boundary intersection lays on in the sector boundary
+	 * 		find the sectors that share the previous segments as one of their edges
+	 * 
+	 * return equiDistancePoint[]
+	 * }
+	 */
+
 	/**
 	 * Given a convex hull and two sites, this method a construct the graph whose nodes are either the sites or intersection points between a spoke and another spoke or edge. Two points are connected in the graph if the line segment between the two points is contained in either spoke or edge. The line segment cannot contain another intersection point from another spoke/edge
 	 * 
