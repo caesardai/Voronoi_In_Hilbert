@@ -597,6 +597,19 @@ public class Voronoi {
 	 * return equiDistancePoint[]
 	 * }
 	 */
+	
+	public void realAugusteAlgo(Point2D.Double site1, Point2D.Double site2) {
+		// constants
+		Convex c = this.geometry.convex;
+		
+		// find equidistance on some spoke
+		Point3d spoke = Util.computeLineEquation(site1, c.convexHull[0]);
+		Point2D.Double equidistantPoint = this.findEquiDistancePoint(site1, site2, spoke);
+		
+		// construct sectors
+		KdTree<KdTree.XYZPoint> graph = this.constructGraph(site1, site2);
+		ArrayList<Sector> sectors = c.constructSector(equidistantPoint, site1, site2, graph);
+	}
 
 	/**
 	 * Given a convex hull and two sites, this method a construct the graph whose nodes are either the sites or intersection points between a spoke and another spoke or edge. Two points are connected in the graph if the line segment between the two points is contained in either spoke or edge. The line segment cannot contain another intersection point from another spoke/edge
