@@ -975,7 +975,7 @@ public class Convex {
 	 * 
 	 * @param points the set of colinear points
 	 */
-	private static void sortColinearPoints(ArrayList<Point2D.Double> points) {
+	public static void sortColinearPoints(ArrayList<Point2D.Double> points) {
 		// only sort if there are more than 1 point in our list
 		if (points.size() < 2)
 			return;

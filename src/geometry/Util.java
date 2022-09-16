@@ -2,6 +2,7 @@ package geometry;
 
 import java.awt.geom.Point2D;
 import processing.core.PVector;
+import trapmap.Segment;
 import Jama.Matrix;
 
 public class Util {
@@ -57,6 +58,12 @@ public class Util {
 	    }
 	    return intersectionPoints;
 	  }
+	
+	public static Point2D.Double lineIntersection(Point3d l1, Point3d l2) {
+		Point3d intersect = l1.crossProduct(l2);
+		if (intersect.z == 0)	return null;
+		else return HilbertGeometry.toCartesian(intersect);
+	}
 
 	public static PVector toPVector(Point2D.Double p) {
 		return new PVector((float) p.x, (float) p.y);
@@ -68,6 +75,13 @@ public class Util {
 
 	public static Point2D.Double toPoint2D(KdTree.XYZPoint p) {
 		return new Point2D.Double(p.x, p.y);
+	}
+	
+	public static Segment pointsToSeg(Point2D.Double p1, Point2D.Double p2) {
+		PVector pv1 = toPVector(p1);
+		PVector pv2 = toPVector(p2);
+		Segment s = new Segment(pv1, pv2);
+		return s;
 	}
 
 	/**

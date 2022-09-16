@@ -104,8 +104,6 @@ public class Bisector {
 	 * Computes the coefficients of the bisector in its conic form
 	 */
 	public void computeBisector() {
-		/* OLD METHOD OF COMPUTING THE BISECTORS
-		 * -----------------------------------------------------------------------------------------------------------------------------------
 		// ensure that all necessary fields are not null
 		if(this.site1 == null || this.site2 == null || this.edge1 == null || this.edge2 == null || this.edge3 == null || this.edge4 == null)
 			return;
@@ -125,58 +123,56 @@ public class Bisector {
 		this.D = line3.z * line4.x + line3.x * line4.z - this.K * this.s * (line1.z * line2.x + line1.x * line2.z); 
 		this.E = line3.z * line4.y + line3.y * line4.z - this.K * this.s * (line1.z * line2.y + line1.y * line2.z); 
 		this.F = line3.z * line4.z - this.K * this.s * (line1.z * line2.z); 
-
-		 * -----------------------------------------------------------------------------------------------------------------------------------
-		 */
-		
-		// in the four edge case
-		if(this.uniqueEdges == 4) {
-			// ensure that projective matrices have been computed
-			if(this.P == null || this.inverseP == null)
-				this.computeProjectiveMatrices();
-			
-			// determine sites in the projected unit square
-			Point2D.Double pSite1 = Bisector.convertToPoint2D( this.P.times( Bisector.convertToMatrix(this.site1) ) );
-			Point2D.Double pSite2 = Bisector.convertToPoint2D( this.P.times( Bisector.convertToMatrix(this.site2) ) ); // let this be point C in math: (c, d)
-			
-			// determine the point with smaller y-coordinate
-			Point2D.Double top = pSite1;
-			Point2D.Double bottom = pSite2;
-			if(pSite1.y < pSite2.y) {
-				top = pSite2;
-				bottom = pSite1;
-			}
-			
-			// compute the coefficients depending on the quadrant that top lies on the plane centered at bottom 
-			if(bottom.x < top.x) {
-				this.A = 0d;
-				this.B = 0d;
-				this.C = -(bottom.x + top.y - 1);
-				this.D = bottom.x * top.y;
-				this.E = bottom.x * top.y;
-				this.F = - bottom.x * top.y;
-			} else {
-				this.A = 0d;
-				this.B = 0d;
-				this.C = bottom.x - top.y;
-				this.D = top.y * (1 - bottom.x);
-				this.E = bottom.x * (top.y - 1);
-				this.F = 0d;
-			}
-
-			this.constantsComputed = true;
-		}
-		// in the three edge case
-		else if(this.uniqueEdges == 3) {
-			// TBD
-		}
-		// in the two edge case
-		// assume the 
-		else if(this.uniqueEdges == 2) {
-			this.K = (Math.abs(line4.x * site1.x + line4.y * site1.y + line4.z) / Math.abs(line2.x * site1.x + line2.y * site1.y + line2.z))
-				* (Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z) / Math.abs(line1.x * site2.x + line1.y * site2.y + line1.z));
-		}
 	}
+		
+//		// in the four edge case
+//		if(this.uniqueEdges == 4) {
+//			// ensure that projective matrices have been computed
+//			if(this.P == null || this.inverseP == null)
+//				this.computeProjectiveMatrices();
+//			
+//			// determine sites in the projected unit square
+//			Point2D.Double pSite1 = Bisector.convertToPoint2D( this.P.times( Bisector.convertToMatrix(this.site1) ) );
+//			Point2D.Double pSite2 = Bisector.convertToPoint2D( this.P.times( Bisector.convertToMatrix(this.site2) ) ); // let this be point C in math: (c, d)
+//			
+//			// determine the point with smaller y-coordinate
+//			Point2D.Double top = pSite1;
+//			Point2D.Double bottom = pSite2;
+//			if(pSite1.y < pSite2.y) {
+//				top = pSite2;
+//				bottom = pSite1;
+//			}
+//			
+//			// compute the coefficients depending on the quadrant that top lies on the plane centered at bottom 
+//			if(bottom.x < top.x) {
+//				this.A = 0d;
+//				this.B = 0d;
+//				this.C = -(bottom.x + top.y - 1);
+//				this.D = bottom.x * top.y;
+//				this.E = bottom.x * top.y;
+//				this.F = - bottom.x * top.y;
+//			} else {
+//				this.A = 0d;
+//				this.B = 0d;
+//				this.C = bottom.x - top.y;
+//				this.D = top.y * (1 - bottom.x);
+//				this.E = bottom.x * (top.y - 1);
+//				this.F = 0d;
+//			}
+//
+//			this.constantsComputed = true;
+//		}
+//		// in the three edge case
+//		else if(this.uniqueEdges == 3) {
+//			// TBD
+//		}
+//		// in the two edge case
+//		// assume the 
+//		else if(this.uniqueEdges == 2) {
+//			this.K = (Math.abs(line4.x * site1.x + line4.y * site1.y + line4.z) / Math.abs(line2.x * site1.x + line2.y * site1.y + line2.z))
+//				* (Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z) / Math.abs(line1.x * site2.x + line1.y * site2.y + line1.z));
+//		}
+	
 	
 	/**
 	 * Given some x, compute the corresponding real y value on the conic
@@ -257,7 +253,7 @@ public class Bisector {
 	 * @param line the line in the projected square that intersections the projected bisector
 	 * @return all intersections between the line and the bisector
 	 */
-	public LinkedList<Point2D.Double> intersectionPointsWithLine(Double[] line) {
+	public LinkedList<Point2D.Double> intersectionPointsWithLine(Point3d line) {
 		// list of intersection points
 		LinkedList<Point2D.Double> intersectionPoints = new LinkedList<Point2D.Double>();
 		
@@ -265,17 +261,14 @@ public class Bisector {
 		if(this.site1 == null || this.site2 == null || this.edge1 == null || this.edge2 == null || this.edge3 == null || this.edge4 == null)
 			return null;
 		
-		if(line.length != 3)
-			return null;
-		
 		// compute constants if not already computed
 		if(!this.constantsComputed)
 			this.computeBisector();
 		
 		// compute coefficients of the quadratic to determine intersection points
-		Double K1 = this.C * line[0];
-		Double K2 = this.E * line[0] + this.C * line[2] - this.D * line[1];
-		Double K3 = this.E * line[2] - this.F * line[1];
+		Double K1 = this.C * line.x;
+		Double K2 = this.E * line.x + this.C * line.z - this.D * line.y;
+		Double K3 = this.E * line.z - this.F * line.y;
 		
 		// compute discriminant
 		Double discriminant = Math.pow(K2, 2) - 4 * K1 * K3; 
