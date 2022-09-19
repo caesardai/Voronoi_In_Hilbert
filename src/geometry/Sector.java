@@ -36,7 +36,10 @@ public class Sector {
 		this.edge4 = edge4;
 
 		sector = new Convex();
-		this.segmentOrigin = new Point2D.Double[vertices.size()];
+		if(sites != null)
+			this.segmentOrigin = new Point2D.Double[vertices.size()];
+		else
+			this.segmentOrigin = null;
 		for (int i = 0; i < vertices.size(); i++) {
 			sector.addPoint(vertices.get(i));
 			if(sites != null)
@@ -56,6 +59,22 @@ public class Sector {
 	 */
 	public Point2D.Double getSite2() {
 		return this.site2;
+	}
+	
+	/**
+	 * Method to set the value of site1. Only can be applied if site1 equals null
+	 * @param site1 Value to assign field site1
+	 */
+	public void setSite1(Point2D.Double site1) {
+		if(this.site1 == null) this.site1 = site1;
+	}
+
+	/**
+	 * Method to set the value of site1. Only can be applied if site1 equals null
+	 * @param site1 Value to assign field site1
+	 */
+	public void setSite2(Point2D.Double site2) {
+		if(this.site2 == null) this.site2 = site2;
 	}
 
 	/*
@@ -103,6 +122,33 @@ public class Sector {
 				(float) vertices[index].y,
 				(float) vertices[(index + 1) % vertices.length].x,
 				(float) vertices[(index + 1) % vertices.length].y);
+	}
+	
+	/**
+	 * Method to set the values of all edges. Only can be applied if all edges equals null
+	 * @param edges Four edges to assign the field edges
+	 */
+	public void setEdges(Segment[] edges) {
+		if(this.edge1 == null && this.edge2 == null && this.edge3 == null && this.edge4 == null) {
+			if(edges.length == 4) {
+				this.edge1 = edges[0];
+				this.edge2 = edges[1];
+				this.edge3 = edges[2];
+				this.edge4 = edges[3];
+			}
+		}
+	}
+	
+	/**
+	 * Method to set the value of segOrigin. Only can be applied if segOrigin equals null
+	 * @param sites the ArrayList that store the sites of the segments of the sector's boundary
+	 */
+	public void setSegSites(ArrayList<Point2D.Double> sites) {
+		if(this.segmentOrigin == null) {
+			this.segmentOrigin = new Point2D.Double[sites.size()];
+			for(int index = 0; index < sites.size(); index++)
+				this.segmentOrigin[index] = sites.get(index);
+		}
 	}
 	
 	/*

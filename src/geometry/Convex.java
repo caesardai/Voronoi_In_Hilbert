@@ -189,21 +189,36 @@ public class Convex {
 	 * Construct sectors with given sites and segments Each sector is associated
 	 * with an edge and site
 	 */
-	public List<Sector> constructSector(Point2D.Double centerPoint, Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
+	public List<Sector> constructSector(Segment edge, Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
 		// returning list of sectors
 		List<Sector> sectors = new ArrayList<Sector>();
 
+		Point2D.Double ep1 = Util.toPoint2D(edge.getLeftPoint());
+		Point2D.Double ep2 = Util.toPoint2D(edge.getRightPoint());
+
 		/*
-		 * CENTERPOINT
+		 * SEGMENT's ENDPOINT 1
 		 */
 		// get all center point's neighboring segment
-		KdTree.XYZPoint centerXYZPoint = Util.toXYZPoint(centerPoint);
+		KdTree.XYZPoint ep1XYZPoint = Util.toXYZPoint(ep1);
 		// get site1 node
-		KdTree.KdNode centerNode = KdTree.getNode(graph, centerXYZPoint);
+		KdTree.KdNode ep1Node = KdTree.getNode(graph, ep1XYZPoint);
 		// get site1 ID
-		KdTree.XYZPoint centerID = centerNode.getID();
+		KdTree.XYZPoint ep1ID = ep1Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<EdgeData> centerEndpoints = centerID.getNeighbors();
+		ArrayList<EdgeData> ep1Endpoints = ep1ID.getNeighbors();
+
+		/*
+		 * SEGMENT's ENDPOINT 2
+		 */
+		// get all center point's neighboring segment
+		KdTree.XYZPoint ep2XYZPoint = Util.toXYZPoint(ep2);
+		// get site1 node
+		KdTree.KdNode ep2Node = KdTree.getNode(graph, ep2XYZPoint);
+		// get site1 ID
+		KdTree.XYZPoint ep2ID = ep2Node.getID();
+		// get all neighbor points for site 1
+		ArrayList<EdgeData> ep2Endpoints = ep2ID.getNeighbors();
 		
 		/*
 		 * SITE 1
@@ -230,123 +245,129 @@ public class Convex {
 		ArrayList<EdgeData> s2Endpoints = s2ID.getNeighbors();
 
 		// compute the angular coordinates of site1 and site2's nearest neighbors
-		ArrayList<Double> centerAngles = this.computeAngles(centerEndpoints, centerPoint);
-		ArrayList<Double> s1Angles = this.computeAngles(s1Endpoints, site1);
-		ArrayList<Double> s2Angles = this.computeAngles(s2Endpoints, site2);
+		ArrayList<Double> ep1Angles = this.computeAngles(ep1Endpoints, ep1);
+//		ArrayList<Double> s1Angles = this.computeAngles(s1Endpoints, site1);
+//		ArrayList<Double> s2Angles = this.computeAngles(s2Endpoints, site2);
 		
-		// Loop through all the neighbors and construct nearby sectors
-		int neighborSize = centerEndpoints.size();
-		for (int i = 0; i < neighborSize; i++) {
-			Point2D.Double p1 = centerEndpoints.get(i).otherNode;
-			KdTree.KdNode nodeP1 = KdTree.getNode(graph, Util.toXYZPoint(p1));
-			KdTree.XYZPoint p1XYZ = nodeP1.getID();
-			Point2D.Double p2 = centerEndpoints.get((i + 1) % neighborSize).otherNode;
-			KdTree.KdNode nodeP2 = KdTree.getNode(graph, Util.toXYZPoint(p2));
-			KdTree.XYZPoint p2XYZ = nodeP2.getID();
-			
-			// get the neighbors of the points above
-			ArrayList<EdgeData> p1Neighbors = (ArrayList<EdgeData>) p1XYZ.neighbors;
-			ArrayList<EdgeData> p2Neighbors = (ArrayList<EdgeData>) p2XYZ.neighbors;
-			
-			// sort points by angular coordinates
-			this.computeAngles(p1Neighbors, p1);
-			this.computeAngles(p2Neighbors, p2);
+		// find the third vertex point
+		ArrayList<Point2D.Double> ep1Candidates = this.findClosestAngles(ep1Endpoints, ep2);
+		
+		// look at the two neighbors
+		Sector sector1 = this.constructSectorFromThreePoints(ep1ID, ep2ID, KdTree.getNode(graph, Util.toXYZPoint(ep1Candidates.get(0))).getID(), graph);
+		Sector sector2 = this.constructSectorFromThreePoints(ep1ID, ep2ID, KdTree.getNode(graph, Util.toXYZPoint(ep1Candidates.get(1))).getID(), graph);
+		
+		// populate sector with all metadata needed
+		this.assignSectorMetaData(sector1, site1, site2, graph);
+		this.assignSectorMetaData(sector2, site1, site2, graph);
+		
+		// return ArrayList of sectors
+		sectors.add(sector1);
+		sectors.add(sector2);
+		return sectors;
+	}
+	
+	// assume that p1 <- edge -> p2 <- edge -> p3
+	public Sector constructSectorFromThreePoints(KdTree.XYZPoint p1, KdTree.XYZPoint p2, KdTree.XYZPoint p3, KdTree<KdTree.XYZPoint> graph) {
+		// copy of XYZPoint as Point2D.Double objects
+		Point2D.Double p12D = Util.toPoint2D(p1);
+		Point2D.Double p22D = Util.toPoint2D(p2);
+		Point2D.Double p32D = Util.toPoint2D(p3);
+		
+		// get neighbors of p1 and p3
+		ArrayList<EdgeData> p1Neighbors = p1.getNeighbors();
+		ArrayList<EdgeData> p3Neighbors = p3.getNeighbors();
+		
+		// sort neighbors
+		ArrayList<Double> p1Angles = this.computeAngles(p1Neighbors, p12D);
+		ArrayList<Double> p3Angles = this.computeAngles(p3Neighbors, p32D);
+		Convex.quickSort(p1Neighbors, p1Angles, 0, p1Neighbors.size() - 1);
+		Convex.quickSort(p3Neighbors, p3Angles, 0, p3Neighbors.size() - 1);
 
-			// find best candidates for points of interest
-			ArrayList<Point2D.Double> candidates1 = this.findClosestAngles(p1Neighbors, centerPoint);
-			ArrayList<Point2D.Double> candidates2 = this.findClosestAngles(p2Neighbors, centerPoint);
+		// find best candidates for points of interest
+		ArrayList<Point2D.Double> candidates1 = this.findClosestAngles(p1Neighbors, p12D);
+		ArrayList<Point2D.Double> candidates2 = this.findClosestAngles(p3Neighbors, p32D);
 
-			// 3 edge case; candidates1 contains p2 and candidates2 contains p1
-			if (candidates1.contains(p2) && candidates2.contains(p1)) {
-				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
-				vertices.add(centerPoint);
-				vertices.add(p1);
-				vertices.add(p2);
+		// 3 edge case; p1 and p3 share an edge
+		if (candidates1.contains(p32D) && candidates2.contains(p12D)) {
+			ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
+			vertices.add(p12D);
+			vertices.add(p22D);
+			vertices.add(p32D);
 
-				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
-
-				Segment[] edges = this.determineEdges(vertices, site1, site2);
-//				Segment[] edges = new Segment[4];
-
-				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
-				sectors.add(sector);
-			}
-
-			// 4 edge case; both arrays contains a common point that is not the center point
-			else if(candidates1.contains(candidates2.get(0)) || candidates1.contains(candidates2.get(1))) {
-				// we need to determine the four point of the sector
-				Point2D.Double p3 = null;
-				ArrayList<EdgeData> p1Points = p1XYZ.getNeighbors();
-				ArrayList<EdgeData> p2Points = p2XYZ.getNeighbors();
-
-				for (EdgeData e : p1Points) {
-					if (!e.otherNode.equals(centerPoint) && p2XYZ.containsNeighbor(e.otherNode)) {
-						p3 = e.otherNode;
-						break;
-					}
-				}
-
-				ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
-				vertices.add(centerPoint);
-				vertices.add(p1);
-				vertices.add(p2);
-				vertices.add(p3);
-
-				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
-
-				Segment[] edges = this.determineEdges(vertices, site1, site2);
-//				Segment[] edges = new Segment[4];
-
-				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
-				sectors.add(sector);
-			}
-			
-			// 5 edge case; look at neighbors of all 4 pairing of the candidates above
-			else {
-				ArrayList<Point2D.Double> vertices = null;
-				boolean isSearching = true;
-				int i1 = 0, i2 = 0;
-				while(isSearching && i1 < candidates1.size()) {
-					while(isSearching && i2 < candidates2.size()) {
-						// get neighbors
-						KdTree.XYZPoint c1XYZ = Util.toXYZPoint(candidates1.get(i1));
-						KdTree.XYZPoint c2XYZ = Util.toXYZPoint(candidates2.get(i2));
-						KdTree.XYZPoint c1 = KdTree.getNode(graph, c1XYZ).getID();
-						KdTree.XYZPoint c2 = KdTree.getNode(graph, c2XYZ).getID();
-						
-						// check if c1 and c2 are each others neighbors
-						if(c1.containsNeighbor(Util.toPoint2D(c2)) && c2.containsNeighbor(Util.toPoint2D(c1))) {
-							// found all vertices
-							vertices = new ArrayList<Point2D.Double>();
-							vertices.add(centerPoint);
-							vertices.add(p1);
-							vertices.add(p2);
-							vertices.add(candidates1.get(i1));
-							vertices.add(candidates2.get(i2));
-							isSearching = false;
-						}
-						i2++;
-					}
-					i1++;
-				}
-
-				// get sites
-				ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
-				
-				// get edges
-				Segment[] edges = this.determineEdges(vertices, site1, site2);
-				
-				// populate sector
-				Sector sector = new Sector(site1, site2, edges[0], edges[1], edges[2], edges[3], vertices, sites);
-				sectors.add(sector);
-			}
+			return new Sector(null, null, null, null, null, null, vertices, null);
 		}
 
-		// if endPointt[i] has another endPoint where it is not the site
+		// 4 edge case; both arrays contains a common point that is not the center point
+		else if(candidates1.contains(candidates2.get(0)) || candidates1.contains(candidates2.get(1))) {
+			// we need to determine the four point of the sector
+			Point2D.Double p42D = null;
 
-		// loop through the segment endpoints i, i+1 and check whether there is an
-		// existing line segment
-		return sectors;
+			for (EdgeData e : p1Neighbors) {
+				if (!e.otherNode.equals(p22D) && p3.containsNeighbor(e.otherNode)) {
+					p42D = e.otherNode;
+					break;
+				}
+			}
+
+			ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
+			vertices.add(p12D);
+			vertices.add(p22D);
+			vertices.add(p32D);
+			vertices.add(p42D);
+
+			return new Sector(null, null, null, null, null, null, vertices, null);
+		}
+		
+		// 5 edge case; look at neighbors of all 4 pairing of the candidates above
+		else {
+			ArrayList<Point2D.Double> vertices = null;
+			boolean isSearching = true;
+			int i1 = 0, i2 = 0;
+			while(isSearching && i1 < candidates1.size()) {
+				while(isSearching && i2 < candidates2.size()) {
+					// get neighbors
+					KdTree.XYZPoint c1XYZ = Util.toXYZPoint(candidates1.get(i1));
+					KdTree.XYZPoint c2XYZ = Util.toXYZPoint(candidates2.get(i2));
+					KdTree.XYZPoint c1 = KdTree.getNode(graph, c1XYZ).getID();
+					KdTree.XYZPoint c2 = KdTree.getNode(graph, c2XYZ).getID();
+					
+					// check if c1 and c2 are each others neighbors
+					if(c1.containsNeighbor(Util.toPoint2D(c2)) && c2.containsNeighbor(Util.toPoint2D(c1))) {
+						// found all vertices
+						vertices = new ArrayList<Point2D.Double>();
+						vertices.add(p12D);
+						vertices.add(p22D);
+						vertices.add(p32D);
+						vertices.add(candidates1.get(i1));
+						vertices.add(candidates2.get(i2));
+						isSearching = false;
+					}
+					i2++;
+				}
+				i1++;
+			}
+
+			// populate sector
+			return new Sector(null, null, null, null, null, null, vertices, null);
+		}
+	}
+
+	private void assignSectorMetaData(Sector sector, Point2D.Double site1, Point2D.Double site2, KdTree<KdTree.XYZPoint> graph) {
+		ArrayList<Point2D.Double> vertices = new ArrayList<Point2D.Double>();
+		for(int index = 0; index < sector.sector.convexHull.length - 1; index++)
+			vertices.add(sector.sector.convexHull[index]);
+
+		// get sites of segments
+		ArrayList<Point2D.Double> sites = this.getSegSites(vertices, graph);
+
+		// determine the associated edges of convex hull edges with sector
+		Segment[] edges = this.determineEdges(vertices, site1, site2);
+
+		// set values
+		sector.setSite1(site1);
+		sector.setSite2(site2);
+		sector.setSegSites(sites);
+		sector.setEdges(edges);
 	}
 	
 	/**
