@@ -17,4 +17,8 @@ public class EdgeData {
 	public EdgeData clone() {
 		return new EdgeData(this.otherNode, this.site, this.edge);
 	}
+	
+	public String toString() {
+		return "[" + Util.printCoordinate(otherNode) + ", " + Util.printCoordinate(site) + "]";
+	}
 }

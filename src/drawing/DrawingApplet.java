@@ -3,6 +3,7 @@ package drawing;
 import javax.swing.*;
 
 import geometry.Convex;
+import geometry.EdgeData;
 import geometry.KdTree;
 import geometry.Util;
 import geometry.Sector;
@@ -107,10 +108,21 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		KdTree<KdTree.XYZPoint> tree = this.voronoi.constructGraph(site1, site2);
 
 		 // find node to test on
-		Point2D.Double test = KdTree.getNode(tree, Util.toXYZPoint(site1)).getID().getNeighbor(4).otherNode;
+		KdTree.XYZPoint siteNode = KdTree.getNode(tree, Util.toXYZPoint(site1)).getID();
+		Point2D.Double test = siteNode.getNeighbor(4).otherNode;
+		KdTree.XYZPoint testNode = KdTree.getNode(tree, Util.toXYZPoint(test)).getID();
+		Point2D.Double test1 = testNode.getNeighbor(0).otherNode;
+		Segment s = Util.pointsToSeg(test, test1);
+		
+//		for(int index = 0; index < siteNode.getNeighbors().size(); index++)
+//			System.out.println(index + ": " + siteNode.getNeighbor(index));
+//			
+//		System.out.println();
+//		for(int index = 0; index < testNode.getNeighbors().size(); index++)
+//			System.out.println(index + ": " + testNode.getNeighbor(index));
 		
 		// Constructing sectors
-		secs = c.constructSector(test, site1, site2, tree);
+		secs = c.constructSector(s, site1, site2, tree);
 
 		/*
 		 * traverse through all sectors for each sector => call all edges => color each

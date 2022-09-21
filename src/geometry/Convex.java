@@ -206,7 +206,7 @@ public class Convex {
 		// get site1 ID
 		KdTree.XYZPoint ep1ID = ep1Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<EdgeData> ep1Endpoints = ep1ID.getNeighbors();
+		// ArrayList<EdgeData> ep1Endpoints = ep1ID.getNeighbors();
 
 		/*
 		 * SEGMENT's ENDPOINT 2
@@ -230,7 +230,7 @@ public class Convex {
 		// get site1 ID
 		KdTree.XYZPoint s1ID = s1Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<EdgeData> s1Endpoints = s1ID.getNeighbors();
+		// ArrayList<EdgeData> s1Endpoints = s1ID.getNeighbors();
 
 		/*
 		 * SITE 2
@@ -242,19 +242,18 @@ public class Convex {
 		// get site2 ID
 		KdTree.XYZPoint s2ID = s2Node.getID();
 		// get all neighbor points for site 1
-		ArrayList<EdgeData> s2Endpoints = s2ID.getNeighbors();
+		// ArrayList<EdgeData> s2Endpoints = s2ID.getNeighbors();
 
-		// compute the angular coordinates of site1 and site2's nearest neighbors
-		ArrayList<Double> ep1Angles = this.computeAngles(ep1Endpoints, ep1);
-//		ArrayList<Double> s1Angles = this.computeAngles(s1Endpoints, site1);
-//		ArrayList<Double> s2Angles = this.computeAngles(s2Endpoints, site2);
+		// compute the angular coordinates of ep2's nearest neighbors and sort these points
+		ArrayList<Double> ep2Angles = this.computeAngles(ep2Endpoints, ep2);
+		Convex.quickSort(ep2Endpoints, ep2Angles, 0, ep2Endpoints.size() - 1);
 		
 		// find the third vertex point
-		ArrayList<Point2D.Double> ep1Candidates = this.findClosestAngles(ep1Endpoints, ep2);
+		ArrayList<Point2D.Double> ep2Candidates = this.findClosestAngles(ep2Endpoints, ep1);
 		
 		// look at the two neighbors
-		Sector sector1 = this.constructSectorFromThreePoints(ep1ID, ep2ID, KdTree.getNode(graph, Util.toXYZPoint(ep1Candidates.get(0))).getID(), graph);
-		Sector sector2 = this.constructSectorFromThreePoints(ep1ID, ep2ID, KdTree.getNode(graph, Util.toXYZPoint(ep1Candidates.get(1))).getID(), graph);
+		Sector sector1 = this.constructSectorFromThreePoints(ep1ID, ep2ID, KdTree.getNode(graph, Util.toXYZPoint(ep2Candidates.get(0))).getID(), graph);
+		Sector sector2 = this.constructSectorFromThreePoints(ep1ID, ep2ID, KdTree.getNode(graph, Util.toXYZPoint(ep2Candidates.get(1))).getID(), graph);
 		
 		// populate sector with all metadata needed
 		this.assignSectorMetaData(sector1, site1, site2, graph);
@@ -284,8 +283,8 @@ public class Convex {
 		Convex.quickSort(p3Neighbors, p3Angles, 0, p3Neighbors.size() - 1);
 
 		// find best candidates for points of interest
-		ArrayList<Point2D.Double> candidates1 = this.findClosestAngles(p1Neighbors, p12D);
-		ArrayList<Point2D.Double> candidates2 = this.findClosestAngles(p3Neighbors, p32D);
+		ArrayList<Point2D.Double> candidates1 = this.findClosestAngles(p1Neighbors, p22D);
+		ArrayList<Point2D.Double> candidates2 = this.findClosestAngles(p3Neighbors, p22D);
 
 		// 3 edge case; p1 and p3 share an edge
 		if (candidates1.contains(p32D) && candidates2.contains(p12D)) {
@@ -302,9 +301,9 @@ public class Convex {
 			// we need to determine the four point of the sector
 			Point2D.Double p42D = null;
 
-			for (EdgeData e : p1Neighbors) {
-				if (!e.otherNode.equals(p22D) && p3.containsNeighbor(e.otherNode)) {
-					p42D = e.otherNode;
+			for (Point2D.Double p : candidates2) {
+				if (!p.equals(p22D) && candidates1.contains(p)) {
+					p42D = p;
 					break;
 				}
 			}
