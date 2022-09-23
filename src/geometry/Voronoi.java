@@ -598,35 +598,46 @@ public class Voronoi {
 		// constants
 		Convex c = this.geometry.convex;
 
-		// find equidistance on some spoke
-		Point3d spoke = Util.computeLineEquation(site1, c.convexHull[0]);
-		Point2D.Double equidistantPoint = this.findEquiDistancePoint(site1, site2, spoke);
-
-		// Saving a list of intersection points
-		ArrayList<Point2D.Double> intersectionPoints = new ArrayList<Point2D.Double>();
-		intersectionPoints.add(equidistantPoint);
-		for (int i = 0; i < c.convexHull.length; i++) {
-			Point3d otherSpoke = Util.computeLineEquation(site2, c.convexHull[i]);
-			Point2D.Double intersect = Util.lineIntersection(spoke, otherSpoke);
-			if (intersect != null)
-				intersectionPoints.add(intersect);
-		}
-		Convex.sortColinearPoints(intersectionPoints);
-		Point2D.Double centerPoint = intersectionPoints.get(intersectionPoints.indexOf(equidistantPoint) - 1);
-
 		// construct sectors
 		KdTree<KdTree.XYZPoint> graph = this.constructGraph(site1, site2);
-		List<Sector> sectors = c.constructSector(centerPoint, site1, site2, graph);
-
-		// finding sector that contains equidistant point
-		Sector currSector = null;
-		for (Sector sec : sectors) {
-			if (sec.isInSector(equidistantPoint)) {
-				currSector = sec;
+		
+		// get site1 neighbor - arraylist
+		KdTree.XYZPoint s1XYZ = KdTree.getNode(graph, Util.toXYZPoint(site1)).getID();
+		ArrayList<EdgeData> s1Neighbors = s1XYZ.getNeighbors(); 
+		
+		// sort neighbors base on angular coordinates
+		ArrayList<Double> s1Angles = Convex.computeAngles(s1Neighbors, site1);
+		Convex.quickSort(s1Neighbors, s1Angles, 0, s1Neighbors.size()-1);
+		
+		// find site1, site2 segment angular coordinates
+		Double toAngle = Voronoi.spokeAngle(site1, site2);
+		
+		// find the immediate left spokes 
+		int counter = s1Neighbors.size() - 1;
+		for (int i = 0; i < s1Neighbors.size(); i++) {
+			if (toAngle < s1Angles.get(i)) {
+				counter = i;
 				break;
 			}
 		}
-
+		Point2D.Double v = s1Neighbors.get(counter).otherNode;
+		Segment sharedEdge = Util.pointsToSeg(site1, v);
+		
+		// construct sector
+		List<Sector> sectors = c.constructSector(sharedEdge, site1, site2, graph);
+		
+		// check which sector to use
+		int indexOfCenterSector = 0;
+		for(int index = 0; index < sectors.get(1).sector.convexHull.length; index++) {
+			List<Point2D.Double> listOfVertices = Arrays.asList(sectors.get(1).sector.convexHull);
+			if(listOfVertices.contains(site2)) {
+				indexOfCenterSector = 1;
+		        break;
+		    }
+		}		
+		
+		// finding sector that contains equidistant point
+		Sector currSector = sectors.get(indexOfCenterSector);
 		Segment e1 = currSector.getEdge1();
 		Segment e2 = currSector.getEdge2();
 		Segment e3 = currSector.getEdge3();
@@ -658,9 +669,6 @@ public class Voronoi {
 			if (segCount == 2)
 				break;
 		}
-		
-		
-		
 	}
 
 	/**

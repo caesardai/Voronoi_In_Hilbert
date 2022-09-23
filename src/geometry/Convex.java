@@ -377,7 +377,7 @@ public class Convex {
 	 * @param center the center point 
 	 * @return the sorted angular coordinates of the center point's nearest neighbors on the graph
 	 */
-	private ArrayList<Double> computeAngles(ArrayList<EdgeData> endPoints, Point2D.Double center) {
+	protected static ArrayList<Double> computeAngles(ArrayList<EdgeData> endPoints, Point2D.Double center) {
 		/*
 		 */
 		ArrayList<Double> angles = new ArrayList<Double>();

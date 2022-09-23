@@ -735,6 +735,14 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
         	return this.neighbors;
         }
         
+        public ArrayList<Point2D.Double> getNeighborsAsPoints() {
+        	ArrayList<Point2D.Double> neighbor2D = new ArrayList<Point2D.Double>();
+        	for (int i = 0; i < this.neighbors.size(); i++) {
+        		neighbor2D.add(this.neighbors.get(i).otherNode);
+        	}
+        	return neighbor2D;
+        }
+        
         public EdgeData getNeighbor(int index) {
         	if(index < 0 || index >= this.neighbors.size())
         		return null;
