@@ -594,25 +594,66 @@ public class Voronoi {
 	 * return equiDistancePoint[] }
 	 */
 
+	private Bisector computeBisectorInSector(Sector sec) {
+		// finding sector that contains equidistant point
+		Segment e1 = sec.getEdge1();
+		Segment e2 = sec.getEdge2();
+		Segment e3 = sec.getEdge3();
+		Segment e4 = sec.getEdge4();
+
+		// compute Bisector
+		Bisector b = new Bisector(sec.site1, sec.site2, e1, e2, e3, e4);
+
+		return b;
+	}
+
+	private Segment[] bisectorSectorIntersection(Bisector bi, Sector sec) {
+		int segCount = 0;
+		Segment[] intersectSeg = new Segment[2];
+		// array of Voronoi boundary segments that intersects bisector
+		Point2D.Double[] secVertices = sec.sector.convexHull;
+		for (int i = 0; i < secVertices.length - 1; i++) {
+			Point2D.Double v1 = secVertices[i];
+			Point2D.Double v2 = secVertices[i + 1];
+			Point3d linev1v2 = Util.computeLineEquation(v1, v2);
+			LinkedList<Point2D.Double> secBisecIntersect = bi.intersectionPointsWithLine(linev1v2);
+			if (secBisecIntersect == null) {
+				continue;
+			}
+			if (segCount == 2)
+				break;
+			else {
+				for (Point2D.Double pt : secBisecIntersect) {
+					if (sec.isInSector(pt)) {
+						// segments that conic intersect with
+						intersectSeg[segCount++] = Util.pointsToSeg(v1, v2);
+					}
+				}
+			}
+		}
+		return intersectSeg;
+	}
+	
+
 	public void realAugusteAlgo(Point2D.Double site1, Point2D.Double site2) {
 		// constants
 		Convex c = this.geometry.convex;
 
 		// construct sectors
 		KdTree<KdTree.XYZPoint> graph = this.constructGraph(site1, site2);
-		
+
 		// get site1 neighbor - arraylist
 		KdTree.XYZPoint s1XYZ = KdTree.getNode(graph, Util.toXYZPoint(site1)).getID();
-		ArrayList<EdgeData> s1Neighbors = s1XYZ.getNeighbors(); 
-		
+		ArrayList<EdgeData> s1Neighbors = s1XYZ.getNeighbors();
+
 		// sort neighbors base on angular coordinates
 		ArrayList<Double> s1Angles = Convex.computeAngles(s1Neighbors, site1);
-		Convex.quickSort(s1Neighbors, s1Angles, 0, s1Neighbors.size()-1);
-		
+		Convex.quickSort(s1Neighbors, s1Angles, 0, s1Neighbors.size() - 1);
+
 		// find site1, site2 segment angular coordinates
 		Double toAngle = Voronoi.spokeAngle(site1, site2);
-		
-		// find the immediate left spokes 
+
+		// find the immediate left spokes
 		int counter = s1Neighbors.size() - 1;
 		for (int i = 0; i < s1Neighbors.size(); i++) {
 			if (toAngle < s1Angles.get(i)) {
@@ -622,52 +663,46 @@ public class Voronoi {
 		}
 		Point2D.Double v = s1Neighbors.get(counter).otherNode;
 		Segment sharedEdge = Util.pointsToSeg(site1, v);
-		
+
 		// construct sector
 		List<Sector> sectors = c.constructSector(sharedEdge, site1, site2, graph);
-		
+
 		// check which sector to use
 		int indexOfCenterSector = 0;
-		for(int index = 0; index < sectors.get(1).sector.convexHull.length; index++) {
+		for (int index = 0; index < sectors.get(1).sector.convexHull.length; index++) {
 			List<Point2D.Double> listOfVertices = Arrays.asList(sectors.get(1).sector.convexHull);
-			if(listOfVertices.contains(site2)) {
+			if (listOfVertices.contains(site2)) {
 				indexOfCenterSector = 1;
-		        break;
-		    }
-		}		
-		
+				break;
+			}
+		}
+
 		// finding sector that contains equidistant point
 		Sector currSector = sectors.get(indexOfCenterSector);
-		Segment e1 = currSector.getEdge1();
-		Segment e2 = currSector.getEdge2();
-		Segment e3 = currSector.getEdge3();
-		Segment e4 = currSector.getEdge4();
-
-		// compute Bisector
-		Bisector b = new Bisector(site1, site2, e1, e2, e3, e4);
-
-		int segCount = 0;
-		// array of Voronoi boundary segments that intersects bisector
-		Segment[] intersectSeg = new Segment[2];
-		Point2D.Double[] secVertices = currSector.sector.convexHull;
-		for (int i = 0; i < secVertices.length; i++) {
-			Point2D.Double v1 = secVertices[i];
-			Point2D.Double v2 = secVertices[i + 1];
-			Point3d linev1v2 = Util.computeLineEquation(v1, v2);
-			LinkedList<Point2D.Double> secBisecIntersect = b.intersectionPointsWithLine(linev1v2);
-			if (secBisecIntersect == null) {
-				continue;
-			} else {
-				for (Point2D.Double pt : secBisecIntersect) {
-					if (segCount == 2)
-						break;
-					if (currSector.isInSector(pt)) {
-						intersectSeg[segCount++] = Util.pointsToSeg(v1, v2);
+		// calculate bisector object
+		Bisector b = computeBisectorInSector(currSector);
+		// find and return a list of segments that intersect with the bisector 
+		Segment[] intersectingSegments = bisectorSectorIntersection(b, currSector);
+		
+		// find other sectors that include above segments
+		for (Segment s : intersectingSegments) {
+			// while it isn't the convex hull edge keep going 
+			while (!currSector.sector.isOnConvexBoundary(Util.toPoint2D(s.getLeftPoint()))) {
+				// construct new sector with the shared segment
+				List<Sector> neighborSectors = c.constructSector(s, site1, site2, graph);
+				for (Sector neighborSec : neighborSectors) {
+					// check if the constructed sector is the sector that we already have
+					if (neighborSec.equals(currSector)) {
+						continue;
+					} 
+					// if it's not, then it's a new neighbor sector, then calculate new bisector
+					else {
+						currSector = neighborSec;
+						b = computeBisectorInSector(currSector);
+						Segment[] newIntersectingSegments = bisectorSectorIntersection(b, currSector);
 					}
 				}
 			}
-			if (segCount == 2)
-				break;
 		}
 	}
 
