@@ -788,6 +788,14 @@ public class Bisector {
 		}
 	}
 	
+	/**
+	 * Cloning method for bisector
+	 */
+	public Bisector clone() {
+		Bisector rtn = new Bisector(this.site1, this.site2, this.edge1, this.edge2, this.edge3, this.edge4, this.leftEndPoint, this.rightEndPoint);
+		return rtn;
+	}
+	
 	/*
 	 * Test method for this object
 	 */
