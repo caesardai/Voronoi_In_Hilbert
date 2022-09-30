@@ -153,7 +153,29 @@ public class VoronoiTest {
 		System.out.println("look at points");
 	}
 	
+	public static void soulCrusher() {
+		HilbertGeometry g = new HilbertGeometry();
+		
+		g.convex = new Convex();
+		Convex c = g.convex;
+		c.addPoint(new Point2D.Double(50d, 50d));
+		c.addPoint(new Point2D.Double(150d, 50d));
+		c.addPoint(new Point2D.Double(150d, 150d));
+		c.addPoint(new Point2D.Double(50d, 150d));
+		Point2D.Double site1 = new Point2D.Double(130d, 69d);
+		Point2D.Double site2 = new Point2D.Double(82d, 124d);
+		
+		Voronoi v = new Voronoi(g);
+		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
+		
+		int index = 0;
+		for (Bisector b : bisectorList) {
+			index++;
+			System.out.print(index + ". bisector - " + b);
+		}
+	}
+	
 	public static void main(String[] argv) {
-		VoronoiTest.testEdgeSort();
+		VoronoiTest.soulCrusher();
 	}
 }

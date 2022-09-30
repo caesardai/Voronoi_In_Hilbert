@@ -84,6 +84,7 @@ public class Util {
 		return s;
 	}
 
+
 	/**
 	 * Converts matrix m that corresponds the homogeneous coordinate p back into an Point object
 	 * 

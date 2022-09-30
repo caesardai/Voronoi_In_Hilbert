@@ -78,7 +78,7 @@ public class Bisector {
 		this.P = null;
 		this.inverseP = null;
 		this.computeEdgeLineEquations();
-		this.computeProjectiveMatrices();
+		// this.computeProjectiveMatrices();
 		this.computeBisector();
 	}
 
@@ -96,7 +96,7 @@ public class Bisector {
 		this.P = null;
 		this.inverseP = null;
 		this.computeEdgeLineEquations();
-		this.computeProjectiveMatrices();
+		// this.computeProjectiveMatrices();
 		this.computeBisector();
 	}
 	
@@ -492,6 +492,20 @@ public class Bisector {
 		*/
 	}
 	
+	public void setEndPoints(Point2D.Double p) {
+		if (this.leftEndPoint != null && this.rightEndPoint != null) {
+			return;
+		} else if (this.leftEndPoint != null) {
+			if (this.leftEndPoint.x < p.x) {
+				this.rightEndPoint = p;
+			} else {
+				this.rightEndPoint = (java.awt.geom.Point2D.Double) this.leftEndPoint.clone();
+				this.leftEndPoint = p;
+			}
+		} else {
+			this.leftEndPoint = p;
+		}
+	}
 	/*
 	 * Checks if list contains a point that is approximately equal to some other points. the approximation is based on the error parameter
 	 */
@@ -793,6 +807,17 @@ public class Bisector {
 	 */
 	public Bisector clone() {
 		Bisector rtn = new Bisector(this.site1, this.site2, this.edge1, this.edge2, this.edge3, this.edge4, this.leftEndPoint, this.rightEndPoint);
+		return rtn;
+	}
+	
+	public String toString() {
+		String rtn = "";
+		rtn += Convex.castDecimal(this.A, 2) + "x^2 + ";
+		rtn += Convex.castDecimal(this.B, 2) + "y^2 + ";
+		rtn += Convex.castDecimal(this.C, 2) + "xy + ";
+		rtn += Convex.castDecimal(this.D, 2) + "x + ";
+		rtn += Convex.castDecimal(this.E, 2) + "y + ";
+		rtn += Convex.castDecimal(this.F, 2) + " = 0";
 		return rtn;
 	}
 	
