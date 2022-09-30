@@ -477,7 +477,7 @@ public class Convex {
 	
 	public Segment[] determineEdges(ArrayList<Point2D.Double> sectorVertices, Point2D.Double site1, Point2D.Double site2) {
 		// Segments to return
-		Segment[] edges = new Segment[4]; 
+ 		Segment[] edges = new Segment[4]; 
 		
 		// compute angular coordinate of vertices with respect to site1
 		ArrayList<Double> s1Angles = new ArrayList<Double>(sectorVertices.size());
@@ -517,9 +517,33 @@ public class Convex {
 		// compute the point that lays on the line we desire to construct
 		Matrix s1Rotation = new Matrix(new double[] {Math.cos(s1MidAngle), Math.sin(s1MidAngle), -Math.sin(s1MidAngle), Math.cos(s1MidAngle)}, 2);
 		Matrix s2Rotation = new Matrix(new double[] {Math.cos(s2MidAngle), Math.sin(s2MidAngle), -Math.sin(s2MidAngle), Math.cos(s2MidAngle)}, 2);
-		Matrix nearOrigin = new Matrix(new double[] {100d, 0d}, 2);
-		Point2D.Double s1LinePoint = Util.toPoint2D(s1Rotation.times(nearOrigin));
-		Point2D.Double s2LinePoint = Util.toPoint2D(s2Rotation.times(nearOrigin));
+		
+		// determine horizontal distance from the hull with respect to Euclidean metric.
+		Point3d horizontalLine = new Point3d(0, 1, -1 * site1.y);
+		Point2D.Double[] intersectPoints = Util.intersectionPoints(horizontalLine, this);
+		double x0 = -1;
+		for(int index = 0; index < intersectPoints.length; index++) {
+			Point2D.Double curr = intersectPoints[index];
+			if(curr.x > site1.x) {
+				x0 = (curr.x - site1.x) / 2;
+				break;
+			}
+		}
+		horizontalLine = new Point3d(0, 1, -1 * site2.y);
+		intersectPoints = Util.intersectionPoints(horizontalLine, this);
+		double y0 = -1;
+		for(int index = 0; index < intersectPoints.length; index++) {
+			Point2D.Double curr = intersectPoints[index];
+			if(curr.x > site2.x) {
+				y0 = (curr.x - site2.x) / 2;
+				break;
+			}
+		}
+		
+		Matrix nearOrigin1 = new Matrix(new double[] {x0, 0d}, 2);
+		Matrix nearOrigin2 = new Matrix(new double[] {y0, 0d}, 2);
+		Point2D.Double s1LinePoint = Util.toPoint2D(s1Rotation.times(nearOrigin1));
+		Point2D.Double s2LinePoint = Util.toPoint2D(s2Rotation.times(nearOrigin2));
 		Util.addToPoint(s1LinePoint, site1);
 		Util.addToPoint(s2LinePoint, site2);
 		

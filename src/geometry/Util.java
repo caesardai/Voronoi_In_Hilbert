@@ -58,6 +58,23 @@ public class Util {
 	    }
 	    return intersectionPoints;
 	  }
+
+	public static Point2D.Double[] intersectionPoints(Point3d line, Convex convex) {
+	    Point3d pqLine = line;
+	    Point3d beginPoint = HilbertGeometry.toHomogeneous(convex.convexHull[0]);
+	    Point2D.Double[] intersectionPoints = new Point2D.Double[2];
+	    int count = 0;
+	    for (int i = 1; i < convex.convexHull.length; i++) {
+	      Point3d endPoint = HilbertGeometry.toHomogeneous(convex.convexHull[i]);
+	      Point2D.Double intersect = HilbertGeometry.toCartesian(HilbertGeometry.intersection(pqLine, beginPoint, endPoint));
+	      if (intersect != null && count < 2 && !Util.contains(intersectionPoints, intersect)) {
+	        intersectionPoints[count] = intersect;
+	        count++;
+	      }
+	      beginPoint = endPoint;
+	    }
+	    return intersectionPoints;
+	  }
 	
 	public static Point2D.Double lineIntersection(Point3d l1, Point3d l2) {
 		Point3d intersect = l1.crossProduct(l2);
