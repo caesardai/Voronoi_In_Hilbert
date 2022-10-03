@@ -332,16 +332,13 @@ public class Bisector {
 	 * @param line
 	 * @return
 	 */
-	public LinkedList<Point2D.Double> intersectionPointsWithLine(Convex c, Double[] line) {
+	public LinkedList<Point2D.Double> intersectionPointsWithLine(Convex c, Point3d line) {
 		// list of intersection points
 		LinkedList<Point2D.Double> intersectionPoints = new LinkedList<Point2D.Double>();
 
 		// ensure that all necessary fields are not null
 		if (this.site1 == null || this.site2 == null || this.edge1 == null || this.edge2 == null || this.edge3 == null
 				|| this.edge4 == null)
-			return null;
-
-		if (line.length != 3)
 			return null;
 
 		// compute constants if not already computed
@@ -359,12 +356,12 @@ public class Bisector {
 		if(dX >= 0) {
 			Double[] solutionsX = this.intersectionBisectorLineX(line);
 			for(Double x : solutionsX)
-				xIntersect.add(new Point2D.Double(x, - line.x / line.y * x - line.z / line[1]));
+				xIntersect.add(new Point2D.Double(x, - line.x / line.y * x - line.z / line.y));
 		}
 		if (dY >= 0) {
 			Double[] solutionsY = this.intersectionBisectorLineY(line);
 			for (Double y : solutionsY)
-				yIntersect.add(new Point2D.Double(-line[1] / line[0] * y - line[2] / line[0], y));
+				yIntersect.add(new Point2D.Double(-line.y / line.x * y - line.z / line.x, y));
 		}
 
 		// check if the points computed above map to the same point using the conic
