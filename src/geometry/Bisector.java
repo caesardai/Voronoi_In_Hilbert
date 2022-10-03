@@ -255,10 +255,10 @@ public class Bisector {
 	 * Compute discriminant for the intersection point between the bisector and a
 	 * line; this corresponds for solution of x
 	 */
-	private Double computeDiscriminantX(Double[] line) {
-		Double a = line[0];
-		Double b = line[1];
-		Double c = line[2];
+	private Double computeDiscriminantX(Point3d line) {
+		Double a = line.x;
+		Double b = line.y;
+		Double c = line.z;
 
 		// System.out.println("line: " + Util.printLineEq(new Double[] {a, b, c}));
 		Double first = Math.pow(-this.C * c * b + 2 * this.B * a * c + this.D * Math.pow(b, 2) - this.E * a * b, 2);
@@ -272,10 +272,10 @@ public class Bisector {
 	 * Compute discriminant for the intersection point between the bisector and a
 	 * line; this corresponds for solution of y
 	 */
-	private Double computeDiscriminantY(Double[] line) {
-		Double a = line[0];
-		Double b = line[1];
-		Double c = line[2];
+	private Double computeDiscriminantY(Point3d line) {
+		Double a = line.x;
+		Double b = line.y;
+		Double c = line.z;
 
 		Double first = Math.pow(2 * this.A * b * c - this.C * c * a - this.D * b * a + this.E * Math.pow(a, 2), 2);
 		Double second = this.A * Math.pow(b, 2) - this.C * b * a + this.B * Math.pow(a, 2);
@@ -288,11 +288,11 @@ public class Bisector {
 	 * Compute the x-values of any intersection points between a given line and the
 	 * bisector
 	 */
-	private Double[] intersectionBisectorLineX(Double[] line) {
+	private Double[] intersectionBisectorLineX(Point3d line) {
 		Double[] solutions = new Double[2];
-		Double a = line[0];
-		Double b = line[1];
-		Double c = line[2];
+		Double a = line.x;
+		Double b = line.y;
+		Double c = line.z;
 
 		// Double firstTerm = -(2 * this.B * a * c + this.D * Math.pow(b, 2) - this.E *
 		// a * b - this.C * c * b);
@@ -310,11 +310,11 @@ public class Bisector {
 	 * Compute the y-values of any intersection points between a given line and the
 	 * bisector
 	 */
-	private Double[] intersectionBisectorLineY(Double[] line) {
+	private Double[] intersectionBisectorLineY(Point3d line) {
 		Double[] solutions = new Double[2];
-		Double a = line[0];
-		Double b = line[1];
-		Double c = line[2];
+		Double a = line.x;
+		Double b = line.y;
+		Double c = line.z;
 
 		Double firstTerm = -(2 * this.A * b * c - this.C * c * a - this.D * b * a + this.E * Math.pow(a, 2));
 		Double discriminant = this.computeDiscriminantY(line);
@@ -345,57 +345,31 @@ public class Bisector {
 		if (!this.constantsComputed)
 			this.computeBisector();
 
-// ------------------- PRIOR OLD WORK ------------------
 		Double dX = this.computeDiscriminantX(line);
 		Double dY = this.computeDiscriminantY(line);
 
-		LinkedList<Point2D.Double> xIntersect = new LinkedList<Point2D.Double>();
-		LinkedList<Point2D.Double> yIntersect = new LinkedList<Point2D.Double>();
+		LinkedList<Point2D.Double> intersect = new LinkedList<Point2D.Double>();
 		
 		// compute the point of potential intersection
 		if(dX >= 0) {
 			Double[] solutionsX = this.intersectionBisectorLineX(line);
 			for(Double x : solutionsX)
-				xIntersect.add(new Point2D.Double(x, - line.x / line.y * x - line.z / line.y));
+				intersect.add(new Point2D.Double(x, - line.x / line.y * x - line.z / line.y));
 		}
 		if (dY >= 0) {
 			Double[] solutionsY = this.intersectionBisectorLineY(line);
 			for (Double y : solutionsY)
-				yIntersect.add(new Point2D.Double(-line.y / line.x * y - line.z / line.x, y));
+				intersect.add(new Point2D.Double(-line.y / line.x * y - line.z / line.x, y));
 		}
 
 		// check if the points computed above map to the same point using the conic
-		// equations
-		Double error = 1e-8;
-		for (Point2D.Double p : xIntersect) {
+		for (Point2D.Double p : intersect) {
 			// check if the point p is in the convex body; if not, move to next point
-			if (!c.isInConvex(p))
-				continue;
-
-			// compute y value for given x values
-			Double[] yPoints = this.computeY(p.x);
-			Point2D.Double test1 = new Point2D.Double(p.x, yPoints[0]);
-			Point2D.Double test2 = new Point2D.Double(p.x, yPoints[1]);
-			if (Util.roughlySamePoints(p, test1, error)) {
-				intersectionPoints.add(p);
-			} else if (Util.roughlySamePoints(p, test2, error)) {
-				intersectionPoints.add(p);
-			}
-		}
-		for (Point2D.Double p : yIntersect) {
-			// check if the point p is in the convex body; if not, move to next point
-			if (!c.isInConvex(p))
-				continue;
-
-			// compute y value for given x values
-			Double[] xPoints = this.computeX(p.y);
-			Point2D.Double test1 = new Point2D.Double(xPoints[0], p.y);
-			Point2D.Double test2 = new Point2D.Double(xPoints[1], p.y);
-			if (Util.roughlySamePoints(p, test1, error)) {
-				intersectionPoints.add(p);
-
-			} else if (Util.roughlySamePoints(p, test2, error)) {
-				intersectionPoints.add(p);
+			if (c.isInConvex(p) || c.isOnConvexBoundary(p)) {
+				// checks if the points is already in the list
+				if(!Bisector.listRouglyContainsPoint(intersectionPoints, p, 1e-8)) {
+					intersectionPoints.add(p);
+				}
 			}
 		}
 
@@ -629,76 +603,6 @@ public class Bisector {
 				return true;
 		}
 		return false;
-	}
-	
-	/*
-	 * Compute discriminant for the intersection point between the bisector and a line; this corresponds for solution of x
-	 */
-	private Double computeDiscriminantX(Point3d line) {
-		Double a = line.x;
-		Double b = line.y;
-		Double c = line.z;
-		
-		// System.out.println("line: " + Util.printLineEq(new Double[] {a, b, c}));
-		Double first = Math.pow(- this.C * c * b + 2 * this.B * a * c +  this.D * Math.pow(b, 2) - this.E * a * b, 2);
-		Double second = this.A * Math.pow(b, 2) - this.C * a * b + this.B * Math.pow(a, 2);
-		Double third = this.B * Math.pow(c, 2) - this.E * c * b + this.F * Math.pow(b, 2);
-
-		return first - 4 * second * third; 
-	}
-
-	/*
-	 * Compute discriminant for the intersection point between the bisector and a line; this corresponds for solution of y
-	 */
-	private Double computeDiscriminantY(Point3d line) {
-		Double a = line.x;
-		Double b = line.y;
-		Double c = line.z;
-		
-		Double first = Math.pow(2 * this.A * b * c - this.C * c * a - this.D * b * a + this.E * Math.pow(a, 2), 2);
-		Double second = this.A * Math.pow(b, 2) - this.C * b * a + this.B * Math.pow(a, 2);
-		Double third = this.A * Math.pow(c, 2) - this.D * c * a + this.F * Math.pow(a, 2);
-
-		return first - 4 * second * third; 
-	}
-	
-	/*
-	 * Compute the x-values of any intersection points between a given line and the bisector
-	 */
-	private Double[] intersectionBisectorLineX(Point3d line) {
-		Double[] solutions = new Double[2];
-		Double a = line.x;
-		Double b = line.y;
-		Double c = line.z;
-		
-		// Double firstTerm = -(2 * this.B * a * c + this.D * Math.pow(b, 2) - this.E * a * b - this.C * c * b);
-		Double firstTerm = -(-this.C * b * c + 2 * this.B * a * c + this.D * Math.pow(b, 2) - this.E * a * b);
-		Double discriminant = this.computeDiscriminantX(line);
-		Double denominator = 2 * (this.A * Math.pow(b, 2) - this.C * a * b + this.B * Math.pow(a, 2));
-		
-		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
-		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
-		
-		return solutions;
-	}
-
-	/*
-	 * Compute the y-values of any intersection points between a given line and the bisector
-	 */
-	private Double[] intersectionBisectorLineY(Point3d line) {
-		Double[] solutions = new Double[2];
-		Double a = line.x;
-		Double b = line.y;
-		Double c = line.z;
-		
-		Double firstTerm = -(2 * this.A * b * c - this.C * c * a - this.D * b * a + this.E * Math.pow(a, 2));
-		Double discriminant = this.computeDiscriminantY(line);
-		Double denominator = 2 * (this.A * Math.pow(b, 2) - this.C * b * a + this.B * Math.pow(a, 2));
-		
-		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
-		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
-
-		return solutions;
 	}
 	
 	/*

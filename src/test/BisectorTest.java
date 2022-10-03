@@ -5,6 +5,7 @@ import java.util.LinkedList;
 
 import geometry.Bisector;
 import geometry.Convex;
+import geometry.Point3d;
 import geometry.Voronoi;
 import geometry.Util;
 
@@ -12,27 +13,34 @@ import trapmap.Segment;
 
 public class BisectorTest {
 	public static void testBisectorLineIntersectionPoints() {
-		Point2D.Double s1 = new Point2D.Double(23, 20);
-		Point2D.Double s2 = new Point2D.Double(28, 12);
-		Point2D.Double p1 = new Point2D.Double(0, 0);
-		Point2D.Double p2 = new Point2D.Double(10, 30);
-		Point2D.Double p3 = new Point2D.Double(35, 20);
-		Point2D.Double p4 = new Point2D.Double(40, 5);
+		// construct the convex hull
+		Point2D.Double p1 = new Point2D.Double(50d, 50d);
+		Point2D.Double p2 = new Point2D.Double(150d, 50d);
+		Point2D.Double p3 = new Point2D.Double(150d, 150d);
+		Point2D.Double p4 = new Point2D.Double(50d, 150d);
 		Convex c = new Convex();
 		c.addPoint(p1);
 		c.addPoint(p2);
 		c.addPoint(p3);
 		c.addPoint(p4);
+		
+		// construct corresponding segments of the edge of the convex hull
 		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
 		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
 		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
 		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
-		Bisector b = new Bisector(s1, s2, e1, e2, e3, e4);
+		
+		// define sites
+		Point2D.Double s1 = new Point2D.Double(130d, 69d);
+		Point2D.Double s2 = new Point2D.Double(82d, 124d);
+		
+		// compute bisector
+		Bisector b = new Bisector(s1, s2, e1, e3, e2, e4);
+		
+		// define some line
+		Point3d line = new Point3d(-1d, -1d, 180d);
 
-		int n = 253;
-		Double[][] lines = Voronoi.thetaRays(s1, n);
-		// System.out.println(Util.printLineEq(lines[1]));
-		LinkedList<Point2D.Double> intersectionPoints = b.intersectionPointsWithLine(c, lines[56]);
+		LinkedList<Point2D.Double> intersectionPoints = b.intersectionPointsWithLine(c, line);
 		for(Point2D.Double p : intersectionPoints)
 			System.out.println("solution: " + Util.printCoordinate(p));
 	}
