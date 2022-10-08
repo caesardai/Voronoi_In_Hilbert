@@ -55,7 +55,35 @@ public class BisectorTest {
 		Bisector b1 = new Bisector(new Point2D.Double(1, 1), new Point2D.Double(2, 2), s1, s2, s3, s4);
 	}
 	
+	public static void testBisectorComputation() {
+		// construct convex hull
+		Point2D.Double h1 = new Point2D.Double(50d, 50d);
+		Point2D.Double h2 = new Point2D.Double(150d, 50d);
+		Point2D.Double h3 = new Point2D.Double(150d, 150d);
+		Point2D.Double h4 = new Point2D.Double(50d, 150d);
+		
+		Convex c = new Convex();
+		c.addPoint(h1);
+		c.addPoint(h2);
+		c.addPoint(h3);
+		c.addPoint(h4);
+		
+		// set sites
+		Point2D.Double site1 = new Point2D.Double(130d, 69d);
+		Point2D.Double site2 = new Point2D.Double(82d, 124d);
+		
+		// set edges
+		Segment edge1 = new Segment(Util.toPVector(h4), Util.toPVector(h3));
+		Segment edge2 = new Segment(Util.toPVector(h1), Util.toPVector(h2));
+		Segment edge3 = new Segment(Util.toPVector(h2), Util.toPVector(h3));
+		Segment edge4 = new Segment(Util.toPVector(h4), Util.toPVector(h3));
+		
+		// compute bisector
+		Bisector b = new Bisector(site1, site2, edge1, edge2, edge3, edge4);
+		System.out.println(b);
+	}
+	
 	public static void main(String[] argv) {
-		testBisectorLineIntersectionPoints();
+		testBisectorComputation();
 	}
 }

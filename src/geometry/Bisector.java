@@ -14,12 +14,10 @@ import Jama.Matrix;
  * Assumptions:
  * - let X be a point on the bisector
  * - let S be the sector which the bisector corresponds to
- * - segment site1-X passes through edges edge2 and edge4
- * - segment site2-X passes through edges edge1 and edge3
- * - X is closer to edge4 with respect to the Euclidean distance
- * - X is closer to edge1 with respect to the Euclidean distance
- * - site1 is closer to edge2 with respect to the Euclidean distance
- * - site2 is closer to edge3 with respect to the Euclidean distance
+ * - edge1 is the forward perspective of site1
+ * - edge2 is the backward perspective of site1
+ * - edge3 is the forward perspective of site2
+ * - edge4 is the backward perspective of site2
  */
 public class Bisector {
 	// constants for conic; equation for conic: Ax^2 + By^2 + Cxy + Dx + Ey + F = 0
@@ -99,7 +97,6 @@ public class Bisector {
 		this.constantsComputed = false;
 		this.P = null;
 		this.inverseP = null;
-		this.computeEdgeLineEquations();
 		// this.computeProjectiveMatrices();
 		this.computeBisector();
 	}
@@ -117,19 +114,19 @@ public class Bisector {
 		this.computeEdgeLineEquations();
 
 		// compute constants
-		this.K = (Math.abs(line4.x * site1.x + line4.y * site1.y + line4.z)
+		this.K = (Math.abs(line1.x * site1.x + line1.y * site1.y + line1.z)
 				/ Math.abs(line2.x * site1.x + line2.y * site1.y + line2.z))
-				* (Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z)
-						/ Math.abs(line1.x * site2.x + line1.y * site2.y + line1.z));
+				* (Math.abs(line4.x * site2.x + line4.y * site2.y + line4.z)
+						/ Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z));
 		this.s = 1d;
 
 		// compute coefficients of bisector curve
-		this.A = line3.x * line4.x - this.K * this.s * (line1.x * line2.x);
-		this.B = line3.y * line4.y - this.K * this.s * line1.y * line2.y;
-		this.C = line3.y * line4.x + line3.x * line4.y - this.K * this.s * (line1.y * line2.x + line1.x * line2.y);
-		this.D = line3.z * line4.x + line3.x * line4.z - this.K * this.s * (line1.z * line2.x + line1.x * line2.z);
-		this.E = line3.z * line4.y + line3.y * line4.z - this.K * this.s * (line1.z * line2.y + line1.y * line2.z);
-		this.F = line3.z * line4.z - this.K * this.s * (line1.z * line2.z);
+		this.A = line4.x * line1.x - this.K * this.s * (line3.x * line2.x);
+		this.B = line4.y * line1.y - this.K * this.s * (line3.y * line2.y);
+		this.C = line4.y * line1.x + line4.x * line1.y - this.K * this.s * (line3.y * line2.x + line3.x * line2.y);
+		this.D = line4.z * line1.x + line4.x * line1.z - this.K * this.s * (line3.z * line2.x + line3.x * line2.z);
+		this.E = line4.z * line1.y + line4.y * line1.z - this.K * this.s * (line3.z * line2.y + line3.y * line2.z);
+		this.F = line4.z * line1.z - this.K * this.s * (line3.z * line2.z);
 	}
 
 	/**
@@ -362,8 +359,8 @@ public class Bisector {
 		// if the quadratic is solvable, then solve the quadratic
 		Double x1 = (-G2 + Math.sqrt(discriminant)) / (2 * G1);
 		Double x2 = (-G2 - Math.sqrt(discriminant)) / (2 * G1);
-		Point2D.Double solution1 = new Point2D.Double(x1, b1.computeY(x1));
-		Point2D.Double solution2 = new Point2D.Double(x2, b1.computeY(x2));
+		Point2D.Double solution1 = new Point2D.Double(x1, b1.computeY(x1)[0]);
+		Point2D.Double solution2 = new Point2D.Double(x2, b1.computeY(x2)[0]);
 
 		// determine if solution is in the convex body
 		if ((solution1.x >= 0 && solution1.x <= 1) && (solution1.y >= 0 && solution1.y <= 1))
@@ -485,7 +482,7 @@ public class Bisector {
 		this.line4 = Bisector.computeLineEquation(leftPoint4, rightPoint4); // d_1 x + d_2 y + d_3 = 0
 
 		// determine number of unique edges
-		this.numUniqueEdges();
+//		this.numUniqueEdges();
 	}
 
 	/*
@@ -606,38 +603,38 @@ public class Bisector {
 	/**
 	 * Computes the number of unique edges
 	 */
-	private void numUniqueEdges() {
-		// ensure that lines are computed
-		if (this.line1 == null || this.line2 == null || this.line3 == null || this.line4 == null)
-			this.computeEdgeLineEquations();
-
-		// place equations into an array
-		Point3d[] lines = new Point3d[] { this.line1, this.line2, this.line3, this.line4 };
-		LinkedList<Point3d> uniqueLines = new LinkedList<Point3d>();
-		uniqueLines.add(lines[0]);
-
-		for (int i = 1; i < 4; i++) {
-			boolean isUnique = true;
-			for (Point3d l : uniqueLines) {
-				if (l.x == lines[i].x && l.y == lines[i].y) {
-					isUnique = false;
-					break;
-				}
-			}
-			if (isUnique)
-				uniqueLines.add(lines[i]);
-		}
-
-		this.uniqueEdges = uniqueLines.size();
-
-		if (this.uniqueEdges < 4 && this.uniqueEdges >= 2) {
-			this.line1 = uniqueLines.get(0);
-			this.line2 = uniqueLines.get(1);
-		}
-		if (this.uniqueEdges == 3) {
-			this.line3 = uniqueLines.get(2);
-		}
-	}
+//	private void numUniqueEdges() {
+//		// ensure that lines are computed
+//		if (this.line1 == null || this.line2 == null || this.line3 == null || this.line4 == null)
+//			this.computeEdgeLineEquations();
+//
+//		// place equations into an array
+//		Point3d[] lines = new Point3d[] { this.line1, this.line2, this.line3, this.line4 };
+//		LinkedList<Point3d> uniqueLines = new LinkedList<Point3d>();
+//		uniqueLines.add(lines[0]);
+//
+//		for (int i = 1; i < 4; i++) {
+//			boolean isUnique = true;
+//			for (Point3d l : uniqueLines) {
+//				if (l.x == lines[i].x && l.y == lines[i].y) {
+//					isUnique = false;
+//					break;
+//				}
+//			}
+//			if (isUnique)
+//				uniqueLines.add(lines[i]);
+//		}
+//
+//		this.uniqueEdges = uniqueLines.size();
+//
+//		if (this.uniqueEdges < 4 && this.uniqueEdges >= 2) {
+//			this.line1 = uniqueLines.get(0);
+//			this.line2 = uniqueLines.get(1);
+//		}
+//		if (this.uniqueEdges == 3) {
+//			this.line3 = uniqueLines.get(2);
+//		}
+//	}
 
 	/**
 	 * Cloning method for bisector

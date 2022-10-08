@@ -146,7 +146,7 @@ public class VoronoiTest {
 		}
 		
 		// construct sectors
-		List<Sector> sectors = Convex.constructSector(site1, site2, tree, v);
+//		List<Sector> sectors = Convex.constructSector(site1, site2, tree, v);
 
 		System.out.println("got here");
 		

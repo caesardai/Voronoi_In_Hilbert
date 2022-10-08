@@ -177,8 +177,8 @@ public class Convex {
 			for (int index = 0; index < intersectionPoints.size() - 1; index++) {
 				Segment newSeg = this.constructSegment(intersectionPoints.get(index),
 						intersectionPoints.get(index + 1));
-				newSeg.setEdge(edgeIntersect);
-				newSeg.setSites(newSite);
+//				newSeg.setEdge(edgeIntersect);
+//				newSeg.setSites(newSite);
 				segs.add(newSeg);
 			}
 		}
@@ -577,14 +577,14 @@ public class Convex {
 
 		// Forward
 		if (s1ColinearPoints.get(2).equals(site1)) {
+			edges[0] = directionSegs[0];
 			edges[1] = directionSegs[1];
-			edges[3] = directionSegs[0];
 		}
 
 		// Backward
 		else {
+			edges[0] = directionSegs[1];
 			edges[1] = directionSegs[0];
-			edges[3] = directionSegs[1];
 		}
 		
 		// determine intersection points against the convex hull boundary and sort them
@@ -617,14 +617,14 @@ public class Convex {
 
 		// Forward
 		if (s2ColinearPoints.get(2).equals(site2)) {
-			edges[0] = directionSegs[0];
-			edges[2] = directionSegs[1];
+			edges[2] = directionSegs[0];
+			edges[3] = directionSegs[1];
 		}
 
 		// Backward
 		else {
-			edges[0] = directionSegs[1];
-			edges[2] = directionSegs[0];
+			edges[2] = directionSegs[1];
+			edges[3] = directionSegs[0];
 		}
 		
 		return edges;

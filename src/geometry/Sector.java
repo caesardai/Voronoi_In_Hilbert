@@ -155,7 +155,9 @@ public class Sector {
 	 * Check if given query point is in the convex object
 	 */
 	public boolean isInSector(Point2D.Double p) {
-		return this.sector.isInConvex(p);
+		boolean inInterior = this.sector.isInConvex(p);
+		boolean onBoundary = this.sector.isOnConvexBoundary(p);
+		return (inInterior || onBoundary);
 	}
 	
 	/**

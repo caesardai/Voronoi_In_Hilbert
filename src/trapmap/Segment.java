@@ -1,7 +1,5 @@
 package trapmap;
 
-import java.awt.geom.Point2D;
-
 import processing.core.PShape;
 import processing.core.PVector;
 
@@ -20,11 +18,11 @@ public class Segment {
 	PShape faceB; // possible (such as mesh)
 	
 	// for TrapMap
-	private Point2D.Double site1;
-	private Point2D.Double site2;
+//	private Point2D.Double site1;
+//	private Point2D.Double site2;
 	
 	// for sector graph
-	private Segment edge;
+//	private Segment edge;
 
 	public Segment(PVector one, PVector two) {
 		// we store the left, lower point as lpoint
@@ -66,22 +64,22 @@ public class Segment {
 	/**
 	 * Construct Segment with labels of one site
 	 */
-	public Segment(float p1X, float p1Y, float p2X, float p2Y, Point2D.Double s1) {
-		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
-		this.site1 = s1;
-		this.site2 = null;
-		this.edge = null;
-	}
+//	public Segment(float p1X, float p1Y, float p2X, float p2Y, Point2D.Double s1) {
+//		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
+//		this.site1 = s1;
+//		this.site2 = null;
+//		this.edge = null;
+//	}
 
 	/**
 	 * Construct Segment with labels of one site
 	 */
-	public Segment(float p1X, float p1Y, float p2X, float p2Y, Point2D.Double s1, Point2D.Double s2) {
-		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
-		this.site1 = s1;
-		this.site2 = s2;
-		this.edge = null;
-	}
+//	public Segment(float p1X, float p1Y, float p2X, float p2Y, Point2D.Double s1, Point2D.Double s2) {
+//		this(new PVector(p1X, p1Y), new PVector(p2X, p2Y));
+//		this.site1 = s1;
+//		this.site2 = s2;
+//		this.edge = null;
+//	}
 
 	/**
 	 * Get the left segment endpoint (as ordered by the compareTo function of the
@@ -145,27 +143,27 @@ public class Segment {
 	 * 
 	 * @return site1 label
 	 */
-	public Point2D.Double getSite1() {
-		return this.site1;
-	}
+//	public Point2D.Double getSite1() {
+//		return this.site1;
+//	}
 
 	/**
 	 * Get the site2 label of the Segment
 	 * 
 	 * @return site2 label
 	 */
-	public Point2D.Double getSite2() {
-		return this.site2;
-	}
+//	public Point2D.Double getSite2() {
+//		return this.site2;
+//	}
 
 	/**
 	 * Updates the site1 label to the new site p
 	 * 
 	 * @param p1, the new site to update site1
 	 */
-	public void setSites(Point2D.Double p1) {
-		this.site1 = p1;
-	}
+//	public void setSites(Point2D.Double p1) {
+//		this.site1 = p1;
+//	}
 
 	/**
 	 * Updates the site1 label to the new site p1, and updates the site2 label to the new site p2
@@ -173,18 +171,18 @@ public class Segment {
 	 * @param p1, the new site to update site1
 	 * @param p2, the new site to update site2
 	 */
-	public void setSites(Point2D.Double p1, Point2D.Double p2) {
-		this.site1 = p1;
-		this.site2 = p2;
-	}
+//	public void setSites(Point2D.Double p1, Point2D.Double p2) {
+//		this.site1 = p1;
+//		this.site2 = p2;
+//	}
 	
-	public Segment getEdge() {
-		return this.edge;
-	}
+//	public Segment getEdge() {
+//		return this.edge;
+//	}
 	
-	public void setEdge(Segment s) {
-		this.edge = s;
-	}
+//	public void setEdge(Segment s) {
+//		this.edge = s;
+//	}
 
 
 	/**

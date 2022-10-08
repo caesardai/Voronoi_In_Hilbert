@@ -786,7 +786,7 @@ public class Voronoi {
 			}
 
 			KdTree.XYZPoint point = node.getID();
-			point.addNeighbor(right, s.getSite1(), s.getEdge());
+			point.addNeighbor(right /*, s.getSite1(), s.getEdge() */);
 
 			node = KdTree.getNode(tree, Util.toXYZPoint(right));
 			if (node == null) {
@@ -795,7 +795,7 @@ public class Voronoi {
 			}
 
 			point = node.getID();
-			point.addNeighbor(left, s.getSite1(), s.getEdge());
+			point.addNeighbor(left /*, s.getSite1(), s.getEdge() */);
 		}
 
 		// return the graph

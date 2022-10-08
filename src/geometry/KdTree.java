@@ -705,8 +705,8 @@ public class KdTree<T extends KdTree.XYZPoint> implements Iterable<T> {
          * 
          * @param p point to add a directed edge from this object to p
          */
-        public void addNeighbor(Point2D.Double p, Point2D.Double site, Segment s) {
-        	EdgeData e = new EdgeData(p, site, s);
+        public void addNeighbor(Point2D.Double p /*, Point2D.Double site, Segment s */) {
+        	EdgeData e = new EdgeData(p, null, null);
         	this.neighbors.add(e);
         }
         
