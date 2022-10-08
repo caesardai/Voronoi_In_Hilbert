@@ -501,16 +501,25 @@ public class Convex {
 		double s2MinAngle = Collections.min(s2Angles);
 		double s2MaxAngle = Collections.max(s2Angles);
 		
-		// compute midpoint angle of the min and max for each site
-		if(s1MinAngle > s1MaxAngle)
+		// compute midpoint angle of the min and max for each site; checks that the angle in question is the acute angle
+		double s1MidAngle;
+		if(Math.abs(s1MaxAngle - s1MinAngle) > Math.PI) {
 			s1MaxAngle -= 2 * Math.PI;
-		double s1MidAngle = Math.abs(s1MaxAngle - s1MinAngle) / 2 + s1MinAngle;
+			s1MidAngle = Math.abs(s1MinAngle - s1MaxAngle) / 2 + s1MaxAngle;
+		} else {
+			s1MidAngle = Math.abs(s1MaxAngle - s1MinAngle) / 2 + s1MinAngle;
+		}
 		if(s1MidAngle < 0)
 			s1MidAngle += 2 * Math.PI;
 
-		if(s2MinAngle > s2MaxAngle)
+		// ensure we are computing the mid-angle of the acute angle formed by all line segments
+		double s2MidAngle;
+		if(Math.abs(s2MaxAngle - s2MinAngle) > Math.PI) {
 			s2MaxAngle -= 2 * Math.PI;
-		double s2MidAngle = Math.abs(s2MaxAngle - s2MinAngle) / 2 + s2MinAngle;
+			s2MidAngle = Math.abs(s2MinAngle - s2MaxAngle) / 2 + s2MaxAngle;
+		} else {
+			s2MidAngle = Math.abs(s2MaxAngle - s2MinAngle) / 2 + s2MinAngle;
+		}
 		if(s2MidAngle < 0)
 			s2MidAngle += 2 * Math.PI;
 		
@@ -569,7 +578,7 @@ public class Convex {
 				Point3d line = hv1.crossProduct(hv2);
 				
 				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(ip[index]))) < 1e-4) {
-					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
+					directionSegs[index] = new Segment(v1, v2);
 					break;
 				}
 			}
@@ -609,7 +618,7 @@ public class Convex {
 				Point3d line = hv1.crossProduct(hv2);
 				
 				if (Math.abs(line.scalarProduct(HilbertGeometry.toHomogeneous(ip[index]))) < 1e-4) {
-					directionSegs[index] = new Segment(Util.toPVector(v1), Util.toPVector(v2));
+					directionSegs[index] = new Segment(v1, v2);
 					break;
 				}
 			}

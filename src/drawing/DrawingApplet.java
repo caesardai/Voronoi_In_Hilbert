@@ -96,33 +96,33 @@ public class DrawingApplet extends PApplet implements ActionListener {
 
 		/* TEST SECTOR GRAPH */
 		// placing all input parameters to construct tree
-		Convex c = this.geometry.convex;
-		c.addPoint(new Point2D.Double(154d, 620d));
-		c.addPoint(new Point2D.Double(67d, 190d));
-		c.addPoint(new Point2D.Double(406d, 20d));
-		c.addPoint(new Point2D.Double(488d, 500d));
-		Point2D.Double site1 = new Point2D.Double(253d, 170d);
-		Point2D.Double site2 = new Point2D.Double(343d, 500d);
-
-		// construct tree
-		KdTree<KdTree.XYZPoint> tree = this.voronoi.constructGraph(site1, site2);
-
-		 // find node to test on
-		KdTree.XYZPoint siteNode = KdTree.getNode(tree, Util.toXYZPoint(site1)).getID();
-		Point2D.Double test = siteNode.getNeighbor(4).otherNode;
-		KdTree.XYZPoint testNode = KdTree.getNode(tree, Util.toXYZPoint(test)).getID();
-		Point2D.Double test1 = testNode.getNeighbor(0).otherNode;
-		Segment s = Util.pointsToSeg(test, test1);
-		
-//		for(int index = 0; index < siteNode.getNeighbors().size(); index++)
-//			System.out.println(index + ": " + siteNode.getNeighbor(index));
-//			
-//		System.out.println();
-//		for(int index = 0; index < testNode.getNeighbors().size(); index++)
-//			System.out.println(index + ": " + testNode.getNeighbor(index));
-		
-		// Constructing sectors
-		secs = c.constructSector(s, site1, site2, tree);
+//		Convex c = this.geometry.convex;
+//		c.addPoint(new Point2D.Double(154d, 620d));
+//		c.addPoint(new Point2D.Double(67d, 190d));
+//		c.addPoint(new Point2D.Double(406d, 20d));
+//		c.addPoint(new Point2D.Double(488d, 500d));
+//		Point2D.Double site1 = new Point2D.Double(253d, 170d);
+//		Point2D.Double site2 = new Point2D.Double(343d, 500d);
+//
+//		// construct tree
+//		KdTree<KdTree.XYZPoint> tree = this.voronoi.constructGraph(site1, site2);
+//
+//		 // find node to test on
+//		KdTree.XYZPoint siteNode = KdTree.getNode(tree, Util.toXYZPoint(site1)).getID();
+//		Point2D.Double test = siteNode.getNeighbor(4).otherNode;
+//		KdTree.XYZPoint testNode = KdTree.getNode(tree, Util.toXYZPoint(test)).getID();
+//		Point2D.Double test1 = testNode.getNeighbor(0).otherNode;
+//		Segment s = Util.pointsToSeg(test, test1);
+//		
+////		for(int index = 0; index < siteNode.getNeighbors().size(); index++)
+////			System.out.println(index + ": " + siteNode.getNeighbor(index));
+////			
+////		System.out.println();
+////		for(int index = 0; index < testNode.getNeighbors().size(); index++)
+////			System.out.println(index + ": " + testNode.getNeighbor(index));
+//		
+//		// Constructing sectors
+//		secs = c.constructSector(s, site1, site2, tree);
 
 		/*
 		 * traverse through all sectors for each sector => call all edges => color each

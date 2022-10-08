@@ -625,7 +625,7 @@ public class Voronoi {
 				break;
 			else {
 				for (Point2D.Double pt : secBisecIntersect) {
-					if (sec.isInSector(pt)) {
+					if (sec.isInSector(pt) && !Util.roughlySamePoints(pt, bi.getLeftEndPoint(), 1e-8)) {
 						// segments that conic intersect with
 						bi.setEndPoints(pt);
 						intersectSeg[segCount++] = Util.pointsToSeg(v1, v2);
@@ -680,7 +680,8 @@ public class Voronoi {
 		}
 
 		// finding sector that contains equidistant point
-		Sector currSector = sectors.get(indexOfCenterSector);
+		Sector firstSector = sectors.get(indexOfCenterSector);
+		Sector currSector = firstSector;
 		// calculate bisector object
 		Bisector b = computeBisectorInSector(currSector);
 		// find and return a list of segments that intersect with the bisector
@@ -696,20 +697,21 @@ public class Voronoi {
 
 		// while it isn't the convex hull edge keep going
 		Segment[] newIntersectingSegments = null;
-		while (!c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint())) && currSegIndex < 1) {
+		boolean completedBisector = false;
+		while (!completedBisector) {
 			// construct new sector with the shared segment
 			List<Sector> neighborSectors = c.constructSector(currSeg, site1, site2, graph);
 			for (Sector neighborSec : neighborSectors) {
 				// check if the constructed sector is the sector that we already have
-				if (neighborSec.equals(currSector)) { // fix later
+				if (neighborSec.isEqual(currSector)) { // fix later
 					continue;
 				}
 				// if it's not, then it's a new neighbor sector, then calculate new bisector
 				else {
 					currSector = neighborSec;
 					b = computeBisectorInSector(currSector);
-					bisectors.add(b.clone());
 					newIntersectingSegments = bisectorSectorIntersection(b, currSector);
+					bisectors.add(b.clone());
 
 					// compare segments in this list to currSeg; only return the segment that is not
 					// currSeg
@@ -727,15 +729,20 @@ public class Voronoi {
 
 			// if the boundary loops back to to the original segment, then break the loop
 			if (currSeg.equals(intersectingSegments[1])) {
-				break;
+				completedBisector = true;
 			}
 
 			// if we are updating to a segment on the convex hull; stop move in current
 			// direction and
 			// move in the opposite direction
-			if (c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint()))) {
-				currSegIndex++;
-				currSeg = intersectingSegments[currSegIndex];
+			if (c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint())) || 
+					c.isOnConvexBoundary(Util.toPoint2D(currSeg.getRightPoint()))) {
+				if(++currSegIndex > 1)
+					completedBisector = true;
+				else {
+					currSeg = intersectingSegments[currSegIndex];
+					currSector = firstSector;
+				}
 			}
 		}
 

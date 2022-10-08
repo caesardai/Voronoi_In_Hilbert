@@ -153,7 +153,8 @@ public class VoronoiTest {
 		System.out.println("look at points");
 	}
 	
-	public static void soulCrusher() {
+	// method to test the construction of a given sector
+	public static void testConstructSector() {
 		HilbertGeometry g = new HilbertGeometry();
 		
 		g.convex = new Convex();
@@ -165,17 +166,53 @@ public class VoronoiTest {
 		Point2D.Double site1 = new Point2D.Double(130d, 69d);
 		Point2D.Double site2 = new Point2D.Double(82d, 124d);
 		
+		// construct graph of sectors
+		Voronoi v = new Voronoi(g);
+		KdTree<KdTree.XYZPoint> tree = v.constructGraph(site1, site2);
+		
+		// construct segment to search from
+		KdTree.KdNode node = KdTree.getNode(tree, Util.toXYZPoint(site1));
+		KdTree.XYZPoint site1XYZ = node.getID();
+		node = KdTree.getNode(tree, Util.toXYZPoint( site1XYZ.getNeighbor(5).otherNode) );
+		KdTree.XYZPoint n1XYZ = node.getID();
+		Point2D.Double s1 = n1XYZ.getNeighbor(1).otherNode;
+		Point2D.Double s2 = site2;
+		Segment segToSearch = new Segment(Util.toPVector(s1), Util.toPVector(s2));
+		
+		// construct sectors
+		List<Sector> sectors = c.constructSector(segToSearch, site1, site2, tree);
+		
+		System.out.println("Insert breakpoint here!");
+	}
+	
+	public static void soulCrusher() {
+		HilbertGeometry g = new HilbertGeometry();
+		
+		g.convex = new Convex();
+		Convex c = g.convex;
+		c.addPoint(new Point2D.Double(200d, 200d));
+		c.addPoint(new Point2D.Double(700d, 200d));
+		c.addPoint(new Point2D.Double(700d, 700d));
+		c.addPoint(new Point2D.Double(200d, 700d));
+		Point2D.Double site1 = new Point2D.Double(504d, 281d);
+		Point2D.Double site2 = new Point2D.Double(382d, 584d);
+		
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
 		
-		int index = 0;
 		for (Bisector b : bisectorList) {
-			index++;
-			System.out.println(index + ". bisector - " + b);
+			System.out.println(b);
 		}
+		
+		for(Bisector b : bisectorList) {
+			System.out.println("\\left\\{" + b.getLeftEndPoint().x + " \\le x \\le" + b.getRightEndPoint().x + "\\right\\}");
+		}
+		
+		System.out.println("Insert breakpoint in here!");
 	}
 	
 	public static void main(String[] argv) {
+//		VoronoiTest.testConstructSector();
 		VoronoiTest.soulCrusher();
 	}
 }

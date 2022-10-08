@@ -3,6 +3,11 @@ package trapmap;
 import processing.core.PShape;
 import processing.core.PVector;
 
+// modification to original source code
+import java.awt.geom.Point2D;
+
+import geometry.Util;
+
 /**
  * Represents a line segment by its endpoints. Endpoints are stored in order as
  * given by the compareTo function of the Point class.
@@ -34,6 +39,16 @@ public class Segment {
 			lPoint = two;
 			rPoint = one;
 		}
+	}
+	
+	/**
+	 * Creates a line segment that preserves the orientation in which p1 and p2 are presented (i.e. p1 -> p2 is the parameterization of this line)
+	 * @param p1 End point of line segment.
+	 * @param p2 End point of line segment
+	 */
+	public Segment(Point2D.Double p1, Point2D.Double p2) {
+		this.lPoint = Util.toPVector(p1);
+		this.rPoint = Util.toPVector(p2);
 	}
 
 	/**

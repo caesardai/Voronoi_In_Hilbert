@@ -57,8 +57,8 @@ public class Bisector {
 	private Point2D.Double rightEndPoint;
 
 	// projective matrix transformation
-	private Matrix P;
-	private Matrix inverseP;
+//	private Matrix P;
+//	private Matrix inverseP;
 
 	// FOR DEBUGGING PURPOSES
 	public Bisector() {
@@ -76,9 +76,8 @@ public class Bisector {
 		this.leftEndPoint = null;
 		this.rightEndPoint = null;
 		this.constantsComputed = false;
-		this.P = null;
-		this.inverseP = null;
-		this.computeEdgeLineEquations();
+//		this.P = null;
+//		this.inverseP = null;
 		// this.computeProjectiveMatrices();
 		this.computeBisector();
 	}
@@ -95,8 +94,8 @@ public class Bisector {
 		this.leftEndPoint = leftEndPoint;
 		this.rightEndPoint = rightEndPoint;
 		this.constantsComputed = false;
-		this.P = null;
-		this.inverseP = null;
+//		this.P = null;
+//		this.inverseP = null;
 		// this.computeProjectiveMatrices();
 		this.computeBisector();
 	}
@@ -127,6 +126,9 @@ public class Bisector {
 		this.D = line4.z * line1.x + line4.x * line1.z - this.K * this.s * (line3.z * line2.x + line3.x * line2.z);
 		this.E = line4.z * line1.y + line4.y * line1.z - this.K * this.s * (line3.z * line2.y + line3.y * line2.z);
 		this.F = line4.z * line1.z - this.K * this.s * (line3.z * line2.z);
+		
+		// store the fact that coefficients have been computed
+		this.constantsComputed = true;
 	}
 
 	/**
@@ -456,6 +458,14 @@ public class Bisector {
 		}
 		return false;
 	}
+	
+	public Point2D.Double getLeftEndPoint() {
+		return this.leftEndPoint;
+	}
+
+	public Point2D.Double getRightEndPoint() {
+		return this.rightEndPoint;
+	}
 
 	/*
 	 * Computes the coefficients of the equations of the segments on the boundary of
@@ -488,103 +498,103 @@ public class Bisector {
 	/*
 	 * compute projective matrix
 	 */
-	private void computeProjectiveMatrices() {
-		// make sure that lines of edges are computed
-		if (this.line1 == null || this.line2 == null || this.line3 == null || this.line4 == null)
-			this.computeEdgeLineEquations();
-
-		// compute the vertices of the quad
-		Point2D.Double[] vertices = new Point2D.Double[4];
-		vertices[0] = HilbertGeometry.toCartesian(this.line1.crossProduct(this.line2));
-		vertices[1] = HilbertGeometry.toCartesian(this.line2.crossProduct(this.line3));
-		vertices[2] = HilbertGeometry.toCartesian(this.line3.crossProduct(this.line4));
-		vertices[3] = HilbertGeometry.toCartesian(this.line4.crossProduct(this.line1));
-
-		// determine relative position of all these points (i.e. which point is the top
-		// left vertex, which is the top right vertex, etc.)
-		// vertices[0] is bottom left corner
-		// vertices[1] is bottom right corner
-		// vertices[2] is top right corner
-		// vertices[3] is top left corner
-
-		// check vertical lines, if they exist permute the vertices position
-		if (vertices[0].x == vertices[1].x || vertices[2].x == vertices[3].x) {
-			Point2D.Double first = (Point2D.Double) vertices[0].clone();
-			for (int index = 0; index < vertices.length; index++) {
-				if (index == vertices.length - 1)
-					vertices[index] = first;
-				else
-					vertices[index] = vertices[(index + 1) % vertices.length];
-			}
-		}
-
-		// sort bottom segment by value of x
-		if (vertices[0].x > vertices[1].x) {
-			Point2D.Double temp = vertices[0];
-			vertices[0] = vertices[1];
-			vertices[1] = temp;
-		}
-
-		// sort top segment by value of x
-		if (vertices[3].x > vertices[2].x) {
-			Point2D.Double temp = vertices[2];
-			vertices[2] = vertices[3];
-			vertices[3] = temp;
-		}
-
-		// sort left segment by value of y
-		if (vertices[0].y > vertices[3].y) {
-			Point2D.Double temp = vertices[0];
-			vertices[0] = vertices[3];
-			vertices[3] = temp;
-
-		}
-
-		// sort left segment by value of y
-		if (vertices[1].y > vertices[2].y) {
-			Point2D.Double temp = vertices[2];
-			vertices[2] = vertices[1];
-			vertices[1] = temp;
-
-		}
-
-		// construct forward projective matrix
-		// we map to the unit square
-		Matrix T = new Matrix(new double[][] {
-				{ vertices[0].x, vertices[0].y, 1d, 0d, 0d, 0d, -vertices[0].x * 0d, -vertices[0].y * 0d },
-				{ 0d, 0d, 0d, vertices[0].x, vertices[0].y, 1d, -vertices[0].x * 0d, -vertices[0].y * 0d },
-				{ vertices[1].x, vertices[1].y, 1d, 0d, 0d, 0d, -vertices[1].x * 1d, -vertices[1].y * 1d },
-				{ 0d, 0d, 0d, vertices[1].x, vertices[1].y, 1d, -vertices[1].x * 0d, -vertices[1].y * 0d },
-				{ vertices[2].x, vertices[2].y, 1d, 0d, 0d, 0d, -vertices[2].x * 1d, -vertices[2].y * 1d },
-				{ 0d, 0d, 0d, vertices[2].x, vertices[2].y, 1d, -vertices[2].x * 1d, -vertices[2].y * 1d },
-				{ vertices[3].x, vertices[3].y, 1d, 0d, 0d, 0d, -vertices[3].x * 0d, -vertices[3].y * 0d },
-				{ 0d, 0d, 0d, vertices[3].x, vertices[3].y, 1d, -vertices[3].x * 1d, -vertices[3].y * 1d } });
-		Matrix Q = new Matrix(new double[][] { { 0d }, { 0d }, { 1d }, { 0d }, { 1d }, { 1d }, { 0d }, { 1d } });
-
-		Matrix C = T.inverse().times(Q);
-
-		this.P = new Matrix(new double[][] { { C.get(0, 0), C.get(1, 0), C.get(2, 0) },
-				{ C.get(3, 0), C.get(4, 0), C.get(5, 0) }, { C.get(6, 0), C.get(7, 0), 1d } });
-
-		// construct backwards projective matrix
-		// we map from the unit square back to the original quad
-		T = new Matrix(new double[][] { { 0d, 0d, 1d, 0d, 0d, 0d, -0d * vertices[0].x, -0d * vertices[0].x },
-				{ 0d, 0d, 0d, 0d, 0d, 1d, -0d * vertices[0].y, -0d * vertices[0].y },
-				{ 1d, 0d, 1d, 0d, 0d, 0d, -1d * vertices[1].x, -0d * vertices[1].x },
-				{ 0d, 0d, 0d, 1d, 0d, 1d, -1d * vertices[1].y, -0d * vertices[1].y },
-				{ 1d, 1d, 1d, 0d, 0d, 0d, -1d * vertices[2].x, -1d * vertices[2].x },
-				{ 0d, 0d, 0d, 1d, 1d, 1d, -1d * vertices[2].y, -1d * vertices[2].y },
-				{ 0d, 1d, 1d, 0d, 0d, 0d, -0d * vertices[3].x, -1d * vertices[3].x },
-				{ 0d, 0d, 0d, 0d, 1d, 1d, -0d * vertices[3].y, -1d * vertices[3].y } });
-		Matrix PP = new Matrix(new double[][] { { vertices[0].x }, { vertices[0].y }, { vertices[1].x },
-				{ vertices[1].y }, { vertices[2].x }, { vertices[2].y }, { vertices[3].x }, { vertices[3].y } });
-
-		C = T.inverse().times(PP);
-
-		this.inverseP = new Matrix(new double[][] { { C.get(0, 0), C.get(1, 0), C.get(2, 0) },
-				{ C.get(3, 0), C.get(4, 0), C.get(5, 0) }, { C.get(6, 0), C.get(7, 0), 1d } });
-
-	}
+//	private void computeProjectiveMatrices() {
+//		// make sure that lines of edges are computed
+//		if (this.line1 == null || this.line2 == null || this.line3 == null || this.line4 == null)
+//			this.computeEdgeLineEquations();
+//
+//		// compute the vertices of the quad
+//		Point2D.Double[] vertices = new Point2D.Double[4];
+//		vertices[0] = HilbertGeometry.toCartesian(this.line1.crossProduct(this.line2));
+//		vertices[1] = HilbertGeometry.toCartesian(this.line2.crossProduct(this.line3));
+//		vertices[2] = HilbertGeometry.toCartesian(this.line3.crossProduct(this.line4));
+//		vertices[3] = HilbertGeometry.toCartesian(this.line4.crossProduct(this.line1));
+//
+//		// determine relative position of all these points (i.e. which point is the top
+//		// left vertex, which is the top right vertex, etc.)
+//		// vertices[0] is bottom left corner
+//		// vertices[1] is bottom right corner
+//		// vertices[2] is top right corner
+//		// vertices[3] is top left corner
+//
+//		// check vertical lines, if they exist permute the vertices position
+//		if (vertices[0].x == vertices[1].x || vertices[2].x == vertices[3].x) {
+//			Point2D.Double first = (Point2D.Double) vertices[0].clone();
+//			for (int index = 0; index < vertices.length; index++) {
+//				if (index == vertices.length - 1)
+//					vertices[index] = first;
+//				else
+//					vertices[index] = vertices[(index + 1) % vertices.length];
+//			}
+//		}
+//
+//		// sort bottom segment by value of x
+//		if (vertices[0].x > vertices[1].x) {
+//			Point2D.Double temp = vertices[0];
+//			vertices[0] = vertices[1];
+//			vertices[1] = temp;
+//		}
+//
+//		// sort top segment by value of x
+//		if (vertices[3].x > vertices[2].x) {
+//			Point2D.Double temp = vertices[2];
+//			vertices[2] = vertices[3];
+//			vertices[3] = temp;
+//		}
+//
+//		// sort left segment by value of y
+//		if (vertices[0].y > vertices[3].y) {
+//			Point2D.Double temp = vertices[0];
+//			vertices[0] = vertices[3];
+//			vertices[3] = temp;
+//
+//		}
+//
+//		// sort left segment by value of y
+//		if (vertices[1].y > vertices[2].y) {
+//			Point2D.Double temp = vertices[2];
+//			vertices[2] = vertices[1];
+//			vertices[1] = temp;
+//
+//		}
+//
+//		// construct forward projective matrix
+//		// we map to the unit square
+//		Matrix T = new Matrix(new double[][] {
+//				{ vertices[0].x, vertices[0].y, 1d, 0d, 0d, 0d, -vertices[0].x * 0d, -vertices[0].y * 0d },
+//				{ 0d, 0d, 0d, vertices[0].x, vertices[0].y, 1d, -vertices[0].x * 0d, -vertices[0].y * 0d },
+//				{ vertices[1].x, vertices[1].y, 1d, 0d, 0d, 0d, -vertices[1].x * 1d, -vertices[1].y * 1d },
+//				{ 0d, 0d, 0d, vertices[1].x, vertices[1].y, 1d, -vertices[1].x * 0d, -vertices[1].y * 0d },
+//				{ vertices[2].x, vertices[2].y, 1d, 0d, 0d, 0d, -vertices[2].x * 1d, -vertices[2].y * 1d },
+//				{ 0d, 0d, 0d, vertices[2].x, vertices[2].y, 1d, -vertices[2].x * 1d, -vertices[2].y * 1d },
+//				{ vertices[3].x, vertices[3].y, 1d, 0d, 0d, 0d, -vertices[3].x * 0d, -vertices[3].y * 0d },
+//				{ 0d, 0d, 0d, vertices[3].x, vertices[3].y, 1d, -vertices[3].x * 1d, -vertices[3].y * 1d } });
+//		Matrix Q = new Matrix(new double[][] { { 0d }, { 0d }, { 1d }, { 0d }, { 1d }, { 1d }, { 0d }, { 1d } });
+//
+//		Matrix C = T.inverse().times(Q);
+//
+//		this.P = new Matrix(new double[][] { { C.get(0, 0), C.get(1, 0), C.get(2, 0) },
+//				{ C.get(3, 0), C.get(4, 0), C.get(5, 0) }, { C.get(6, 0), C.get(7, 0), 1d } });
+//
+//		// construct backwards projective matrix
+//		// we map from the unit square back to the original quad
+//		T = new Matrix(new double[][] { { 0d, 0d, 1d, 0d, 0d, 0d, -0d * vertices[0].x, -0d * vertices[0].x },
+//				{ 0d, 0d, 0d, 0d, 0d, 1d, -0d * vertices[0].y, -0d * vertices[0].y },
+//				{ 1d, 0d, 1d, 0d, 0d, 0d, -1d * vertices[1].x, -0d * vertices[1].x },
+//				{ 0d, 0d, 0d, 1d, 0d, 1d, -1d * vertices[1].y, -0d * vertices[1].y },
+//				{ 1d, 1d, 1d, 0d, 0d, 0d, -1d * vertices[2].x, -1d * vertices[2].x },
+//				{ 0d, 0d, 0d, 1d, 1d, 1d, -1d * vertices[2].y, -1d * vertices[2].y },
+//				{ 0d, 1d, 1d, 0d, 0d, 0d, -0d * vertices[3].x, -1d * vertices[3].x },
+//				{ 0d, 0d, 0d, 0d, 1d, 1d, -0d * vertices[3].y, -1d * vertices[3].y } });
+//		Matrix PP = new Matrix(new double[][] { { vertices[0].x }, { vertices[0].y }, { vertices[1].x },
+//				{ vertices[1].y }, { vertices[2].x }, { vertices[2].y }, { vertices[3].x }, { vertices[3].y } });
+//
+//		C = T.inverse().times(PP);
+//
+//		this.inverseP = new Matrix(new double[][] { { C.get(0, 0), C.get(1, 0), C.get(2, 0) },
+//				{ C.get(3, 0), C.get(4, 0), C.get(5, 0) }, { C.get(6, 0), C.get(7, 0), 1d } });
+//
+//	}
 
 	/**
 	 * computes coefficients of the equations of two given points
@@ -647,11 +657,11 @@ public class Bisector {
 
 	public String toString() {
 		String rtn = "";
-		rtn += Convex.castDecimal(this.A, 2) + "x^2 + ";
-		rtn += Convex.castDecimal(this.B, 2) + "y^2 + ";
-		rtn += Convex.castDecimal(this.C, 2) + "xy + ";
-		rtn += Convex.castDecimal(this.D, 2) + "x + ";
-		rtn += Convex.castDecimal(this.E, 2) + "y + ";
+		rtn += this.A + "x^2 + ";
+		rtn += this.B + "y^2 + ";
+		rtn += this.C + "xy + ";
+		rtn += this.D + "x + ";
+		rtn += this.E + "y + ";
 		rtn += this.F + " = 0";
 		return rtn;
 	}
