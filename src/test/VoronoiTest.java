@@ -171,7 +171,7 @@ public class VoronoiTest {
 		int index = 0;
 		for (Bisector b : bisectorList) {
 			index++;
-			System.out.print(index + ". bisector - " + b);
+			System.out.println(index + ". bisector - " + b);
 		}
 	}
 	

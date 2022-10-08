@@ -612,11 +612,12 @@ public class Voronoi {
 		Segment[] intersectSeg = new Segment[2];
 		// array of Voronoi boundary segments that intersects bisector
 		Point2D.Double[] secVertices = sec.sector.convexHull;
+		LinkedList<Point2D.Double> secBisecIntersect = null;
 		for (int i = 0; i < secVertices.length - 1; i++) {
 			Point2D.Double v1 = secVertices[i];
 			Point2D.Double v2 = secVertices[i + 1];
 			Point3d linev1v2 = Util.computeLineEquation(v1, v2);
-			LinkedList<Point2D.Double> secBisecIntersect = bi.intersectionPointsWithLine(linev1v2);
+			secBisecIntersect = bi.intersectionPointsWithLine(this.geometry.convex, linev1v2);
 			if (secBisecIntersect == null) {
 				continue;
 			}
@@ -632,9 +633,9 @@ public class Voronoi {
 				}
 			}
 		}
+		
 		return intersectSeg;
 	}
-	
 
 	public ArrayList<Bisector> realAugusteAlgo(Point2D.Double site1, Point2D.Double site2) {
 		// constants
@@ -682,58 +683,62 @@ public class Voronoi {
 		Sector currSector = sectors.get(indexOfCenterSector);
 		// calculate bisector object
 		Bisector b = computeBisectorInSector(currSector);
-		// find and return a list of segments that intersect with the bisector 
+		// find and return a list of segments that intersect with the bisector
 		Segment[] intersectingSegments = bisectorSectorIntersection(b, currSector);
-		
+
 		// tracking some segment
 		int currSegIndex = 0;
 		Segment currSeg = intersectingSegments[currSegIndex];
-		
+
 		// arraylist to store bisectors
 		ArrayList<Bisector> bisectors = new ArrayList<Bisector>();
 		bisectors.add(b.clone());
-		
-		// while it isn't the convex hull edge keep going 
-		while (!c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint())) && currSegIndex > 1) {
+
+		// while it isn't the convex hull edge keep going
+		Segment[] newIntersectingSegments = null;
+		while (!c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint())) && currSegIndex < 1) {
 			// construct new sector with the shared segment
 			List<Sector> neighborSectors = c.constructSector(currSeg, site1, site2, graph);
 			for (Sector neighborSec : neighborSectors) {
 				// check if the constructed sector is the sector that we already have
-				if (neighborSec.equals(currSector)) {
+				if (neighborSec.equals(currSector)) { // fix later
 					continue;
-				} 
+				}
 				// if it's not, then it's a new neighbor sector, then calculate new bisector
 				else {
+					currSector = neighborSec;
 					b = computeBisectorInSector(currSector);
 					bisectors.add(b.clone());
-					Segment[] newIntersectingSegments = bisectorSectorIntersection(b, currSector);
+					newIntersectingSegments = bisectorSectorIntersection(b, currSector);
 
-					// compare segments in this list to currSeg; only return the segment that is not currSeg
-					for(int index = 0; index < newIntersectingSegments.length; index++) {
-						if(!currSeg.equals(newIntersectingSegments[index])) {
+					// compare segments in this list to currSeg; only return the segment that is not
+					// currSeg
+					for (int index = 0; index < newIntersectingSegments.length; index++) {
+						if (!currSeg.equals(newIntersectingSegments[index])) {
 							currSeg = newIntersectingSegments[index];
 							break;
 						}
 					}
-					
+
 					// stop searching bisector
 					break;
 				}
 			}
-			
+
 			// if the boundary loops back to to the original segment, then break the loop
-			if(currSeg.equals(intersectingSegments[1])) {
+			if (currSeg.equals(intersectingSegments[1])) {
 				break;
 			}
-			
-			// if we are updating to a segment on the convex hull; stop move in current direction and 
+
+			// if we are updating to a segment on the convex hull; stop move in current
+			// direction and
 			// move in the opposite direction
-			if(c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint()))) {
+			if (c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint()))) {
 				currSegIndex++;
 				currSeg = intersectingSegments[currSegIndex];
 			}
 		}
-		
+
 		// return Bisector
 		return bisectors;
 	}
