@@ -204,6 +204,15 @@ public class VoronoiTest {
 			System.out.println(b);
 		}
 		
+		Bisector bisect = bisectorList.get(2);
+		Double[] solutions1 = bisect.computeY(601.842d);
+		Double[] solutions2 = bisect.computeY(579.697d);
+		
+		for(Double pt : solutions1)
+			System.out.println(pt);
+		for(Double pt : solutions2)
+			System.out.println(pt);
+		
 		for(Bisector b : bisectorList) {
 			System.out.println("\\left\\{" + b.getLeftEndPoint().x + " \\le x \\le" + b.getRightEndPoint().x + "\\right\\}");
 		}

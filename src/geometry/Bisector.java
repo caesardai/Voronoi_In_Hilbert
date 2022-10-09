@@ -131,21 +131,61 @@ public class Bisector {
 		this.constantsComputed = true;
 	}
 
+	/*
+	 * Given some y, compute the corresponding real x value on the conic
+	 */
+	public Double[] computeX(Double x) {
+		// compute constants if not already computed
+		if (!this.constantsComputed)
+			this.computeBisector();
+
+		// determine constants for this parameterized (in terms of x) conic
+		Double K1 = this.A;
+		Double K2 = this.C * x + this.D;
+		Double K3 = this.B * Math.pow(x, 2) + this.E * x + this.F;
+
+		// if K1 is zero, then use a different parameterization
+		if(K1 == 0d) {
+			return new Double[] {K3 / K2};
+		} else {
+			// determine if discriminant is negative or not; if negative, no real solution
+			// exist, otherwise, real solutions exist
+			Double discriminant = Math.pow(K2, 2) - 4 * K1 * K3;
+			if (discriminant < 0)
+				return new Double[0];
+
+			Double[] solutions = new Double[2];
+			solutions[0] = (-K2 + Math.sqrt(discriminant)) / (2 * K1);
+			solutions[1] = (-K2 - Math.sqrt(discriminant)) / (2 * K1);
+
+			return solutions;
+		}
+		
+
+//		Double numerator = this.E * y + this.F;
+//		Double denominator = this.C * y + this.D;
+//		if(denominator == 0d) {
+//			System.out.println("division by zero error");
+//			return Double.MIN_VALUE;
+//		} else
+//			return - numerator / denominator;
+	}
+
 	/**
 	 * Given some x, compute the corresponding real y value on the conic
 	 * 
 	 * @param x the x-value to plug into the parameterized function of the bisector
 	 * @return the corresponding y-value on the bisector
 	 */
-	public Double[] computeY(Double x) {
+	public Double[] computeY(Double y) {
 		// compute constants if not already computed
 		if (!this.constantsComputed)
 			this.computeBisector();
 
 		// determine constants for this parameterized (in terms of x) conic
 		Double K1 = this.B;
-		Double K2 = this.C * x + this.E;
-		Double K3 = this.A * Math.pow(x, 2) + this.D * x + this.F;
+		Double K2 = this.C * y + this.E;
+		Double K3 = this.A * Math.pow(y, 2) + this.D * y + this.F;
 
 		// determine if discriminant is negative or not; if negative, no real solution
 		// exist, otherwise, real solutions exist
@@ -153,11 +193,15 @@ public class Bisector {
 		if (discriminant < 0)
 			return new Double[0];
 
-		Double[] solutions = new Double[2];
-		solutions[0] = (-K2 + Math.sqrt(discriminant)) / (2 * K1);
-		solutions[1] = (-K2 - Math.sqrt(discriminant)) / (2 * K1);
+		if(K1 == 0) {
+			return new Double[] {K3 / K2};
+		} else {
+			Double[] solutions = new Double[2];
+			solutions[0] = (-K2 + Math.sqrt(discriminant)) / (2 * K1);
+			solutions[1] = (-K2 - Math.sqrt(discriminant)) / (2 * K1);
 
-		return solutions;
+			return solutions;
+		}
 
 //		Double numerator = this.D * x + this.F;
 //		Double denominator = this.C * x + this.E;
@@ -168,39 +212,6 @@ public class Bisector {
 //			return - numerator / denominator;
 	}
 
-	/*
-	 * Given some y, compute the corresponding real x value on the conic
-	 */
-	public Double[] computeX(Double y) {
-		// compute constants if not already computed
-		if (!this.constantsComputed)
-			this.computeBisector();
-
-		// determine constants for this parameterized (in terms of x) conic
-		Double K1 = this.A;
-		Double K2 = this.C * y + this.D;
-		Double K3 = this.B * Math.pow(y, 2) + this.E * y + this.F;
-
-		// determine if discriminant is negative or not; if negative, no real solution
-		// exist, otherwise, real solutions exist
-		Double discriminant = Math.pow(K2, 2) - 4 * K1 * K3;
-		if (discriminant < 0)
-			return new Double[0];
-
-		Double[] solutions = new Double[2];
-		solutions[0] = (-K2 + Math.sqrt(discriminant)) / (2 * K1);
-		solutions[1] = (-K2 - Math.sqrt(discriminant)) / (2 * K1);
-
-		return solutions;
-
-//		Double numerator = this.E * y + this.F;
-//		Double denominator = this.C * y + this.D;
-//		if(denominator == 0d) {
-//			System.out.println("division by zero error");
-//			return Double.MIN_VALUE;
-//		} else
-//			return - numerator / denominator;
-	}
 
 	/*
 	 * Compute discriminant for the intersection point between the bisector and a
