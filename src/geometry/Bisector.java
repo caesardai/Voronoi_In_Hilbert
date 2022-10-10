@@ -36,6 +36,9 @@ public class Bisector {
 
 	// check if constants are computed
 	private boolean constantsComputed;
+	
+	// stores the classification of the conic
+	private short classifiction;
 
 	// sites
 	private Point2D.Double site1;
@@ -76,6 +79,7 @@ public class Bisector {
 		this.leftEndPoint = null;
 		this.rightEndPoint = null;
 		this.constantsComputed = false;
+		this.classifiction = -1;
 //		this.P = null;
 //		this.inverseP = null;
 		// this.computeProjectiveMatrices();
@@ -94,6 +98,7 @@ public class Bisector {
 		this.leftEndPoint = leftEndPoint;
 		this.rightEndPoint = rightEndPoint;
 		this.constantsComputed = false;
+		this.classifiction = -1;
 //		this.P = null;
 //		this.inverseP = null;
 		// this.computeProjectiveMatrices();
@@ -129,6 +134,42 @@ public class Bisector {
 		
 		// store the fact that coefficients have been computed
 		this.constantsComputed = true;
+		
+		// detemine the classification of the bisector
+		this.classifyBisector();
+	}
+	
+	/**
+	 * Given that the bisector coefficients are computed, determine the type of conic the bisector is
+	 */
+	private void classifyBisector() {
+		// ensure constants are computed
+		if(!this.constantsComputed)
+			this.computeBisector();
+		
+		/*
+		 * Let -1 be when classification is not been performed
+		 * Let 0 be a some type of line
+		 * Let 1 be a parabola
+		 * Let 2 be a hyperbola
+		 * Let 3 be a ellipse
+		 */
+		
+		// determine if conic is degenerate
+		Matrix m = new Matrix(new double[] {this.A, this.B, this.D, this.B, this.C, this.E, this.D, this.E, this.F}, 3);
+		if(m.det() < 1e-12) {
+			this.classifiction = 0;
+			return;
+		}
+		
+		// conic must not be degenerate here, thus, use this equation and solve based on its value
+		double expression = Math.pow(this.C, 2) - 4 * this.A * this.B;
+		if(expression > 0)
+			this.classifiction = 2;
+		else if(expression < 0)
+			this.classifiction = 3;
+		else
+			this.classifiction = 1;
 	}
 
 	/*
@@ -476,6 +517,10 @@ public class Bisector {
 
 	public Point2D.Double getRightEndPoint() {
 		return this.rightEndPoint;
+	}
+	
+	public short getClassification() {
+		return this.classifiction;
 	}
 
 	/*

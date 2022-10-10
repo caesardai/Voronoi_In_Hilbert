@@ -789,7 +789,7 @@ public class Convex {
 			} else {
 				ArrayList<Double> compare = new ArrayList<Double>();
 				for (Point2D.Double p : intersectionPoints)
-					compare.add(p.x);
+					compare.add(p.y);
 				Convex.quickSort(intersectionPoints, compare, 0, intersectionPoints.size() - 1);
 			}
 

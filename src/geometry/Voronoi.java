@@ -607,9 +607,12 @@ public class Voronoi {
 		return b;
 	}
 
-	private Segment[] bisectorSectorIntersection(Bisector bi, Sector sec) {
-		int segCount = 0;
+	private Segment[] bisectorSectorIntersection(Bisector bi, Sector sec, Point2D.Double entryPoint) {
 		Segment[] intersectSeg = new Segment[2];
+
+		// find all possible intersection points and the segments they lay on
+		LinkedList<Point2D.Double> allIntersectionPoints = new LinkedList<Point2D.Double>();
+		LinkedList<Segment> allSegments= new LinkedList<Segment>();
 		// array of Voronoi boundary segments that intersects bisector
 		Point2D.Double[] secVertices = sec.sector.convexHull;
 		LinkedList<Point2D.Double> secBisecIntersect = null;
@@ -618,23 +621,44 @@ public class Voronoi {
 			Point2D.Double v2 = secVertices[i + 1];
 			Point3d linev1v2 = Util.computeLineEquation(v1, v2);
 			secBisecIntersect = bi.intersectionPointsWithLine(this.geometry.convex, linev1v2);
-			if (secBisecIntersect == null) {
-				continue;
-			}
-			if (segCount == 2)
-				break;
-			else {
-				for (Point2D.Double pt : secBisecIntersect) {
-					if (sec.isInSector(pt) && !Util.roughlySamePoints(pt, bi.getLeftEndPoint(), 1e-8)) {
+			for(Point2D.Double p : secBisecIntersect) {
+				// check if the point is in the sector
+				if (sec.isInSector(p)) {
+					// check if the point is not the entryPoint
+					if(!Util.roughlySamePoints(p, entryPoint, 1e-4)) {
 						// segments that conic intersect with
-						bi.setEndPoints(pt);
-						intersectSeg[segCount++] = Util.pointsToSeg(v1, v2);
+						allIntersectionPoints.add(p);
+						allSegments.add(Util.pointsToSeg(v1, v2));
+					} else { // found the entryPoint, store this segment
+						intersectSeg[0] = Util.pointsToSeg(v1, v2);
 					}
 				}
 			}
 		}
 		
-		return intersectSeg;
+		// if this the first bisector computed, then do the following
+		if(entryPoint == null) {
+			// assume that the first two intersection points are the only two intersection points on this sector
+			bi.setEndPoints(allIntersectionPoints.get(0));
+			bi.setEndPoints(allIntersectionPoints.get(1));
+			intersectSeg[0] = allSegments.get(0);
+			intersectSeg[1] = allSegments.get(1);
+			return intersectSeg;
+		} else {
+			// loop through all intersection points and find the point closest to entryPoint
+			ArrayList<Double> distances = new ArrayList<Double>(allIntersectionPoints.size());
+			for(int index = 0; index < allIntersectionPoints.size(); index++)
+				distances.add(entryPoint.distance(allIntersectionPoints.get(index)));
+			
+			// get arg min of distances
+			double minDistances = Collections.min(distances);
+			int minDistPointIndex = distances.indexOf(minDistances);
+			bi.setEndPoints(allIntersectionPoints.get(minDistPointIndex));
+			
+			// return results
+			intersectSeg[1] = allSegments.get(minDistPointIndex);
+			return intersectSeg;
+		}
 	}
 
 	public ArrayList<Bisector> realAugusteAlgo(Point2D.Double site1, Point2D.Double site2) {
@@ -685,7 +709,7 @@ public class Voronoi {
 		// calculate bisector object
 		Bisector b = computeBisectorInSector(currSector);
 		// find and return a list of segments that intersect with the bisector
-		Segment[] intersectingSegments = bisectorSectorIntersection(b, currSector);
+		Segment[] intersectingSegments = bisectorSectorIntersection(b, currSector, null);
 
 		// tracking some segment
 		int currSegIndex = 0;
@@ -698,6 +722,7 @@ public class Voronoi {
 		// while it isn't the convex hull edge keep going
 		Segment[] newIntersectingSegments = null;
 		boolean completedBisector = false;
+		boolean switchedSides = false;
 		while (!completedBisector) {
 			// construct new sector with the shared segment
 			List<Sector> neighborSectors = c.constructSector(currSeg, site1, site2, graph);
@@ -710,7 +735,24 @@ public class Voronoi {
 				else {
 					currSector = neighborSec;
 					b = computeBisectorInSector(currSector);
-					newIntersectingSegments = bisectorSectorIntersection(b, currSector);
+					
+					// find one the bisector intersection points
+					Point2D.Double endPoint = null;
+					Bisector bist = null;
+					if(!switchedSides) 
+						bist = bisectors.get(bisectors.size() - 1);
+					else {
+						bist = bisectors.get(0);
+						switchedSides = false;
+					}
+					endPoint = bist.getLeftEndPoint();
+					Point3d currSegLine = Util.computeLineEquation(Util.toPoint2D(currSeg.getLeftPoint()), Util.toPoint2D(currSeg.getRightPoint()));
+					if(Math.abs(currSegLine.scalarProduct(HilbertGeometry.toHomogeneous(endPoint))) > 1e-8) {
+						endPoint = bist.getRightEndPoint();
+					}
+					b.setEndPoints(endPoint);
+					
+					newIntersectingSegments = bisectorSectorIntersection(b, currSector, endPoint);
 					bisectors.add(b.clone());
 
 					// compare segments in this list to currSeg; only return the segment that is not
@@ -735,13 +777,14 @@ public class Voronoi {
 			// if we are updating to a segment on the convex hull; stop move in current
 			// direction and
 			// move in the opposite direction
-			if (c.isOnConvexBoundary(Util.toPoint2D(currSeg.getLeftPoint())) || 
-					c.isOnConvexBoundary(Util.toPoint2D(currSeg.getRightPoint()))) {
+			if (c.isOnConvexBoundary(b.getLeftEndPoint()) || 
+					c.isOnConvexBoundary(b.getRightEndPoint())) {
 				if(++currSegIndex > 1)
 					completedBisector = true;
 				else {
 					currSeg = intersectingSegments[currSegIndex];
 					currSector = firstSector;
+					switchedSides = true;
 				}
 			}
 		}

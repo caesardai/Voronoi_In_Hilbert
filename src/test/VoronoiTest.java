@@ -190,12 +190,12 @@ public class VoronoiTest {
 		
 		g.convex = new Convex();
 		Convex c = g.convex;
-		c.addPoint(new Point2D.Double(200d, 200d));
-		c.addPoint(new Point2D.Double(700d, 200d));
-		c.addPoint(new Point2D.Double(700d, 700d));
-		c.addPoint(new Point2D.Double(200d, 700d));
-		Point2D.Double site1 = new Point2D.Double(504d, 281d);
-		Point2D.Double site2 = new Point2D.Double(382d, 584d);
+		c.addPoint(new Point2D.Double(50d, 50d));
+		c.addPoint(new Point2D.Double(150d, 50d));
+		c.addPoint(new Point2D.Double(200d, 150d));
+		c.addPoint(new Point2D.Double(100d, 150d));
+		Point2D.Double site1 = new Point2D.Double(130d, 69d);
+		Point2D.Double site2 = new Point2D.Double(113d, 125d);
 		
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
@@ -203,15 +203,6 @@ public class VoronoiTest {
 		for (Bisector b : bisectorList) {
 			System.out.println(b);
 		}
-		
-		Bisector bisect = bisectorList.get(2);
-		Double[] solutions1 = bisect.computeY(601.842d);
-		Double[] solutions2 = bisect.computeY(579.697d);
-		
-		for(Double pt : solutions1)
-			System.out.println(pt);
-		for(Double pt : solutions2)
-			System.out.println(pt);
 		
 		for(Bisector b : bisectorList) {
 			System.out.println("\\left\\{" + b.getLeftEndPoint().x + " \\le x \\le" + b.getRightEndPoint().x + "\\right\\}");
