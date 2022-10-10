@@ -192,12 +192,12 @@ public class VoronoiTest {
 		
 		g.convex = new Convex();
 		Convex c = g.convex;
-		c.addPoint(new Point2D.Double(50d, 50d));
-		c.addPoint(new Point2D.Double(150d, 50d));
-		c.addPoint(new Point2D.Double(200d, 150d));
-		c.addPoint(new Point2D.Double(100d, 150d));
-		Point2D.Double site1 = new Point2D.Double(130d, 69d);
-		Point2D.Double site2 = new Point2D.Double(113d, 125d);
+		c.addPoint(new Point2D.Double(165d, 618d));
+		c.addPoint(new Point2D.Double(880d, 53d));
+		c.addPoint(new Point2D.Double(1020d, 984d));
+		// c.addPoint(new Point2D.Double(1100d, 1150d));
+		Point2D.Double site1 = new Point2D.Double(866d, 216d);
+		Point2D.Double site2 = new Point2D.Double(684d, 700d);
 		
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);

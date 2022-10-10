@@ -2,6 +2,8 @@ package geometry;
 
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import trapmap.Segment;
 
@@ -719,6 +721,16 @@ public class Bisector {
 		rtn += this.D + "x + ";
 		rtn += this.E + "y + ";
 		rtn += this.F + " = 0";
+
+		Pattern p = Pattern.compile("E[0-9]+");
+		Matcher m = p.matcher(rtn);
+		while(m.find()) {
+			String pattern = m.group(0);
+			String replacement = " * 10^{" + pattern.substring(1, pattern.length()) + "}";
+			rtn = rtn.replaceAll(pattern, replacement);
+		}
+		
+		rtn += "\\left\\{" + this.getLeftEndPoint().x + " \\le x \\le " + this.getRightEndPoint().x + "\\right\\}";
 		return rtn;
 	}
 }
