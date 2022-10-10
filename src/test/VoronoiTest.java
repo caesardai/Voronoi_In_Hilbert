@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import geometry.Bisector;
 import geometry.Convex;
@@ -200,14 +202,18 @@ public class VoronoiTest {
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
 		
+		Pattern p = Pattern.compile("E[0-9]+");
 		for (Bisector b : bisectorList) {
-			System.out.println(b);
+			String printStatement = b.toString();
+			Matcher m = p.matcher(printStatement);
+			while(m.find()) {
+				String pattern = m.group(0);
+				String replacement = " * 10^{" + pattern.substring(1, pattern.length()) + "}";
+				printStatement = printStatement.replaceAll(pattern, replacement);
+			}
+			
+			System.out.println(printStatement + "\\left\\{" + b.getLeftEndPoint().x + " \\le x \\le " + b.getRightEndPoint().x + "\\right\\}");
 		}
-		
-		for(Bisector b : bisectorList) {
-			System.out.println("\\left\\{" + b.getLeftEndPoint().x + " \\le x \\le" + b.getRightEndPoint().x + "\\right\\}");
-		}
-		
 		System.out.println("Insert breakpoint in here!");
 	}
 	
