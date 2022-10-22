@@ -85,7 +85,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	 * Setting up visualization interface
 	 */
 	public void setup() {
-		size(1060, 800);
+		size(1000, 1000);
 		initButton();
 
 		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);

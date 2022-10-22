@@ -121,6 +121,7 @@ public class Voronoi {
 		}
 		return nearestPoint;
 	}
+	
 
 	public void computeVoronoi() {
 		this.voronoiPoints.clear();

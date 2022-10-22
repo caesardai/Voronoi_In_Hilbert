@@ -529,7 +529,7 @@ public class Convex {
 		
 		// determine horizontal distance from the hull with respect to Euclidean metric.
 		Point3d horizontalLine = new Point3d(0, 1, -1 * site1.y);
-		Point2D.Double[] intersectPoints = Util.intersectionPoints(horizontalLine, this);
+		Point2D.Double[] intersectPoints = Util.lineConvexIntersectionPoints(horizontalLine, this);
 		double x0 = -1;
 		for(int index = 0; index < intersectPoints.length; index++) {
 			Point2D.Double curr = intersectPoints[index];
@@ -539,7 +539,7 @@ public class Convex {
 			}
 		}
 		horizontalLine = new Point3d(0, 1, -1 * site2.y);
-		intersectPoints = Util.intersectionPoints(horizontalLine, this);
+		intersectPoints = Util.lineConvexIntersectionPoints(horizontalLine, this);
 		double y0 = -1;
 		for(int index = 0; index < intersectPoints.length; index++) {
 			Point2D.Double curr = intersectPoints[index];

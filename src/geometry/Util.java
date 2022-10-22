@@ -59,7 +59,7 @@ public class Util {
 	    return intersectionPoints;
 	  }
 
-	public static Point2D.Double[] intersectionPoints(Point3d line, Convex convex) {
+	public static Point2D.Double[] lineConvexIntersectionPoints(Point3d line, Convex convex) {
 	    Point3d pqLine = line;
 	    Point3d beginPoint = HilbertGeometry.toHomogeneous(convex.convexHull[0]);
 	    Point2D.Double[] intersectionPoints = new Point2D.Double[2];
@@ -80,6 +80,28 @@ public class Util {
 		Point3d intersect = l1.crossProduct(l2);
 		if (intersect.z == 0)	return null;
 		else return HilbertGeometry.toCartesian(intersect);
+	}
+	
+	public Double distancePointToSegment(Point2D.Double pt, Segment seg) {
+		PVector lPoint = seg.getLeftPoint();
+		PVector rPoint = seg.getRightPoint();
+		Point2D.Double l1 = toPoint2D(lPoint);
+		Point2D.Double l2 = toPoint2D(rPoint);
+		
+		
+		return Math.abs((l2.getX() - l1.getX()) * (l1.getY() - pt.getY()) 
+				- (l1.getX() - pt.getX()) * (l2.getY() - l1.getY())) 
+				/ Math.sqrt(Math.pow(l2.getX() - l1.getX(), 2) + Math.pow(l2.getY() - l1.getY(), 2));
+	}
+	
+	public Double distancePointToLine(Point2D.Double pt, Point3d line) {
+		Double x = pt.x;
+		Double y = pt.y;
+		Double a = line.x;
+		Double b = line.y;
+		Double c = line.z;
+		
+		return Math.abs(((a * x + b * y + c)) / (Math.sqrt(a * a + b * b)));
 	}
 
 	public static PVector toPVector(Point2D.Double p) {

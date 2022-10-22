@@ -161,12 +161,12 @@ public class VoronoiTest {
 		
 		g.convex = new Convex();
 		Convex c = g.convex;
-		c.addPoint(new Point2D.Double(50d, 50d));
-		c.addPoint(new Point2D.Double(150d, 50d));
-		c.addPoint(new Point2D.Double(150d, 150d));
-		c.addPoint(new Point2D.Double(50d, 150d));
-		Point2D.Double site1 = new Point2D.Double(130d, 69d);
-		Point2D.Double site2 = new Point2D.Double(82d, 124d);
+		c.addPoint(new Point2D.Double(200d, 200d));
+		c.addPoint(new Point2D.Double(700d, 200d));
+		c.addPoint(new Point2D.Double(700d, 700d));
+		c.addPoint(new Point2D.Double(200d, 700d));
+		Point2D.Double site1 = new Point2D.Double(504d, 281d);
+		Point2D.Double site2 = new Point2D.Double(382d, 584d);
 		
 		// construct graph of sectors
 		Voronoi v = new Voronoi(g);
@@ -192,12 +192,12 @@ public class VoronoiTest {
 		
 		g.convex = new Convex();
 		Convex c = g.convex;
-		c.addPoint(new Point2D.Double(50d, 50d));
-		c.addPoint(new Point2D.Double(150d, 50d));
-		c.addPoint(new Point2D.Double(200d, 150d));
-		c.addPoint(new Point2D.Double(100d, 150d));
-		Point2D.Double site1 = new Point2D.Double(130d, 69d);
-		Point2D.Double site2 = new Point2D.Double(113d, 125d);
+		c.addPoint(new Point2D.Double(200d, 200d));
+		c.addPoint(new Point2D.Double(700d, 200d));
+		c.addPoint(new Point2D.Double(800d, 700d));
+		c.addPoint(new Point2D.Double(300d, 700d));
+		Point2D.Double site1 = new Point2D.Double(504d, 281d);
+		Point2D.Double site2 = new Point2D.Double(598d, 585d);
 		
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
