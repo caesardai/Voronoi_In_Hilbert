@@ -187,17 +187,58 @@ public class VoronoiTest {
 		System.out.println("Insert breakpoint here!");
 	}
 	
-	public static void soulCrusher() {
+	public static void soulCrusher(String convexFile, String siteFile) {
 		HilbertGeometry g = new HilbertGeometry();
-		
 		g.convex = new Convex();
 		Convex c = g.convex;
+<<<<<<< HEAD
 		c.addPoint(new Point2D.Double(200d, 200d));
 		c.addPoint(new Point2D.Double(700d, 200d));
 		c.addPoint(new Point2D.Double(800d, 700d));
 		c.addPoint(new Point2D.Double(300d, 700d));
 		Point2D.Double site1 = new Point2D.Double(504d, 281d);
 		Point2D.Double site2 = new Point2D.Double(598d, 585d);
+=======
+		
+		// read any files to determine hull of the set
+		if(convexFile != null) {
+			Point2D.Double[] hullVertices = c.load(convexFile);
+			for(int index = 0; index < hullVertices.length; index++)
+				c.addPoint(hullVertices[index]);
+		} else {
+			c.addPoint(new Point2D.Double(50d, 50d));
+			c.addPoint(new Point2D.Double(150d, 50d));
+			c.addPoint(new Point2D.Double(200d, 150d));
+			c.addPoint(new Point2D.Double(100d, 150d));
+		}
+		
+		// read any files to determine the sites for this diagram
+		Point2D.Double site1 = null;
+		Point2D.Double site2 = null;;
+		boolean defaultSites = false;
+		if(siteFile != null) {
+			Point2D.Double[] siteVertices = c.load(siteFile);
+			if(siteVertices.length != 2)
+				defaultSites = true;
+			else {
+				site1 = siteVertices[0];
+				site2 = siteVertices[1];
+			}
+		} 
+		if(defaultSites) {
+			site1 = new Point2D.Double(139d, 69d);
+			site2 = new Point2D.Double(113d, 125d);
+		}
+		
+		// print hull vertices
+		System.out.print("[");
+		for(Point2D.Double p : c.convexHull)
+			System.out.print(Util.printCoordinate(p) + ", ");
+		System.out.println("]");
+
+		// print site vertices
+		System.out.println("[" + Util.printCoordinate(site1) + ", " + Util.printCoordinate(site2) + "]");
+>>>>>>> 2e524009188abe11c92081ebcc1b49d282526a28
 		
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
@@ -219,6 +260,9 @@ public class VoronoiTest {
 	
 	public static void main(String[] argv) {
 //		VoronoiTest.testConstructSector();
-		VoronoiTest.soulCrusher();
+		
+		String convexFile = "src/convexes/hull0";
+		String siteFile = "src/convexes/site0";
+		VoronoiTest.soulCrusher(convexFile, siteFile);
 	}
 }
