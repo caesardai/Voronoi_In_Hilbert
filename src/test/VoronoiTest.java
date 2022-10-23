@@ -191,14 +191,6 @@ public class VoronoiTest {
 		HilbertGeometry g = new HilbertGeometry();
 		g.convex = new Convex();
 		Convex c = g.convex;
-<<<<<<< HEAD
-		c.addPoint(new Point2D.Double(200d, 200d));
-		c.addPoint(new Point2D.Double(700d, 200d));
-		c.addPoint(new Point2D.Double(800d, 700d));
-		c.addPoint(new Point2D.Double(300d, 700d));
-		Point2D.Double site1 = new Point2D.Double(504d, 281d);
-		Point2D.Double site2 = new Point2D.Double(598d, 585d);
-=======
 		
 		// read any files to determine hull of the set
 		if(convexFile != null) {
@@ -206,10 +198,10 @@ public class VoronoiTest {
 			for(int index = 0; index < hullVertices.length; index++)
 				c.addPoint(hullVertices[index]);
 		} else {
-			c.addPoint(new Point2D.Double(50d, 50d));
-			c.addPoint(new Point2D.Double(150d, 50d));
-			c.addPoint(new Point2D.Double(200d, 150d));
-			c.addPoint(new Point2D.Double(100d, 150d));
+			c.addPoint(new Point2D.Double(200d, 200d));
+			c.addPoint(new Point2D.Double(700d, 200d));
+			c.addPoint(new Point2D.Double(800d, 700d));
+			c.addPoint(new Point2D.Double(300d, 700d));
 		}
 		
 		// read any files to determine the sites for this diagram
@@ -221,8 +213,8 @@ public class VoronoiTest {
 			if(siteVertices.length != 2)
 				defaultSites = true;
 			else {
-				site1 = siteVertices[0];
-				site2 = siteVertices[1];
+				site1 = new Point2D.Double(504d, 281d);
+				site2 = new Point2D.Double(598d, 585d);
 			}
 		} 
 		if(defaultSites) {
@@ -238,7 +230,6 @@ public class VoronoiTest {
 
 		// print site vertices
 		System.out.println("[" + Util.printCoordinate(site1) + ", " + Util.printCoordinate(site2) + "]");
->>>>>>> 2e524009188abe11c92081ebcc1b49d282526a28
 		
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);

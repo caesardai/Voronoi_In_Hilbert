@@ -771,7 +771,8 @@ public class Voronoi {
 			}
 
 			// if the boundary loops back to to the original segment, then break the loop
-			if (currSeg.equals(intersectingSegments[1])) {
+
+
 				completedBisector = true;
 			}
 
