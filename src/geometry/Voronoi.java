@@ -791,19 +791,19 @@ public class Voronoi {
 		Point2D.Double currS11 = currSec.getSite1();
 		Point2D.Double currS12 = currSec.getSite2();
 		// edge 1
-		Segment currS1e1 = sec1.getEdge1();
+		Segment currS1e1 = currSec.getEdge1();
 		PVector currS1e1x = currS1e1.getLeftPoint();
 		PVector currS1e1y = currS1e1.getRightPoint();
 		// edge 2
-		Segment currS1e2 = sec1.getEdge2();
+		Segment currS1e2 = currSec.getEdge2();
 		PVector currS1e2x = currS1e2.getLeftPoint();
 		PVector currS1e2y = currS1e2.getRightPoint();
 		// edge 3
-		Segment currS1e3 = sec1.getEdge3();
+		Segment currS1e3 = currSec.getEdge3();
 		PVector currS1e3x = currS1e3.getLeftPoint();
 		PVector currS1e3y = currS1e3.getRightPoint();
 		// edge 4
-		Segment currS1e4 = sec1.getEdge4();
+		Segment currS1e4 = currSec.getEdge4();
 		PVector currS1e4x = currS1e4.getLeftPoint();
 		PVector currS1e4y = currS1e4.getRightPoint();
 		System.out.println("********** Sector we are currently in **********");
@@ -835,7 +835,7 @@ public class Voronoi {
 		// ************************************************************************************
 		Point2D.Double biLeftPt = b.getLeftEndPoint();
 		Point2D.Double biRightPt = b.getRightEndPoint();
-		System.out.println("Bisector");
+		System.out.println("Bisector in the Current Sector");
 		System.out.println("Left Endpoint: " + Util.printCoordinate(biLeftPt));
 		System.out.println("Right Endpoint: " + Util.printCoordinate(biRightPt) + "\n");
 		// ************************************************************************************
@@ -856,19 +856,19 @@ public class Voronoi {
 				Point2D.Double s1 = sec.getSite1();
 				Point2D.Double s2 = sec.getSite2();
 				// edge 1
-				Segment e1 = sec2.getEdge1();
+				Segment e1 = sec.getEdge1();
 				PVector e1x = e1.getLeftPoint();
 				PVector e1y = e1.getRightPoint();
 				// edge 2
-				Segment e2 = sec2.getEdge2();
+				Segment e2 = sec.getEdge2();
 				PVector e2x = e2.getLeftPoint();
 				PVector e2y = e2.getRightPoint();
 				// edge 3
-				Segment e3 = sec2.getEdge3();
+				Segment e3 = sec.getEdge3();
 				PVector e3x = e3.getLeftPoint();
 				PVector e3y = e3.getRightPoint();
 				// edge 4
-				Segment e4 = sec2.getEdge4();
+				Segment e4 = sec.getEdge4();
 				PVector e4x = e4.getLeftPoint();
 				PVector e4y = e4.getRightPoint();
 
@@ -901,19 +901,19 @@ public class Voronoi {
 					Point2D.Double nextS1 = currSector.getSite1();
 					Point2D.Double nextS2 = currSector.getSite2();
 					// edge 1
-					Segment nextSe1 = sec2.getEdge1();
+					Segment nextSe1 = currSector.getEdge1();
 					PVector nextSe1x = nextSe1.getLeftPoint();
 					PVector nextSe1y = nextSe1.getRightPoint();
 					// edge 2
-					Segment nextSe2 = sec2.getEdge2();
+					Segment nextSe2 = currSector.getEdge2();
 					PVector nextSe2x = nextSe2.getLeftPoint();
 					PVector nextSe2y = nextSe2.getRightPoint();
 					// edge 3
-					Segment nextSe3 = sec2.getEdge3();
+					Segment nextSe3 = currSector.getEdge3();
 					PVector nextSe3x = nextSe3.getLeftPoint();
 					PVector nextSe3y = nextSe3.getRightPoint();
 					// edge 4
-					Segment nextSe4 = sec2.getEdge4();
+					Segment nextSe4 = currSector.getEdge4();
 					PVector nextSe4x = nextSe4.getLeftPoint();
 					PVector nextSe4y = nextSe4.getRightPoint();
 

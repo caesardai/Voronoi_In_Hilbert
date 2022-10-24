@@ -238,8 +238,14 @@ public class VoronoiTest {
 
 		Voronoi v = new Voronoi(g);
 		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
+		
+		System.out.println("We have " + bisectorList.size() + " bisectors.");
 
 		Pattern p = Pattern.compile("E[0-9]+");
+		// Print Statement
+		// ************************************************************************************
+		int index = 0;
+		// ************************************************************************************
 		for (Bisector b : bisectorList) {
 			String printStatement = b.toString();
 			Matcher m = p.matcher(printStatement);
