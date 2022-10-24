@@ -121,7 +121,6 @@ public class Voronoi {
 		}
 		return nearestPoint;
 	}
-	
 
 	public void computeVoronoi() {
 		this.voronoiPoints.clear();
@@ -613,7 +612,7 @@ public class Voronoi {
 
 		// find all possible intersection points and the segments they lay on
 		LinkedList<Point2D.Double> allIntersectionPoints = new LinkedList<Point2D.Double>();
-		LinkedList<Segment> allSegments= new LinkedList<Segment>();
+		LinkedList<Segment> allSegments = new LinkedList<Segment>();
 		// array of Voronoi boundary segments that intersects bisector
 		Point2D.Double[] secVertices = sec.sector.convexHull;
 		LinkedList<Point2D.Double> secBisecIntersect = null;
@@ -622,11 +621,11 @@ public class Voronoi {
 			Point2D.Double v2 = secVertices[i + 1];
 			Point3d linev1v2 = Util.computeLineEquation(v1, v2);
 			secBisecIntersect = bi.intersectionPointsWithLine(this.geometry.convex, linev1v2);
-			for(Point2D.Double p : secBisecIntersect) {
+			for (Point2D.Double p : secBisecIntersect) {
 				// check if the point is in the sector
 				if (sec.isInSector(p)) {
 					// check if the point is not the entryPoint
-					if(!Util.roughlySamePoints(p, entryPoint, 1e-4)) {
+					if (!Util.roughlySamePoints(p, entryPoint, 1e-4)) {
 						// segments that conic intersect with
 						allIntersectionPoints.add(p);
 						allSegments.add(Util.pointsToSeg(v1, v2));
@@ -636,10 +635,11 @@ public class Voronoi {
 				}
 			}
 		}
-		
+
 		// if this the first bisector computed, then do the following
-		if(entryPoint == null) {
-			// assume that the first two intersection points are the only two intersection points on this sector
+		if (entryPoint == null) {
+			// assume that the first two intersection points are the only two intersection
+			// points on this sector
 			bi.setEndPoints(allIntersectionPoints.get(0));
 			bi.setEndPoints(allIntersectionPoints.get(1));
 			intersectSeg[0] = allSegments.get(0);
@@ -648,14 +648,14 @@ public class Voronoi {
 		} else {
 			// loop through all intersection points and find the point closest to entryPoint
 			ArrayList<Double> distances = new ArrayList<Double>(allIntersectionPoints.size());
-			for(int index = 0; index < allIntersectionPoints.size(); index++)
+			for (int index = 0; index < allIntersectionPoints.size(); index++)
 				distances.add(entryPoint.distance(allIntersectionPoints.get(index)));
-			
+
 			// get arg min of distances
 			double minDistances = Collections.min(distances);
 			int minDistPointIndex = distances.indexOf(minDistances);
 			bi.setEndPoints(allIntersectionPoints.get(minDistPointIndex));
-			
+
 			// return results
 			intersectSeg[1] = allSegments.get(minDistPointIndex);
 			return intersectSeg;
@@ -694,6 +694,75 @@ public class Voronoi {
 		// construct sector
 		List<Sector> sectors = c.constructSector(sharedEdge, site1, site2, graph);
 
+		// Print statement
+		// ***********************************************************************************
+		System.out.println("site1: (" + site1.x + ", " + site1.y + ")");
+		System.out.println("site2: (" + site2.x + ", " + site2.y + ")");
+		System.out.println();
+		System.out.println("Sectors that shares the same edge");
+		// ****** sector1 ******
+		Sector sec1 = sectors.get(0);
+		Point2D.Double s11 = sec1.getSite1();
+		Point2D.Double s12 = sec1.getSite2();
+		// edge 1
+		Segment s1e1 = sec1.getEdge1();
+		PVector s1e1x = s1e1.getLeftPoint();
+		PVector s1e1y = s1e1.getRightPoint();
+		// edge 2
+		Segment s1e2 = sec1.getEdge2();
+		PVector s1e2x = s1e2.getLeftPoint();
+		PVector s1e2y = s1e2.getRightPoint();
+		// edge 3
+		Segment s1e3 = sec1.getEdge3();
+		PVector s1e3x = s1e3.getLeftPoint();
+		PVector s1e3y = s1e3.getRightPoint();
+		// edge 4
+		Segment s1e4 = sec1.getEdge4();
+		PVector s1e4x = s1e4.getLeftPoint();
+		PVector s1e4y = s1e4.getRightPoint();
+		System.out.println("********** s1 **********");
+		System.out.printf("site1: " + Util.printCoordinate(site1) + "\n");
+		System.out.printf("site2: " + Util.printCoordinate(site2) + "\n");
+		System.out.println("e1 leftPt: " + Util.toPoint2D(s1e1x) + " rightPt: " + Util.toPoint2D(s1e1y));
+		System.out.println("e2 leftPt: " + Util.toPoint2D(s1e2x) + " rightPt: " + Util.toPoint2D(s1e2y));
+		System.out.println("e3 leftPt: " + Util.toPoint2D(s1e3x) + " rightPt: " + Util.toPoint2D(s1e3y));
+		System.out.println("e4 leftPt: " + Util.toPoint2D(s1e4x) + " rightPt: " + Util.toPoint2D(s1e4y));
+
+		System.out.println("************************\n");
+
+		// ****** sector2 ******
+		Sector sec2 = sectors.get(1);
+		Point2D.Double s21 = sec2.getSite1();
+		Point2D.Double s22 = sec2.getSite2();
+		// edge 1
+		Segment s2e1 = sec2.getEdge1();
+		PVector s2e1x = s2e1.getLeftPoint();
+		PVector s2e1y = s2e1.getRightPoint();
+		// edge 2
+		Segment s2e2 = sec2.getEdge2();
+		PVector s2e2x = s2e2.getLeftPoint();
+		PVector s2e2y = s2e2.getRightPoint();
+		// edge 3
+		Segment s2e3 = sec2.getEdge3();
+		PVector s2e3x = s2e3.getLeftPoint();
+		PVector s2e3y = s2e3.getRightPoint();
+		// edge 4
+		Segment s2e4 = sec2.getEdge4();
+		PVector s2e4x = s2e4.getLeftPoint();
+		PVector s2e4y = s2e4.getRightPoint();
+
+		System.out.println("********** s2 **********");
+		System.out.printf("site1: " + Util.printCoordinate(site1) + "\n");
+		System.out.printf("site2: " + Util.printCoordinate(site2) + "\n");
+		System.out.println("e1 leftPt: " + Util.toPoint2D(s2e1x) + " rightPt: " + Util.toPoint2D(s2e1y));
+		System.out.println("e2 leftPt: " + Util.toPoint2D(s2e2x) + " rightPt: " + Util.toPoint2D(s2e2y));
+		System.out.println("e3 leftPt: " + Util.toPoint2D(s2e3x) + " rightPt: " + Util.toPoint2D(s2e3y));
+		System.out.println("e4 leftPt: " + Util.toPoint2D(s2e4x) + " rightPt: " + Util.toPoint2D(s2e4y));
+
+		System.out.println("************************\n");
+		// ************************************************************************************
+		
+		
 		// check which sector to use
 		int indexOfCenterSector = 0;
 		for (int index = 0; index < sectors.get(1).sector.convexHull.length; index++) {
@@ -703,10 +772,52 @@ public class Voronoi {
 				break;
 			}
 		}
+		
+		// Print statement
+		// ************************************************************************************
+		if (indexOfCenterSector == 0) {
+			System.out.println("We are printing out sector[" + indexOfCenterSector + "]\n");
+		} else {
+			System.out.println("We are printing out sector[" + indexOfCenterSector + "]\n");
+		}
 
 		// finding sector that contains equidistant point
 		Sector firstSector = sectors.get(indexOfCenterSector);
 		Sector currSector = firstSector;
+
+		// Print statement
+		// ****** Sector that we are in ******
+		Sector currSec = currSector;
+		Point2D.Double currS11 = currSec.getSite1();
+		Point2D.Double currS12 = currSec.getSite2();
+		// edge 1
+		Segment currS1e1 = sec1.getEdge1();
+		PVector currS1e1x = currS1e1.getLeftPoint();
+		PVector currS1e1y = currS1e1.getRightPoint();
+		// edge 2
+		Segment currS1e2 = sec1.getEdge2();
+		PVector currS1e2x = currS1e2.getLeftPoint();
+		PVector currS1e2y = currS1e2.getRightPoint();
+		// edge 3
+		Segment currS1e3 = sec1.getEdge3();
+		PVector currS1e3x = currS1e3.getLeftPoint();
+		PVector currS1e3y = currS1e3.getRightPoint();
+		// edge 4
+		Segment currS1e4 = sec1.getEdge4();
+		PVector currS1e4x = currS1e4.getLeftPoint();
+		PVector currS1e4y = currS1e4.getRightPoint();
+		System.out.println("********** Sector we are currently in **********");
+		System.out.printf("site1: " + Util.printCoordinate(currS11) + "\n");
+		System.out.printf("site2: " + Util.printCoordinate(currS12) + "\n");
+		System.out.println("e1 leftPt: " + Util.toPoint2D(currS1e1x) + " rightPt: " + Util.toPoint2D(currS1e1y));
+		System.out.println("e2 leftPt: " + Util.toPoint2D(currS1e2x) + " rightPt: " + Util.toPoint2D(currS1e2y));
+		System.out.println("e3 leftPt: " + Util.toPoint2D(currS1e3x) + " rightPt: " + Util.toPoint2D(currS1e3y));
+		System.out.println("e4 leftPt: " + Util.toPoint2D(currS1e4x) + " rightPt: " + Util.toPoint2D(currS1e4y));
+
+		System.out.println("************************************************\n");
+		// ************************************************************************************
+		
+
 		// calculate bisector object
 		Bisector b = computeBisectorInSector(currSector);
 		// find and return a list of segments that intersect with the bisector
@@ -719,6 +830,16 @@ public class Voronoi {
 		// arraylist to store bisectors
 		ArrayList<Bisector> bisectors = new ArrayList<Bisector>();
 		bisectors.add(b.clone());
+		
+		// Print statement
+		// ************************************************************************************
+		Point2D.Double biLeftPt = b.getLeftEndPoint();
+		Point2D.Double biRightPt = b.getRightEndPoint();
+		System.out.println("Bisector");
+		System.out.println("Left Endpoint: " + Util.printCoordinate(biLeftPt));
+		System.out.println("Right Endpoint: " + Util.printCoordinate(biRightPt) + "\n");
+		// ************************************************************************************
+		
 
 		// while it isn't the convex hull edge keep going
 		Segment[] newIntersectingSegments = null;
@@ -727,6 +848,44 @@ public class Voronoi {
 		while (!completedBisector) {
 			// construct new sector with the shared segment
 			List<Sector> neighborSectors = c.constructSector(currSeg, site1, site2, graph);
+			
+			// Print Statement
+			// ************************************************************************************
+			int secIndex = 0;
+			for (Sector sec : neighborSectors) {
+				Point2D.Double s1 = sec.getSite1();
+				Point2D.Double s2 = sec.getSite2();
+				// edge 1
+				Segment e1 = sec2.getEdge1();
+				PVector e1x = e1.getLeftPoint();
+				PVector e1y = e1.getRightPoint();
+				// edge 2
+				Segment e2 = sec2.getEdge2();
+				PVector e2x = e2.getLeftPoint();
+				PVector e2y = e2.getRightPoint();
+				// edge 3
+				Segment e3 = sec2.getEdge3();
+				PVector e3x = e3.getLeftPoint();
+				PVector e3y = e3.getRightPoint();
+				// edge 4
+				Segment e4 = sec2.getEdge4();
+				PVector e4x = e4.getLeftPoint();
+				PVector e4y = e4.getRightPoint();
+
+				System.out.println("********** Neighbor Sector " + secIndex + " **********");
+				System.out.printf("site1: " + Util.printCoordinate(s1) + "\n");
+				System.out.printf("site2: " + Util.printCoordinate(s2) + "\n");
+				System.out.println("e1 leftPt: " + Util.toPoint2D(e1x) + " rightPt: " + Util.toPoint2D(e1y));
+				System.out.println("e2 leftPt: " + Util.toPoint2D(e2x) + " rightPt: " + Util.toPoint2D(e2y));
+				System.out.println("e3 leftPt: " + Util.toPoint2D(e3x) + " rightPt: " + Util.toPoint2D(e3y));
+				System.out.println("e4 leftPt: " + Util.toPoint2D(e4x) + " rightPt: " + Util.toPoint2D(e4y));
+
+				System.out.println("******************************************************\n");
+				secIndex++;
+			}
+			// ************************************************************************************
+		
+			
 			for (Sector neighborSec : neighborSectors) {
 				// check if the constructed sector is the sector that we already have
 				if (neighborSec.isEqual(currSector)) { // fix later
@@ -737,25 +896,95 @@ public class Voronoi {
 					currSector = neighborSec;
 					b = computeBisectorInSector(currSector);
 					
+					// Print Statement
+					// ************************************************************************************
+					Point2D.Double nextS1 = currSector.getSite1();
+					Point2D.Double nextS2 = currSector.getSite2();
+					// edge 1
+					Segment nextSe1 = sec2.getEdge1();
+					PVector nextSe1x = nextSe1.getLeftPoint();
+					PVector nextSe1y = nextSe1.getRightPoint();
+					// edge 2
+					Segment nextSe2 = sec2.getEdge2();
+					PVector nextSe2x = nextSe2.getLeftPoint();
+					PVector nextSe2y = nextSe2.getRightPoint();
+					// edge 3
+					Segment nextSe3 = sec2.getEdge3();
+					PVector nextSe3x = nextSe3.getLeftPoint();
+					PVector nextSe3y = nextSe3.getRightPoint();
+					// edge 4
+					Segment nextSe4 = sec2.getEdge4();
+					PVector nextSe4x = nextSe4.getLeftPoint();
+					PVector nextSe4y = nextSe4.getRightPoint();
+
+					System.out.println("********** Next Sector **********");
+					System.out.printf("site1: " + Util.printCoordinate(nextS1) + "\n");
+					System.out.printf("site2: " + Util.printCoordinate(nextS2) + "\n");
+					System.out.println("e1 leftPt: " + Util.toPoint2D(nextSe1x) + " rightPt: " + Util.toPoint2D(nextSe1y));
+					System.out.println("e2 leftPt: " + Util.toPoint2D(nextSe2x) + " rightPt: " + Util.toPoint2D(nextSe2y));
+					System.out.println("e3 leftPt: " + Util.toPoint2D(nextSe3x) + " rightPt: " + Util.toPoint2D(nextSe3y));
+					System.out.println("e4 leftPt: " + Util.toPoint2D(nextSe4x) + " rightPt: " + Util.toPoint2D(nextSe4y));
+					System.out.println("*********************************\n");
+					// ************************************************************************************	
+
+					
 					// find one the bisector intersection points
 					Point2D.Double endPoint = null;
 					Bisector bist = null;
-					if(!switchedSides) 
+					if (!switchedSides)
 						bist = bisectors.get(bisectors.size() - 1);
 					else {
 						bist = bisectors.get(0);
 						switchedSides = false;
 					}
 					endPoint = bist.getLeftEndPoint();
-					Point3d currSegLine = Util.computeLineEquation(Util.toPoint2D(currSeg.getLeftPoint()), Util.toPoint2D(currSeg.getRightPoint()));
-					if(Math.abs(currSegLine.scalarProduct(HilbertGeometry.toHomogeneous(endPoint))) > 1e-8) {
+					Point3d currSegLine = Util.computeLineEquation(Util.toPoint2D(currSeg.getLeftPoint()),
+							Util.toPoint2D(currSeg.getRightPoint()));
+					if (Math.abs(currSegLine.scalarProduct(HilbertGeometry.toHomogeneous(endPoint))) > 1e-8) {
 						endPoint = bist.getRightEndPoint();
 					}
 					b.setEndPoints(endPoint);
 					
+					// Print Statement
+					// ************************************************************************************
+					Point2D.Double intersect1 = b.getLeftEndPoint();
+					Point2D.Double intersect2 = b.getRightEndPoint();
+					if (intersect1 == null) {
+						System.out.println("Bisector-sector intersect point1 null");
+						System.out.println("Bisector-Intersection Point2: " + Util.printCoordinate(intersect2) + '\n');
+					} 
+					if (intersect2 == null) {
+						System.out.println("Bisector-sector intersect point2 null");
+						System.out.println("Bisector-Intersection Point1: " + Util.printCoordinate(intersect1) + '\n');
+					} else {
+						System.out.println("Bisector-Intersection Point1: " + Util.printCoordinate(intersect1) + '\n');
+						System.out.println("Bisector-Intersection Point2: " + Util.printCoordinate(intersect2) + '\n');
+					}
+					System.out.println("***************************************************\n");
+					// ************************************************************************************
+
+					// returns two sector segments that the bisector intersect with
 					newIntersectingSegments = bisectorSectorIntersection(b, currSector, endPoint);
 					bisectors.add(b.clone());
 
+					
+					// Print Statement
+					// ************************************************************************************
+					System.out.println("****** Segments that intersect with Bisector ******");
+					Segment seg1 = newIntersectingSegments[0];
+					Segment seg2 = newIntersectingSegments[1];
+					PVector seg1LeftPoint = seg1.getLeftPoint();
+					PVector seg1RightPoint = seg1.getRightPoint();
+					PVector seg2LeftPoint = seg2.getLeftPoint();
+					PVector seg2RightPoint = seg2.getRightPoint();
+					System.out.println("Intersecting segment 1: " + "(" + Util.toPoint2D(seg1LeftPoint) + ")-(" 
+							+ Util.toPoint2D(seg1RightPoint) + ")");
+					System.out.println("Intersecting segment 2: " + "(" + Util.toPoint2D(seg2LeftPoint) + ")-(" 
+							+ Util.toPoint2D(seg2RightPoint) + ")");
+					System.out.println("***************************************************\n");
+					// ************************************************************************************
+					
+					
 					// compare segments in this list to currSeg; only return the segment that is not
 					// currSeg
 					for (int index = 0; index < newIntersectingSegments.length; index++) {
@@ -765,6 +994,17 @@ public class Voronoi {
 						}
 					}
 
+					// Print Statement
+					// ************************************************************************************
+					System.out.println("****** Next segment we're looking at ******");
+					Segment nextSeg = currSeg;
+					PVector nextSegLeftPoint = nextSeg.getLeftPoint();
+					PVector nextSegRightPoint = nextSeg.getRightPoint();
+					System.out.println("Next segment: " + "(" + Util.toPoint2D(nextSegLeftPoint) + ")-(" 
+							+ Util.toPoint2D(nextSegLeftPoint) + ")");
+					System.out.println("*******************************************\n");
+					// ************************************************************************************
+					
 					// stop searching bisector
 					break;
 				}
@@ -772,22 +1012,19 @@ public class Voronoi {
 
 			// if the boundary loops back to to the original segment, then break the loop
 
+			completedBisector = true;
+		}
 
+		// if we are updating to a segment on the convex hull; stop move in current
+		// direction and
+		// move in the opposite direction
+		if (c.isOnConvexBoundary(b.getLeftEndPoint()) || c.isOnConvexBoundary(b.getRightEndPoint())) {
+			if (++currSegIndex > 1)
 				completedBisector = true;
-			}
-
-			// if we are updating to a segment on the convex hull; stop move in current
-			// direction and
-			// move in the opposite direction
-			if (c.isOnConvexBoundary(b.getLeftEndPoint()) || 
-					c.isOnConvexBoundary(b.getRightEndPoint())) {
-				if(++currSegIndex > 1)
-					completedBisector = true;
-				else {
-					currSeg = intersectingSegments[currSegIndex];
-					currSector = firstSector;
-					switchedSides = true;
-				}
+			else {
+				currSeg = intersectingSegments[currSegIndex];
+				currSector = firstSector;
+				switchedSides = true;
 			}
 		}
 
@@ -838,7 +1075,7 @@ public class Voronoi {
 			}
 
 			KdTree.XYZPoint point = node.getID();
-			point.addNeighbor(right /*, s.getSite1(), s.getEdge() */);
+			point.addNeighbor(right /* , s.getSite1(), s.getEdge() */);
 
 			node = KdTree.getNode(tree, Util.toXYZPoint(right));
 			if (node == null) {
@@ -847,7 +1084,7 @@ public class Voronoi {
 			}
 
 			point = node.getID();
-			point.addNeighbor(left /*, s.getSite1(), s.getEdge() */);
+			point.addNeighbor(left /* , s.getSite1(), s.getEdge() */);
 		}
 
 		// return the graph

@@ -59,7 +59,7 @@ public class Util {
 	    return intersectionPoints;
 	  }
 
-	public static Point2D.Double[] lineConvexIntersectionPoints(Point3d line, Convex convex) {
+	public static Point2D.Double[] intersectionPoints(Point3d line, Convex convex) {
 	    Point3d pqLine = line;
 	    Point3d beginPoint = HilbertGeometry.toHomogeneous(convex.convexHull[0]);
 	    Point2D.Double[] intersectionPoints = new Point2D.Double[2];
