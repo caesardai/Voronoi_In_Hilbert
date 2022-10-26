@@ -26,6 +26,7 @@ public class Point3d {
     return x * q.x + y * q.y + z * q.z;
   }
   
+
   public static Point3d linearCombination(Point3d[] points, double[] coeff) {
     Point3d result = new Point3d(0, 0, 0);
     for (int i = 0; i < coeff.length; i++) {

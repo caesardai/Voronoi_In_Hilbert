@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import geometry.Point3d;
 
 import trapmap.Segment;
 
@@ -115,6 +116,11 @@ public class Bisector {
 		this.A = val;
 	}
 
+	public double lineDistance(Point3d line1, Point3d line2) {
+		return (line1.x-line2.x)*(line1.x-line2.x)+(line1.y-line2.y)*(line1.y-line2.y)+(line1.z-line2.z)*(line1.z-line2.z);
+		
+		
+	}
 	/**
 	 * Computes the coefficients of the bisector in its conic form
 	 */
@@ -133,19 +139,50 @@ public class Bisector {
 				* (Math.abs(line4.x * site2.x + line4.y * site2.y + line4.z)
 						/ Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z));
 		this.s = 1d;
-
+		
+		System.out.println("-----------------------------");
+		System.out.println("Site1: "+site1);
+		System.out.println("Line1: "+line1.x+"x "+line1.y+"y " + line1.z+"z ");
+		System.out.println("Line2: "+line2.x+"x "+line2.y+"y " + line2.z+"z ");
+		System.out.println("Site2: "+site2);
+		System.out.println("Line3: "+line3.x+"x "+line3.y+"y " + line3.z+"z ");
+		System.out.println("Line4: "+line4.x+"x "+line4.y+"y " + line4.z+"z ");
+		System.out.println("-----------------------------");
+		
+		if (lineDistance(line1,line3)<.00000001) {
+			System.out.println("test++++++++++++");
+			this.A = 0.0;
+			this.B = 0.0;
+			this.C = 0.0;
+			this.D = line4.x-this.K*line2.x;
+			this.E = line4.y-this.K*line2.y;
+			this.F = line4.z-this.K*line2.z;
+		}
+		else if (lineDistance(line2,line4)<.00000001) {
+			System.out.println("test++++++++++++");
+			this.A = 0.0;
+			this.B = 0.0;
+			this.C = 0.0;
+			this.D = line1.x-this.K*line3.x;
+			this.E = line1.y-this.K*line3.y;
+			this.F = line1.z-this.K*line3.z;
+		}
+		else {
+			this.A = line4.x * line1.x - this.K * this.s * (line3.x * line2.x);
+			this.B = line4.y * line1.y - this.K * this.s * (line3.y * line2.y);
+			this.C = line4.y * line1.x + line4.x * line1.y - this.K * this.s * (line3.y * line2.x + line3.x * line2.y);
+			this.D = line4.z * line1.x + line4.x * line1.z - this.K * this.s * (line3.z * line2.x + line3.x * line2.z);
+			this.E = line4.z * line1.y + line4.y * line1.z - this.K * this.s * (line3.z * line2.y + line3.y * line2.z);
+			this.F = line4.z * line1.z - this.K * this.s * (line3.z * line2.z);
+		}
+		
 		// compute coefficients of bisector curve
-		this.A = line4.x * line1.x - this.K * this.s * (line3.x * line2.x);
-		this.B = line4.y * line1.y - this.K * this.s * (line3.y * line2.y);
-		this.C = line4.y * line1.x + line4.x * line1.y - this.K * this.s * (line3.y * line2.x + line3.x * line2.y);
-		this.D = line4.z * line1.x + line4.x * line1.z - this.K * this.s * (line3.z * line2.x + line3.x * line2.z);
-		this.E = line4.z * line1.y + line4.y * line1.z - this.K * this.s * (line3.z * line2.y + line3.y * line2.z);
-		this.F = line4.z * line1.z - this.K * this.s * (line3.z * line2.z);
+
 		
 		// store the fact that coefficients have been computed
 		this.constantsComputed = true;
 		
-		// detemine the classification of the bisector
+		// determine the classification of the bisector
 		this.classifyBisector();
 	}
 	
@@ -315,7 +352,11 @@ public class Bisector {
 
 		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
 		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
-
+		if (Math.min(lineDistance(line1,line3),lineDistance(line2,line4))<.0000000001) {//this needs to be set to some confidence level later
+			Point3d p = new Point3d(this.D, this.E, this.F);
+			solutions[0]=Util.lineIntersection(p, line).x;
+			solutions[1]=-100000000000000000.0;
+		}
 		return solutions;
 	}
 
@@ -335,7 +376,11 @@ public class Bisector {
 
 		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
 		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
-
+		if (Math.min(lineDistance(line1,line3),lineDistance(line2,line4))<.0000000001) {//this needs to be set to some confidence level later
+			Point3d p = new Point3d(this.D, this.E, this.F);
+			solutions[0]=Util.lineIntersection(p, line).y;
+			solutions[1]=-1000000000000000000.0;
+		}
 		return solutions;
 	}
 

@@ -890,6 +890,7 @@ public class Voronoi {
 		
 			
 			for (Sector neighborSec : neighborSectors) {
+				
 				// check if the constructed sector is the sector that we already have
 				if (neighborSec.isEqual(currSector)) { // fix later
 					continue;
@@ -968,7 +969,7 @@ public class Voronoi {
 //					}
 //					System.out.println("***************************************************\n");
 					// ************************************************************************************
-
+					
 					// returns two sector segments that the bisector intersect with
 					newIntersectingSegments = bisectorSectorIntersection(b, currSector, endPoint);
 					bisectors.add(b.clone());
@@ -1046,11 +1047,21 @@ public class Voronoi {
 			if (currSeg.equals(intersectingSegments[1])) {
 				completedBisector = true;
 			}
+			if (c.isOnConvexBoundary(b.getLeftEndPoint()) || c.isOnConvexBoundary(b.getRightEndPoint())) {
+				if (++currSegIndex > 1)
+					completedBisector = true;
+				else {
+					currSeg = intersectingSegments[currSegIndex];
+					currSector = firstSector;
+					switchedSides = true;
+				}
+			}
 		}
 
 		// if we are updating to a segment on the convex hull; stop move in current
 		// direction and
 		// move in the opposite direction
+		System.out.print("++++++++++++++++++++++++++++++");
 		if (c.isOnConvexBoundary(b.getLeftEndPoint()) || c.isOnConvexBoundary(b.getRightEndPoint())) {
 			if (++currSegIndex > 1)
 				completedBisector = true;

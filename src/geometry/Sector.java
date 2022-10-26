@@ -41,11 +41,20 @@ public class Sector {
 			this.segmentOrigin = new Point2D.Double[vertices.size()];
 		else
 			this.segmentOrigin = null;
-		for (int i = 0; i < vertices.size(); i++) {
-			sector.addPoint(vertices.get(i));
-			if(sites != null)
-				this.segmentOrigin[i] = sites.get(i);
-		}
+		
+		System.out.println("Sector vertices: ");
+        for (int i = 0; i < vertices.size(); i++) {
+            sector.addPoint(vertices.get(i));
+            System.out.println("("+vertices.get(i).x +"," + vertices.get(i).y + ")");
+            if(sites != null)
+                this.segmentOrigin[i] = sites.get(i);
+        }
+		
+//		for (int i = 0; i < vertices.size(); i++) {
+//			sector.addPoint(vertices.get(i));
+//			if(sites != null)
+//				this.segmentOrigin[i] = sites.get(i);
+//		}
 	}
 
 	/*
