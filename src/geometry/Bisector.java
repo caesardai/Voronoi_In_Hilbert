@@ -106,6 +106,14 @@ public class Bisector {
 		// this.computeProjectiveMatrices();
 		this.computeBisector();
 	}
+	
+	public Double returnA() {
+		return this.A;
+	}
+	
+	public void setAValue(Double val) {
+		this.A = val;
+	}
 
 	/**
 	 * Computes the coefficients of the bisector in its conic form

@@ -215,16 +215,16 @@ public class VoronoiTest {
 			if (siteVertices.length != 2)
 				defaultSites = true;
 			else {
-				site1 = new Point2D.Double(465d, 286d);
-				site2 = new Point2D.Double(465d, 519d);
+				site1 = new Point2D.Double(598d, 585d);
+				site2 = new Point2D.Double(504d, 281d);
 			}
-		} else {
-			site1 = new Point2D.Double(598d, 585d);
-			site2 = new Point2D.Double(504d, 281d);
 		}
 		if (defaultSites) {
 			site1 = new Point2D.Double(139d, 69d);
 			site2 = new Point2D.Double(113d, 125d);
+		} else {
+			site1 = new Point2D.Double(598d, 585d);
+			site2 = new Point2D.Double(504d, 281d);
 		}
 
 		// print hull vertices
