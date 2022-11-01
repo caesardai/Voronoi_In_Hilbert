@@ -543,27 +543,37 @@ public class Convex {
 		Matrix s2Rotation = new Matrix(new double[] { Math.cos(s2MidAngle), Math.sin(s2MidAngle), -Math.sin(s2MidAngle),
 				Math.cos(s2MidAngle) }, 2);
 
-		// determine horizontal distance from the hull with respect to Euclidean metric.
-		Point3d horizontalLine = new Point3d(0, 1, -1 * site1.y);
-		Point2D.Double[] intersectPoints = Util.intersectionPoints(horizontalLine, this);
-		double x0 = -1;
-		for (int index = 0; index < intersectPoints.length; index++) {
-			Point2D.Double curr = intersectPoints[index];
-			if (curr.x > site1.x) {
-				x0 = (curr.x - site1.x) / 2;
-				break;
-			}
-		}
-		horizontalLine = new Point3d(0, 1, -1 * site2.y);
-		intersectPoints = Util.intersectionPoints(horizontalLine, this);
-		double y0 = -1;
-		for (int index = 0; index < intersectPoints.length; index++) {
-			Point2D.Double curr = intersectPoints[index];
-			if (curr.x > site2.x) {
-				y0 = (curr.x - site2.x) / 2;
-				break;
-			}
-		}
+		// determine horizontal and vertical distance from the hull with respect to Euclidean metric (site 1).
+        Point3d horizontalLine = new Point3d(0, 1, -1 * site1.y);
+        Point3d verticalLine = new Point3d(1, 0, -1 * site1.x);
+        Point2D.Double[] hintersectPoints = Util.intersectionPoints(horizontalLine, this);
+        Point2D.Double[] vintersectPoints = Util.intersectionPoints(verticalLine, this);
+
+        // find distance between all intersection points with site 1. get minimum
+        // find correct radius for site 1
+        double x0 = -1;
+        ArrayList<Double> distances = new ArrayList<Double>();
+        for(Point2D.Double p : hintersectPoints)
+            distances.add(p.distance(site1));
+        for(Point2D.Double p : vintersectPoints)
+            distances.add(p.distance(site1));
+        x0 = Collections.min(distances) / 10;
+
+
+        // determine horizontal and vertical distance from the hull with respect to Euclidean metric (site 1).
+        horizontalLine = new Point3d(0, 1, -1 * site2.y);
+        verticalLine = new Point3d(1, 0, -1 * site2.x);
+        hintersectPoints = Util.intersectionPoints(horizontalLine, this);
+        vintersectPoints = Util.intersectionPoints(verticalLine, this);
+
+        // find correct radius for site 2
+        double y0 = -1;
+        distances = new ArrayList<Double>();
+        for(Point2D.Double p : hintersectPoints)
+            distances.add(p.distance(site2));
+        for(Point2D.Double p : vintersectPoints)
+            distances.add(p.distance(site2));
+        y0 = Collections.min(distances) / 10;
 
 		Matrix nearOrigin1 = new Matrix(new double[] { x0, 0d }, 2);
 		Matrix nearOrigin2 = new Matrix(new double[] { y0, 0d }, 2);
@@ -962,10 +972,14 @@ public class Convex {
 		for (int i = 0; i < N - 1; i++) {
 			a = convexHull[i];
 			b = convexHull[i + 1];
+			if (a.distanceSq(p)<.01) {
+				onBoundary = true;
+			}
+			Segment seg = new Segment(a,b);
 			Point2D.Double ab = new Point2D.Double(b.x - a.x, b.y - a.y);
 			Point2D.Double ap = new Point2D.Double(p.x - a.x, p.y - a.y);
 			double crossProduct = ab.x * ap.y - ab.y * ap.x;
-			if (Math.abs(crossProduct) <= 1e-2) {
+			if (Math.abs(crossProduct) <= 0.05) {
 				// check if the point is within the correct bounds
 				double smallX = a.x;
 				double largeX = b.x;

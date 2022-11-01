@@ -215,8 +215,8 @@ public class VoronoiTest {
 			if (siteVertices.length != 2)
 				defaultSites = true;
 			else {
-				site1 = new Point2D.Double(598d, 585d);
-				site2 = new Point2D.Double(504d, 281d);
+				site1 = new Point2D.Double(599d, 393d);
+				site2 = new Point2D.Double(398d, 530d);
 			}
 		}
 		if (defaultSites) {

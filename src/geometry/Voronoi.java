@@ -1044,9 +1044,12 @@ public class Voronoi {
 			}
 
 			// if the boundary loops back to to the original segment, then break the loop
+			if (currSeg == null) {
+				break;
+			}
 			if (currSeg.equals(intersectingSegments[1])) {
 				completedBisector = true;
-			}
+			}	
 			if (c.isOnConvexBoundary(b.getLeftEndPoint()) || c.isOnConvexBoundary(b.getRightEndPoint())) {
 				if (++currSegIndex > 1)
 					completedBisector = true;
