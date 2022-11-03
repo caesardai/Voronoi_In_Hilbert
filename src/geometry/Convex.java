@@ -979,7 +979,7 @@ public class Convex {
 			Point2D.Double ab = new Point2D.Double(b.x - a.x, b.y - a.y);
 			Point2D.Double ap = new Point2D.Double(p.x - a.x, p.y - a.y);
 			double crossProduct = ab.x * ap.y - ab.y * ap.x;
-			if (Math.abs(crossProduct) <= 0.05) {
+			if (Math.abs(crossProduct) <= 1e-2) {
 				// check if the point is within the correct bounds
 				double smallX = a.x;
 				double largeX = b.x;

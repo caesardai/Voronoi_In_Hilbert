@@ -175,6 +175,9 @@ public class Bisector {
 			this.E = line4.z * line1.y + line4.y * line1.z - this.K * this.s * (line3.z * line2.y + line3.y * line2.z);
 			this.F = line4.z * line1.z - this.K * this.s * (line3.z * line2.z);
 		}
+		System.out.println(this.A + "x^2 + " + this.B + "y^2 + " + this.C + "xy + "+ this.D + "x + "+ this.E + "y + " + this.F + " = 0");
+		System.out.println("-----------------------------");
+		
 		
 		// compute coefficients of bisector curve
 
@@ -783,6 +786,8 @@ public class Bisector {
 			rtn = rtn.replaceAll(pattern, replacement);
 		}
 		
+		//There is a issue with this that the bisector may bulge out so we may want to expand this
+		//This happens when the bisector is nearly vertical
 		rtn += "\\left\\{" + this.getLeftEndPoint().x + " \\le x \\le " + this.getRightEndPoint().x + "\\right\\}";
 		return rtn;
 	}

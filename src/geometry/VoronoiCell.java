@@ -19,6 +19,26 @@ public class VoronoiCell {
 		for (Bisector wall : cellWall) {
 			Point2D.Double leftPoint = wall.getLeftEndPoint();
 			Point2D.Double rightPoint = wall.getRightEndPoint();
+			Double leftX = leftPoint.getX();
+			Double rightX = rightPoint.getX();
+			Double leftY = leftPoint.getY();
+			Double rightY = rightPoint.getY();
+			
+			Double incrementX;
+			Double incrementY;
+			if (leftX < rightX) {
+				incrementX = (rightX - leftX) / 50;
+			} else {
+				incrementX = (leftX - rightX) / 50;
+			}
+			if (leftY < rightY) {
+				incrementY = (rightX - leftX) / 50;
+			} else {
+				incrementY = (leftX - rightX) / 50;
+			}
+			
+			
+			
 			
 		}
 		
