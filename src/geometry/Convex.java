@@ -1065,7 +1065,7 @@ public class Convex {
 
 		// determine if the set of points are colinear with a vertical line
 		ArrayList<Double> compare = new ArrayList<Double>();
-		if (Math.abs(points.get(0).y - points.get(1).y) <= 1e-8) {
+		if (Math.abs(points.get(0).x - points.get(1).x) <= 1e-8) {
 			for (Point2D.Double p : points)
 				compare.add(p.y);
 		}
