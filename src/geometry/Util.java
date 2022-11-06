@@ -112,6 +112,7 @@ public class Util {
 		Double dx = x - x3;
 		Double dy = y - y3;
 		Double dist = Math.sqrt(dx * dx + dy * dy);
+		
 		return dist;
 	}
 

@@ -678,9 +678,9 @@ public class Voronoi {
 
 		Double incrementX;
 		if (leftX < rightX) {
-			incrementX = (rightX - leftX) / 30;
+			incrementX = (rightX - leftX) / 5;
 		} else {
-			incrementX = (leftX - rightX) / 30;
+			incrementX = (leftX - rightX) / 5;
 		}
 
 //		int wallSegIndex = 0;
@@ -695,7 +695,7 @@ public class Voronoi {
 				pointToLineDistance[i] = Util.distanceXYToSegment(increment, potentialYVal[i], line);
 			}
 			// if there is only one Y value
-			if (pointToLineDistance[1] == 0.0) {
+			if (pointToLineDistance.length == 1) {
 				Point2D.Double pt = new Point2D.Double(increment, potentialYVal[0]);
 				voronoiCellVertices.add(pt);
 			} else if (pointToLineDistance[0] < pointToLineDistance[1]) {
@@ -782,9 +782,6 @@ public class Voronoi {
 
 		// calculate bisector object
 		Bisector b = computeBisectorInSector(currSector);
-		// aprox
-		ArrayList<Segment> aprox = approximateBisector(b);
-		for (int i = 0; i < aprox.size(); i++) allSegments.add(aprox.get(i));
 	
 		// find and return a list of segments that intersect with the bisector
 		Segment[] intersectingSegments = bisectorSectorIntersection(b, currSector, null);
@@ -825,23 +822,14 @@ public class Voronoi {
 				else {
 					currSector = neighborSec;
 					b = computeBisectorInSector(currSector);
-					// aprox
-					ArrayList<Segment> aprox1 = approximateBisector(b);
-					for (int i = 0; i < aprox1.size(); i++) allSegments.add(aprox.get(i));
 
 					// find one the bisector intersection points
 					Point2D.Double endPoint = null;
 					Bisector bist = null;
 					if (!switchedSides) {
 						bist = bisectors.get(bisectors.size() - 1);
-						// aprox
-						ArrayList<Segment> aprox2 = approximateBisector(bist);
-						for (int i = 0; i < aprox2.size(); i++) allSegments.add(aprox.get(i));
 					} else {
 						bist = bisectors.get(0);
-						// aprox
-						ArrayList<Segment> aprox3 = approximateBisector(bist);
-						for (int i = 0; i < aprox3.size(); i++) allSegments.add(aprox.get(i));
 //						if (bist.returnA() == 0.0) {
 //							bist.setAValue(0.0000001);
 //						}
@@ -901,7 +889,18 @@ public class Voronoi {
 				switchedSides = true;
 			}
 		}
-
+		for (Bisector bisec : bisectors) {
+			// pass all segments into AllSegments
+			ArrayList<Segment> aprox = approximateBisector(bisec);
+			for (int i = 0; i < aprox.size(); i++) {
+				allSegments.add(aprox.get(i));
+				System.out.println(aprox.get(i));
+			}
+			
+			// constrcut VoronoiCell Object
+		}
+		
+		
 		// return Bisector
 		return bisectors;
 	}

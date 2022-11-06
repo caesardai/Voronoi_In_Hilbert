@@ -2,47 +2,32 @@ package geometry;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import trapmap.Segment;
 
 public class VoronoiCell {
 	Point2D.Double site;
-	ArrayList<Bisector> cellWall = new ArrayList<Bisector>();
+	ArrayList<Segment> cellWall = new ArrayList<Segment>();
 	// Store the vertices as a list of cells
 	ArrayList<Point2D.Double> cellVertices = new ArrayList<Point2D.Double>();
 	
 	// constructor
-	public VoronoiCell(Point2D.Double site, ArrayList<Bisector> cellWall,ArrayList<Point2D.Double> cellVertices) {
+	public VoronoiCell(Point2D.Double site, ArrayList<Segment> cellWall,ArrayList<Point2D.Double> cellVertices) {
 		this.site = site;
 		this.cellWall = cellWall;
 		this.cellVertices = cellVertices;
-		
-		// constructing the bisector approximation
-		for (Bisector wall : cellWall) {
-			Point2D.Double leftPoint = wall.getLeftEndPoint();
-			Point2D.Double rightPoint = wall.getRightEndPoint();
-			Double leftX = leftPoint.getX();
-			Double rightX = rightPoint.getX();
-			Double leftY = leftPoint.getY();
-			Double rightY = rightPoint.getY();
 			
-			Double incrementX;
-			Double incrementY;
-			if (leftX < rightX) {
-				incrementX = (rightX - leftX) / 50;
-			} else {
-				incrementX = (leftX - rightX) / 50;
-			}
-			if (leftY < rightY) {
-				incrementY = (rightX - leftX) / 50;
-			} else {
-				incrementY = (leftX - rightX) / 50;
-			}
-			
-			
-			
-			
-		}
-		
 	}
 	
+	public Segment getWallIndex(int index) {
+		return this.cellWall.get(index);
+	}
+	
+	public Point2D.Double getVetexIndex(int index) {
+		return this.cellVertices.get(index);
+	}
+	
+	public Point2D.Double getSite() {
+		return this.site;
+	}
 	
 }

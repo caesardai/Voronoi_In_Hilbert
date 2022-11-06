@@ -235,6 +235,21 @@ public class Bisector {
 		Double K2 = this.C * x + this.D;
 		Double K3 = this.B * Math.pow(x, 2) + this.E * x + this.F;
 
+		// horzontal line
+		if (A == 0 && C == 0 && D == 0 && B == 0) {
+			Double[] solutions = new Double[1];
+			solutions[0] = - this.F / this.E;
+			return solutions;
+		}
+		
+		if (A == 0 && C == 0 && D == 0) {
+			Double[] solutions = new Double[2];
+			solutions[0] = (- this.E + Math.sqrt(Math.pow(this.E, 2) - 4 * this.B * this.F)) / (2 * this.B);
+			solutions[1]= (- this.E - Math.sqrt(Math.pow(this.E, 2) - 4 * this.B * this.F)) / (2 * this.B);
+			return solutions;
+		}
+		
+		
 		// if K1 is zero, then use a different parameterization
 		if(K1 == 0d) {
 			return new Double[] {K3 / K2};
