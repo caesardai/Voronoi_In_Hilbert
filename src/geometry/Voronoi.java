@@ -683,11 +683,13 @@ public class Voronoi {
 			incrementX = (leftX - rightX) / 5;
 		}
 
-//		int wallSegIndex = 0;
+		voronoiCellVertices.add(leftPoint);
 		Double increment = leftX;
-
 		// Keep approximating bisector until we're out of range
-		while (increment < rightX) {
+		while (increment <= rightX + .0000001) {
+			if (Math.abs(increment - rightX) <= .0000001) {
+				increment = rightX;
+			}
 			// assign value
 			Double[] potentialYVal = b.computeX(increment);
 			Double[] pointToLineDistance = new Double[potentialYVal.length];
@@ -805,6 +807,7 @@ public class Voronoi {
 		
 
 		// while it isn't the convex hull edge keep going
+		Point2D.Double[] bisectHullIntersect = new Point2D.Double[2];
 		Segment[] newIntersectingSegments = null;
 		boolean completedBisector = false;
 		boolean switchedSides = false;
@@ -866,6 +869,13 @@ public class Voronoi {
 				completedBisector = true;
 			}
 			if (c.isOnConvexBoundary(b.getLeftEndPoint()) || c.isOnConvexBoundary(b.getRightEndPoint())) {
+				if (c.isOnConvexBoundary(b.getLeftEndPoint())) {
+					bisectHullIntersect[0] = b.getLeftEndPoint();
+				} else {
+					bisectHullIntersect[1] = b.getRightEndPoint();
+				}
+				
+				
 				if (++currSegIndex > 1)
 					completedBisector = true;
 				else {
@@ -879,27 +889,55 @@ public class Voronoi {
 		// if we are updating to a segment on the convex hull; stop move in current
 		// direction and
 		// move in the opposite direction
-		System.out.print("++++++++++++++++++++++++++++++");
+		System.out.print("++++++++++++++++++++++++++++++\n");
 		if (c.isOnConvexBoundary(b.getLeftEndPoint()) || c.isOnConvexBoundary(b.getRightEndPoint())) {
-			if (++currSegIndex > 1)
+			// store convex hull intersection points
+			if (++currSegIndex > 1) {
+//				 System.out.println("bk2: " + Util.printCoordinate(b.getLeftEndPoint()) + ", " + 
+//						 Util.printCoordinate(b.getRightEndPoint()));
+				if (c.isOnConvexBoundary(b.getLeftEndPoint())) {
+					bisectHullIntersect[0] = b.getLeftEndPoint();
+				} else {
+					bisectHullIntersect[1] = b.getRightEndPoint();
+				}
 				completedBisector = true;
+			}
 			else {
 				currSeg = intersectingSegments[currSegIndex];
 				currSector = firstSector;
 				switchedSides = true;
 			}
 		}
+		
+		
 		for (Bisector bisec : bisectors) {
 			// pass all segments into AllSegments
 			ArrayList<Segment> aprox = approximateBisector(bisec);
 			for (int i = 0; i < aprox.size(); i++) {
 				allSegments.add(aprox.get(i));
-				System.out.println(aprox.get(i));
+				PVector lpt = aprox.get(i).getLeftPoint();
+				PVector rpt = aprox.get(i).getRightPoint();
+				if (aprox.get(i).getRightPoint().y<=aprox.get(i).getLeftPoint().y) {
+					System.out.println("y="+"M("+aprox.get(i).getLeftPoint().x+","+aprox.get(i).getLeftPoint().y+","+aprox.get(i).getRightPoint().x+","+aprox.get(i).getRightPoint().y+",x)"
+							+ "\\left\\{ "+aprox.get(i).getLeftPoint().x+" \\le x \\le "+aprox.get(i).getRightPoint().x+" \\right\\} "+ " \\left\\{ "+aprox.get(i).getRightPoint().y+" \\le y \\le "+aprox.get(i).getLeftPoint().y+" \\right\\} ");
+				}
+				else {
+					System.out.println("y="+"M("+aprox.get(i).getLeftPoint().x+","+aprox.get(i).getLeftPoint().y+","+aprox.get(i).getRightPoint().x+","+aprox.get(i).getRightPoint().y+",x)"
+							+ "\\left\\{ "+aprox.get(i).getLeftPoint().x+" \\le x \\le "+aprox.get(i).getRightPoint().x+" \\right\\} "+ " \\left\\{ "+aprox.get(i).getLeftPoint().y+" \\le y \\le "+aprox.get(i).getRightPoint().y+" \\right\\} ");
+				}
+				//System.out.println(Util.printCoordinate(Util.toPoint2D(lpt)) + ", " + Util.printCoordinate(Util.toPoint2D(rpt)));
+				// System.out.println("Bisector " + i + ": " + aprox.get(i) + "\n");
+//				System.out.println("y="+"M("+aprox.get(i).getLeftPoint().x+","+aprox.get(i).getLeftPoint().y+
+//						","+aprox.get(i).getRightPoint().x+","+aprox.get(i).getRightPoint().y+",x)"+ "\left\{ " + 
+//						aprox.get(i).getLeftPoint().x+" \le x \le "+aprox.get(i).getRightPoint().x+" \right\} "+ 
+//						" \left\{ "+aprox.get(i).getLeftPoint().y+" \le y \le "+aprox.get(i).getRightPoint().y+" \right\} ");
+//				M\left(q,r,s,t,x\right)=\frac{\left(t-r\right)}{s-q}\left(x-q\right)+r
 			}
 			
 			// constrcut VoronoiCell Object
 		}
-		
+		System.out.println(c.isBisectOnConvexBoundary(bisectHullIntersect[0]));
+		System.out.println("hull inter pt:" + Util.printCoordinate(bisectHullIntersect[0]) + "," + Util.printCoordinate(bisectHullIntersect[1]));
 		
 		// return Bisector
 		return bisectors;

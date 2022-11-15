@@ -155,7 +155,7 @@ public class Util {
 		Segment s = new Segment(pv1, pv2);
 		return s;
 	}
-
+	
 	/**
 	 * Converts matrix m that corresponds the homogeneous coordinate p back into an
 	 * Point object

@@ -954,6 +954,47 @@ public class Convex {
 		return true;
 	}
 
+	public Segment isBisectOnConvexBoundary(Point2D.Double p) {
+		int N = convexHull.length;
+		Point2D.Double a, b;
+		Segment seg = null;
+		
+		for (int i = 0; i < N - 1; i++) {
+			a = convexHull[i];
+			b = convexHull[i + 1];
+			if (a.distanceSq(p)<.01) {
+				seg = constructSegment(a, b);
+			}
+			seg = new Segment(a,b);
+			Point2D.Double ab = new Point2D.Double(b.x - a.x, b.y - a.y);
+			Point2D.Double ap = new Point2D.Double(p.x - a.x, p.y - a.y);
+			double crossProduct = ab.x * ap.y - ab.y * ap.x;
+			if (Math.abs(crossProduct) <= 1e-2) {
+				// check if the point is within the correct bounds
+				double smallX = a.x;
+				double largeX = b.x;
+				double smallY = a.y;
+				double largeY = b.y;
+
+				// swap values if not correct
+				if (smallX > largeX) {
+					double tmp = smallX;
+					smallX = largeX;
+					largeX = tmp;
+				}
+				if (smallY > largeY) {
+					double tmp = smallY;
+					smallY = largeY;
+					largeY = tmp;
+				}
+
+				if ((p.x >= smallX && p.x <= largeX) && (p.y >= smallY && p.y <= largeY))
+					return seg;
+			}
+		}
+		return seg;
+	}
+	
 	/**
 	 * Determines if the query point lays on the boundary of the convex body
 	 * 
@@ -1065,7 +1106,7 @@ public class Convex {
 
 		// determine if the set of points are colinear with a vertical line
 		ArrayList<Double> compare = new ArrayList<Double>();
-		if (Math.abs(points.get(0).y - points.get(1).y) <= 1e-8) {
+		if (Math.abs(points.get(0).x - points.get(1).x) <= 1e-8) {
 			for (Point2D.Double p : points)
 				compare.add(p.y);
 		}

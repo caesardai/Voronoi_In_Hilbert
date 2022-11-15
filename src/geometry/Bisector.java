@@ -223,7 +223,7 @@ public class Bisector {
 	}
 
 	/*
-	 * Given some y, compute the corresponding real x value on the conic
+	 * Given some x, compute the corresponding real y value on the conic
 	 */
 	public Double[] computeX(Double x) {
 		// compute constants if not already computed
@@ -231,9 +231,9 @@ public class Bisector {
 			this.computeBisector();
 
 		// determine constants for this parameterized (in terms of x) conic
-		Double K1 = this.A;
-		Double K2 = this.C * x + this.D;
-		Double K3 = this.B * Math.pow(x, 2) + this.E * x + this.F;
+		Double K1 = this.B;
+		Double K2 = this.C * x + this.E;
+		Double K3 = this.A * Math.pow(x, 2) + this.D * x + this.F;
 
 		// horzontal line
 		if (A == 0 && C == 0 && D == 0 && B == 0) {
@@ -252,7 +252,12 @@ public class Bisector {
 		
 		// if K1 is zero, then use a different parameterization
 		if(K1 == 0d) {
-			return new Double[] {K3 / K2};
+//			Double[] solutions = new Double[2];
+//			Double discriminant = Math.pow(E+ B*x,2) - 4 * C * (D*x+F);
+//			solutions[0]=(-(E+B*x)+Math.sqrt(discriminant)) / (2*C);
+//			solutions[1]=(-(E+B*x)-Math.sqrt(discriminant)) / (2*C);
+//			return solutions;
+			return new Double[] {-K3 / K2};
 		} else {
 			// determine if discriminant is negative or not; if negative, no real solution
 			// exist, otherwise, real solutions exist
