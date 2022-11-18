@@ -39,7 +39,7 @@ public class Bisector {
 
 	// check if constants are computed
 	private boolean constantsComputed;
-	
+
 	// stores the classification of the conic
 	private short classifiction;
 
@@ -107,20 +107,21 @@ public class Bisector {
 		// this.computeProjectiveMatrices();
 		this.computeBisector();
 	}
-	
+
 	public Double returnA() {
 		return this.A;
 	}
-	
+
 	public void setAValue(Double val) {
 		this.A = val;
 	}
 
 	public double lineDistance(Point3d line1, Point3d line2) {
-		return (line1.x-line2.x)*(line1.x-line2.x)+(line1.y-line2.y)*(line1.y-line2.y)+(line1.z-line2.z)*(line1.z-line2.z);
-		
-		
+		return (line1.x - line2.x) * (line1.x - line2.x) + (line1.y - line2.y) * (line1.y - line2.y)
+				+ (line1.z - line2.z) * (line1.z - line2.z);
+
 	}
+
 	/**
 	 * Computes the coefficients of the bisector in its conic form
 	 */
@@ -139,35 +140,33 @@ public class Bisector {
 				* (Math.abs(line4.x * site2.x + line4.y * site2.y + line4.z)
 						/ Math.abs(line3.x * site2.x + line3.y * site2.y + line3.z));
 		this.s = 1d;
-		
+
 		System.out.println("-----------------------------");
-		System.out.println("Site1: "+site1);
-		System.out.println("Line1: "+line1.x+"x "+line1.y+"y " + line1.z+"z ");
-		System.out.println("Line2: "+line2.x+"x "+line2.y+"y " + line2.z+"z ");
-		System.out.println("Site2: "+site2);
-		System.out.println("Line3: "+line3.x+"x "+line3.y+"y " + line3.z+"z ");
-		System.out.println("Line4: "+line4.x+"x "+line4.y+"y " + line4.z+"z ");
+		System.out.println("Site1: " + site1);
+		System.out.println("Line1: " + line1.x + "x " + line1.y + "y " + line1.z + "z ");
+		System.out.println("Line2: " + line2.x + "x " + line2.y + "y " + line2.z + "z ");
+		System.out.println("Site2: " + site2);
+		System.out.println("Line3: " + line3.x + "x " + line3.y + "y " + line3.z + "z ");
+		System.out.println("Line4: " + line4.x + "x " + line4.y + "y " + line4.z + "z ");
 		System.out.println("-----------------------------");
-		
-		if (lineDistance(line1,line3)<.00000001) {
+
+		if (lineDistance(line1, line3) < .00000001) {
 			System.out.println("test++++++++++++");
 			this.A = 0.0;
 			this.B = 0.0;
 			this.C = 0.0;
-			this.D = line4.x-this.K*line2.x;
-			this.E = line4.y-this.K*line2.y;
-			this.F = line4.z-this.K*line2.z;
-		}
-		else if (lineDistance(line2,line4)<.00000001) {
+			this.D = line4.x - this.K * line2.x;
+			this.E = line4.y - this.K * line2.y;
+			this.F = line4.z - this.K * line2.z;
+		} else if (lineDistance(line2, line4) < .00000001) {
 			System.out.println("test++++++++++++");
 			this.A = 0.0;
 			this.B = 0.0;
 			this.C = 0.0;
-			this.D = line1.x-this.K*line3.x;
-			this.E = line1.y-this.K*line3.y;
-			this.F = line1.z-this.K*line3.z;
-		}
-		else {
+			this.D = line1.x - this.K * line3.x;
+			this.E = line1.y - this.K * line3.y;
+			this.F = line1.z - this.K * line3.z;
+		} else {
 			this.A = line4.x * line1.x - this.K * this.s * (line3.x * line2.x);
 			this.B = line4.y * line1.y - this.K * this.s * (line3.y * line2.y);
 			this.C = line4.y * line1.x + line4.x * line1.y - this.K * this.s * (line3.y * line2.x + line3.x * line2.y);
@@ -175,48 +174,47 @@ public class Bisector {
 			this.E = line4.z * line1.y + line4.y * line1.z - this.K * this.s * (line3.z * line2.y + line3.y * line2.z);
 			this.F = line4.z * line1.z - this.K * this.s * (line3.z * line2.z);
 		}
-		System.out.println(this.A + "x^2 + " + this.B + "y^2 + " + this.C + "xy + "+ this.D + "x + "+ this.E + "y + " + this.F + " = 0");
+		System.out.println(this.A + "x^2 + " + this.B + "y^2 + " + this.C + "xy + " + this.D + "x + " + this.E + "y + "
+				+ this.F + " = 0");
 		System.out.println("-----------------------------");
-		
-		
+
 		// compute coefficients of bisector curve
 
-		
 		// store the fact that coefficients have been computed
 		this.constantsComputed = true;
-		
+
 		// determine the classification of the bisector
 		this.classifyBisector();
 	}
-	
+
 	/**
-	 * Given that the bisector coefficients are computed, determine the type of conic the bisector is
+	 * Given that the bisector coefficients are computed, determine the type of
+	 * conic the bisector is
 	 */
 	private void classifyBisector() {
 		// ensure constants are computed
-		if(!this.constantsComputed)
+		if (!this.constantsComputed)
 			this.computeBisector();
-		
+
 		/*
-		 * Let -1 be when classification is not been performed
-		 * Let 0 be a some type of line
-		 * Let 1 be a parabola
-		 * Let 2 be a hyperbola
-		 * Let 3 be a ellipse
+		 * Let -1 be when classification is not been performed Let 0 be a some type of
+		 * line Let 1 be a parabola Let 2 be a hyperbola Let 3 be a ellipse
 		 */
-		
+
 		// determine if conic is degenerate
-		Matrix m = new Matrix(new double[] {this.A, this.B, this.D, this.B, this.C, this.E, this.D, this.E, this.F}, 3);
-		if(m.det() < 1e-12) {
+		Matrix m = new Matrix(new double[] { this.A, this.B, this.D, this.B, this.C, this.E, this.D, this.E, this.F },
+				3);
+		if (m.det() < 1e-12) {
 			this.classifiction = 0;
 			return;
 		}
-		
-		// conic must not be degenerate here, thus, use this equation and solve based on its value
+
+		// conic must not be degenerate here, thus, use this equation and solve based on
+		// its value
 		double expression = Math.pow(this.C, 2) - 4 * this.A * this.B;
-		if(expression > 0)
+		if (expression > 0)
 			this.classifiction = 2;
-		else if(expression < 0)
+		else if (expression < 0)
 			this.classifiction = 3;
 		else
 			this.classifiction = 1;
@@ -238,26 +236,25 @@ public class Bisector {
 		// horzontal line
 		if (A == 0 && C == 0 && D == 0 && B == 0) {
 			Double[] solutions = new Double[1];
-			solutions[0] = - this.F / this.E;
+			solutions[0] = -this.F / this.E;
 			return solutions;
 		}
-		
+
 		if (A == 0 && C == 0 && D == 0) {
 			Double[] solutions = new Double[2];
-			solutions[0] = (- this.E + Math.sqrt(Math.pow(this.E, 2) - 4 * this.B * this.F)) / (2 * this.B);
-			solutions[1]= (- this.E - Math.sqrt(Math.pow(this.E, 2) - 4 * this.B * this.F)) / (2 * this.B);
+			solutions[0] = (-this.E + Math.sqrt(Math.pow(this.E, 2) - 4 * this.B * this.F)) / (2 * this.B);
+			solutions[1] = (-this.E - Math.sqrt(Math.pow(this.E, 2) - 4 * this.B * this.F)) / (2 * this.B);
 			return solutions;
 		}
-		
-		
+
 		// if K1 is zero, then use a different parameterization
-		if(K1 == 0d) {
+		if (K1 == 0d) {
 //			Double[] solutions = new Double[2];
 //			Double discriminant = Math.pow(E+ B*x,2) - 4 * C * (D*x+F);
 //			solutions[0]=(-(E+B*x)+Math.sqrt(discriminant)) / (2*C);
 //			solutions[1]=(-(E+B*x)-Math.sqrt(discriminant)) / (2*C);
 //			return solutions;
-			return new Double[] {-K3 / K2};
+			return new Double[] { -K3 / K2 };
 		} else {
 			// determine if discriminant is negative or not; if negative, no real solution
 			// exist, otherwise, real solutions exist
@@ -271,7 +268,6 @@ public class Bisector {
 
 			return solutions;
 		}
-		
 
 //		Double numerator = this.E * y + this.F;
 //		Double denominator = this.C * y + this.D;
@@ -304,8 +300,8 @@ public class Bisector {
 		if (discriminant < 0)
 			return new Double[0];
 
-		if(K1 == 0) {
-			return new Double[] {K3 / K2};
+		if (K1 == 0) {
+			return new Double[] { K3 / K2 };
 		} else {
 			Double[] solutions = new Double[2];
 			solutions[0] = (-K2 + Math.sqrt(discriminant)) / (2 * K1);
@@ -322,7 +318,6 @@ public class Bisector {
 //		} else
 //			return - numerator / denominator;
 	}
-
 
 	/*
 	 * Compute discriminant for the intersection point between the bisector and a
@@ -375,10 +370,12 @@ public class Bisector {
 
 		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
 		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
-		if (Math.min(lineDistance(line1,line3),lineDistance(line2,line4))<.0000000001) {//this needs to be set to some confidence level later
+		if (Math.min(lineDistance(line1, line3), lineDistance(line2, line4)) < .0000000001) {// this needs to be set to
+																								// some confidence level
+																								// later
 			Point3d p = new Point3d(this.D, this.E, this.F);
-			solutions[0]=Util.lineIntersection(p, line).x;
-			solutions[1]=-100000000000000000.0;
+			solutions[0] = Util.lineIntersection(p, line).x;
+			solutions[1] = -100000000000000000.0;
 		}
 		return solutions;
 	}
@@ -399,10 +396,12 @@ public class Bisector {
 
 		solutions[0] = (firstTerm + Math.sqrt(discriminant)) / denominator;
 		solutions[1] = (firstTerm - Math.sqrt(discriminant)) / denominator;
-		if (Math.min(lineDistance(line1,line3),lineDistance(line2,line4))<.0000000001) {//this needs to be set to some confidence level later
+		if (Math.min(lineDistance(line1, line3), lineDistance(line2, line4)) < .0000000001) {// this needs to be set to
+																								// some confidence level
+																								// later
 			Point3d p = new Point3d(this.D, this.E, this.F);
-			solutions[0]=Util.lineIntersection(p, line).y;
-			solutions[1]=-1000000000000000000.0;
+			solutions[0] = Util.lineIntersection(p, line).y;
+			solutions[1] = -1000000000000000000.0;
 		}
 		return solutions;
 	}
@@ -430,12 +429,12 @@ public class Bisector {
 		Double dY = this.computeDiscriminantY(line);
 
 		LinkedList<Point2D.Double> intersect = new LinkedList<Point2D.Double>();
-		
+
 		// compute the point of potential intersection
-		if(dX >= 0) {
+		if (dX >= 0) {
 			Double[] solutionsX = this.intersectionBisectorLineX(line);
-			for(Double x : solutionsX)
-				intersect.add(new Point2D.Double(x, - line.x / line.y * x - line.z / line.y));
+			for (Double x : solutionsX)
+				intersect.add(new Point2D.Double(x, -line.x / line.y * x - line.z / line.y));
 		}
 		if (dY >= 0) {
 			Double[] solutionsY = this.intersectionBisectorLineY(line);
@@ -448,7 +447,7 @@ public class Bisector {
 			// check if the point p is in the convex body; if not, move to next point
 			if (c.isInConvex(p) || c.isOnConvexBoundary(p)) {
 				// checks if the points is already in the list
-				if(!Bisector.listRouglyContainsPoint(intersectionPoints, p, 1e-8)) {
+				if (!Bisector.listRouglyContainsPoint(intersectionPoints, p, 1e-8)) {
 					intersectionPoints.add(p);
 				}
 			}
@@ -588,7 +587,7 @@ public class Bisector {
 		}
 		return false;
 	}
-	
+
 	public Point2D.Double getLeftEndPoint() {
 		return this.leftEndPoint;
 	}
@@ -596,7 +595,7 @@ public class Bisector {
 	public Point2D.Double getRightEndPoint() {
 		return this.rightEndPoint;
 	}
-	
+
 	public short getClassification() {
 		return this.classifiction;
 	}
@@ -800,14 +799,15 @@ public class Bisector {
 
 		Pattern p = Pattern.compile("E[0-9]+");
 		Matcher m = p.matcher(rtn);
-		while(m.find()) {
+		while (m.find()) {
 			String pattern = m.group(0);
 			String replacement = " * 10^{" + pattern.substring(1, pattern.length()) + "}";
 			rtn = rtn.replaceAll(pattern, replacement);
 		}
-		
-		//There is a issue with this that the bisector may bulge out so we may want to expand this
-		//This happens when the bisector is nearly vertical
+
+		// There is a issue with this that the bisector may bulge out so we may want to
+		// expand this
+		// This happens when the bisector is nearly vertical
 		rtn += "\\left\\{" + this.getLeftEndPoint().x + " \\le x \\le " + this.getRightEndPoint().x + "\\right\\}";
 		return rtn;
 	}
