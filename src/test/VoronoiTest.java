@@ -15,9 +15,12 @@ import geometry.HilbertGeometry;
 import geometry.Point3d;
 import geometry.Sector;
 import geometry.Voronoi;
+import geometry.VoronoiCell;
 import geometry.Util;
 
 import trapmap.Segment;
+import trapmap.TrapMap;
+import trapmap.Trapezoid;
 
 public class VoronoiTest {
 	public static void testNewThetaRayTrace() {
@@ -209,19 +212,20 @@ public class VoronoiTest {
 		Point2D.Double site1 = null;
 		Point2D.Double site2 = null;
 		;
-		boolean defaultSites = false;
+		boolean defaultSites = true;
+		Point2D.Double[] siteVertices = null;
 		if (siteFile != null) {
-			Point2D.Double[] siteVertices = c.load(siteFile);
+			siteVertices = c.load(siteFile);
 			if (siteVertices.length != 2)
-				defaultSites = true;
+				defaultSites = false;
 			else {
 				site1 = new Point2D.Double(599d, 393d);
 				site2 = new Point2D.Double(398d, 530d);
 			}
 		}
 		if (defaultSites) {
-			site1 = new Point2D.Double(139d, 69d);
-			site2 = new Point2D.Double(113d, 125d);
+			site1 = siteVertices[0];
+			site2 = siteVertices[1];
 		} else {
 			site1 = new Point2D.Double(598d, 585d);
 			site2 = new Point2D.Double(504d, 281d);
@@ -236,29 +240,50 @@ public class VoronoiTest {
 		// print site vertices
 		System.out.println("[" + Util.printCoordinate(site1) + ", " + Util.printCoordinate(site2) + "]");
 
-		Voronoi v = new Voronoi(g);
-		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
-		
-		System.out.println("We have " + bisectorList.size() + " bisectors.");
+		Voronoi v12 = new Voronoi(g);
+		ArrayList<VoronoiCell> cells12 = new ArrayList<VoronoiCell>();
+		ArrayList<VoronoiCell> cells13 = new ArrayList<VoronoiCell>();
+		ArrayList<VoronoiCell> cells23 = new ArrayList<VoronoiCell>();
+		cells12 = v12.realAugusteAlgo(site1, site2);
+		Point2D.Double site3 = new Point2D.Double(409d, 543d);
+		Voronoi v13 = new Voronoi(g);
+		cells13 = v13.realAugusteAlgo(site1, site3);
+		Voronoi v23 = new Voronoi(g);
+		cells23 = v23.realAugusteAlgo(site2, site3);
+		System.out.println("---------------------------");
+		cells12.get(0).Printer();
+		cells12.get(1).Printer();
+		cells13.get(0).Printer();
+		cells13.get(1).Printer();
+		cells23.get(0).Printer();
+		cells23.get(1).Printer();
+		System.out.println("Break Point Here!");
+//		ArrayList<TrapMap> trapMaps = v.realAugusteAlgo(site1, site2);
+//		for (Trapezoid Trap : trapMaps.get(0).findFaceTrapezoids(site1.x,site1.y)) {
+//			System.out.println("{"+Trap.toString()+"}");
+//		}
+//		ArrayList<Bisector> bisectorList = v.realAugusteAlgo(site1, site2);
 
-		Pattern p = Pattern.compile("E[0-9]+");
-		// Print Statement
-		// ************************************************************************************
-		int index = 0;
-		// ************************************************************************************
-		for (Bisector b : bisectorList) {
-			String printStatement = b.toString();
-			Matcher m = p.matcher(printStatement);
-			while (m.find()) {
-				String pattern = m.group(0);
-				String replacement = " * 10^{" + pattern.substring(1, pattern.length()) + "}";
-				printStatement = printStatement.replaceAll(pattern, replacement);
-			}
-
-			System.out.println(printStatement + "\\left\\{" + b.getLeftEndPoint().x + " \\le x \\le "
-					+ b.getRightEndPoint().x + "\\right\\}");
-		}
-		System.out.println("Insert breakpoint in here!");
+//		System.out.println("We have " + bisectorList.size() + " bisectors.");
+//
+//		Pattern p = Pattern.compile("E[0-9]+");
+//		// Print Statement
+//		// ************************************************************************************
+//		int index = 0;
+//		// ************************************************************************************
+//		for (Bisector b : bisectorList) {
+//			String printStatement = b.toString();
+//			Matcher m = p.matcher(printStatement);
+//			while (m.find()) {
+//				String pattern = m.group(0);
+//				String replacement = " * 10^{" + pattern.substring(1, pattern.length()) + "}";
+//				printStatement = printStatement.replaceAll(pattern, replacement);
+//			}
+//
+//			System.out.println(printStatement + "\\left\\{" + b.getLeftEndPoint().x + " \\le x \\le "
+//					+ b.getRightEndPoint().x + "\\right\\}");
+//		}
+//		System.out.println("Insert breakpoint in here!");
 	}
 
 	public static void main(String[] argv) {
@@ -266,8 +291,8 @@ public class VoronoiTest {
 
 //		"src/convexes/hull0";
 //		"src/convexes/site0"
-		String convexFile = null;
-		String siteFile = null;
+		String convexFile = "src/convexes/LoadHull";
+		String siteFile = "src/convexes/LoadSites";
 		VoronoiTest.soulCrusher(convexFile, siteFile);
 	}
 }

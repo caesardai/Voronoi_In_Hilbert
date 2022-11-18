@@ -16,7 +16,7 @@ import drawing.DrawUtil;
 import trapmap.TrapMap;
 import trapmap.Trapezoid;
 import trapmap.Segment;
-
+import processing.core.PShape;
 import processing.core.PVector;
 
 public class Voronoi {
@@ -726,13 +726,13 @@ public class Voronoi {
 		return voronoiCellSegment;
 	}
 
-	public ArrayList<Bisector> realAugusteAlgo(Point2D.Double site1, Point2D.Double site2) {
+	public ArrayList<VoronoiCell> realAugusteAlgo(Point2D.Double site1, Point2D.Double site2) {
 		// constants
 		Convex c = this.geometry.convex;
 
 		// construct sectors
 		KdTree<KdTree.XYZPoint> graph = this.constructGraph(site1, site2);
- 
+
 		// get site1 neighbor - arraylist
 		KdTree.XYZPoint s1XYZ = KdTree.getNode(graph, Util.toXYZPoint(site1)).getID();
 		ArrayList<EdgeData> s1Neighbors = s1XYZ.getNeighbors();
@@ -756,8 +756,8 @@ public class Voronoi {
 		Segment sharedEdge = Util.pointsToSeg(site1, v);
 
 		// construct sector
-		List<Sector> sectors = c.constructSector(sharedEdge, site1, site2, graph);	
-		
+		List<Sector> sectors = c.constructSector(sharedEdge, site1, site2, graph);
+
 		// check which sector to use
 		int indexOfCenterSector = 0;
 		for (int index = 0; index < sectors.get(1).sector.convexHull.length; index++) {
@@ -767,7 +767,7 @@ public class Voronoi {
 				break;
 			}
 		}
-		
+
 		// Print statement
 		// ************************************************************************************
 		if (indexOfCenterSector == 0) {
@@ -779,11 +779,11 @@ public class Voronoi {
 
 		// finding sector that contains equidistant point
 		Sector firstSector = sectors.get(indexOfCenterSector);
-		Sector currSector = firstSector;		
+		Sector currSector = firstSector;
 
 		// calculate bisector object
 		Bisector b = computeBisectorInSector(currSector);
-	
+
 		// find and return a list of segments that intersect with the bisector
 		Segment[] intersectingSegments = bisectorSectorIntersection(b, currSector, null);
 
@@ -794,7 +794,7 @@ public class Voronoi {
 		// arraylist to store bisectors
 		ArrayList<Bisector> bisectors = new ArrayList<Bisector>();
 		bisectors.add(b.clone());
-		
+
 		// Print statement
 		// ************************************************************************************
 		Point2D.Double biLeftPt = b.getLeftEndPoint();
@@ -803,7 +803,6 @@ public class Voronoi {
 		System.out.println("Left Endpoint: " + Util.printCoordinate(biLeftPt));
 		System.out.println("Right Endpoint: " + Util.printCoordinate(biRightPt) + "\n");
 		// ************************************************************************************
-		
 
 		// while it isn't the convex hull edge keep going
 		Point2D.Double[] bisectHullIntersect = new Point2D.Double[2];
@@ -813,9 +812,9 @@ public class Voronoi {
 		while (!completedBisector) {
 			// construct new sector with the shared segment
 			List<Sector> neighborSectors = c.constructSector(currSeg, site1, site2, graph);
-			
+
 			for (Sector neighborSec : neighborSectors) {
-				
+
 				// check if the constructed sector is the sector that we already have
 				if (neighborSec.isEqual(currSector)) { // fix later
 					continue;
@@ -844,7 +843,7 @@ public class Voronoi {
 						endPoint = bist.getRightEndPoint();
 					}
 					b.setEndPoints(endPoint);
-					
+
 					// returns two sector segments that the bisector intersect with
 					newIntersectingSegments = bisectorSectorIntersection(b, currSector, endPoint);
 					bisectors.add(b.clone());
@@ -857,7 +856,7 @@ public class Voronoi {
 							break;
 						}
 					}
-					
+
 					// stop searching bisector
 					break;
 				}
@@ -873,8 +872,7 @@ public class Voronoi {
 				} else {
 					bisectHullIntersect[1] = b.getRightEndPoint();
 				}
-				
-				
+
 				if (++currSegIndex > 1)
 					completedBisector = true;
 				else {
@@ -900,15 +898,13 @@ public class Voronoi {
 					bisectHullIntersect[1] = b.getRightEndPoint();
 				}
 				completedBisector = true;
-			}
-			else {
+			} else {
 				currSeg = intersectingSegments[currSegIndex];
 				currSector = firstSector;
 				switchedSides = true;
 			}
 		}
-		
-		
+
 		for (Bisector bisec : bisectors) {
 			// pass all segments into AllSegments
 			ArrayList<Segment> aprox = approximateBisector(bisec);
@@ -916,15 +912,23 @@ public class Voronoi {
 				allSegments.add(aprox.get(i));
 				PVector lpt = aprox.get(i).getLeftPoint();
 				PVector rpt = aprox.get(i).getRightPoint();
-				if (aprox.get(i).getRightPoint().y<=aprox.get(i).getLeftPoint().y) {
-					System.out.println("y="+"M("+aprox.get(i).getLeftPoint().x+","+aprox.get(i).getLeftPoint().y+","+aprox.get(i).getRightPoint().x+","+aprox.get(i).getRightPoint().y+",x)"
-							+ "\\left\\{ "+aprox.get(i).getLeftPoint().x+" \\le x \\le "+aprox.get(i).getRightPoint().x+" \\right\\} "+ " \\left\\{ "+aprox.get(i).getRightPoint().y+" \\le y \\le "+aprox.get(i).getLeftPoint().y+" \\right\\} ");
+				if (aprox.get(i).getRightPoint().y <= aprox.get(i).getLeftPoint().y) {
+					System.out.println("y=" + "M(" + aprox.get(i).getLeftPoint().x + "," + aprox.get(i).getLeftPoint().y
+							+ "," + aprox.get(i).getRightPoint().x + "," + aprox.get(i).getRightPoint().y + ",x)"
+							+ "\\left\\{ " + aprox.get(i).getLeftPoint().x + " \\le x \\le "
+							+ aprox.get(i).getRightPoint().x + " \\right\\} " + " \\left\\{ "
+							+ aprox.get(i).getRightPoint().y + " \\le y \\le " + aprox.get(i).getLeftPoint().y
+							+ " \\right\\} ");
+				} else {
+					System.out.println("y=" + "M(" + aprox.get(i).getLeftPoint().x + "," + aprox.get(i).getLeftPoint().y
+							+ "," + aprox.get(i).getRightPoint().x + "," + aprox.get(i).getRightPoint().y + ",x)"
+							+ "\\left\\{ " + aprox.get(i).getLeftPoint().x + " \\le x \\le "
+							+ aprox.get(i).getRightPoint().x + " \\right\\} " + " \\left\\{ "
+							+ aprox.get(i).getLeftPoint().y + " \\le y \\le " + aprox.get(i).getRightPoint().y
+							+ " \\right\\} ");
 				}
-				else {
-					System.out.println("y="+"M("+aprox.get(i).getLeftPoint().x+","+aprox.get(i).getLeftPoint().y+","+aprox.get(i).getRightPoint().x+","+aprox.get(i).getRightPoint().y+",x)"
-							+ "\\left\\{ "+aprox.get(i).getLeftPoint().x+" \\le x \\le "+aprox.get(i).getRightPoint().x+" \\right\\} "+ " \\left\\{ "+aprox.get(i).getLeftPoint().y+" \\le y \\le "+aprox.get(i).getRightPoint().y+" \\right\\} ");
-				}
-				//System.out.println(Util.printCoordinate(Util.toPoint2D(lpt)) + ", " + Util.printCoordinate(Util.toPoint2D(rpt)));
+				// System.out.println(Util.printCoordinate(Util.toPoint2D(lpt)) + ", " +
+				// Util.printCoordinate(Util.toPoint2D(rpt)));
 				// System.out.println("Bisector " + i + ": " + aprox.get(i) + "\n");
 //				System.out.println("y="+"M("+aprox.get(i).getLeftPoint().x+","+aprox.get(i).getLeftPoint().y+
 //						","+aprox.get(i).getRightPoint().x+","+aprox.get(i).getRightPoint().y+",x)"+ "\left\{ " + 
@@ -932,131 +936,176 @@ public class Voronoi {
 //						" \left\{ "+aprox.get(i).getLeftPoint().y+" \le y \le "+aprox.get(i).getRightPoint().y+" \right\} ");
 //				M\left(q,r,s,t,x\right)=\frac{\left(t-r\right)}{s-q}\left(x-q\right)+r
 			}
-			
+
 			// constrcut VoronoiCell Object
-			
+
 		}
-		System.out.println(c.isBisectOnConvexBoundary(bisectHullIntersect[0]));
-		System.out.println(c.isBisectOnConvexBoundary(bisectHullIntersect[1]));
-		System.out.println("hull inter pt:" + Util.printCoordinate(bisectHullIntersect[0]) + "," + Util.printCoordinate(bisectHullIntersect[1]));
-		//Let's make the cell wall for site 1.
-		//We first locate site 1 side of the cell
+//		System.out.println(c.isBisectOnConvexBoundary(bisectHullIntersect[0]));
+//		System.out.println(c.isBisectOnConvexBoundary(bisectHullIntersect[1]));
+//		System.out.println("hull inter pt:" + Util.printCoordinate(bisectHullIntersect[0]) + "," + Util.printCoordinate(bisectHullIntersect[1]));
+
+		// NOW WE MAE THE VORONOI CELLS FOR THE TWO SITES
+
+		// We find where the bisector hits the hull
 		Segment hullSeg1 = c.isBisectOnConvexBoundary(bisectHullIntersect[0]);
 		Segment hullSeg2 = c.isBisectOnConvexBoundary(bisectHullIntersect[1]);
 
 		ArrayList<Point2D.Double> cellWallSite1 = new ArrayList<Point2D.Double>();
 		ArrayList<Point2D.Double> cellWallSite2 = new ArrayList<Point2D.Double>();
-		
-		//we get which side of the bisector our sites are on
+
+		// we get which side of the bisector our sites are on
 		GrahamScan.Turn turnSite1 = GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], site1);
 		GrahamScan.Turn turnSite2 = GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], site2);
-		//VoronoiCell vorCell = new VoronoiCell(site1, allSegments);
+		// VoronoiCell vorCell = new VoronoiCell(site1, allSegments);
 
+		// We find where we need to start searching the boundary of the hull
 		int startingIndex = 0;
-		for (int i=0;i<c.convexHull.length;i++)
-			if (c.convexHull[i].x==hullSeg1.getRightPoint().x && c.convexHull[i].y==hullSeg1.getRightPoint().y) {
-				startingIndex=i;
+		for (int i = 0; i < c.convexHull.length; i++)
+			if (c.convexHull[i].x == hullSeg1.getRightPoint().x && c.convexHull[i].y == hullSeg1.getRightPoint().y) {
+				startingIndex = i;
 			}
-		
-		//BUILD CELL WALL WITH POINTS FOR SITE 1 OF BOUNDARY
-		System.out.println("++++++++++" + c.convexHull[startingIndex] + "++++++++++");
-		
-		//Do we need to switch the bisectHullIntersect[...]'s insertion
-		Boolean switcher=false;
-		if (site1.x>site2.x) {
-			switcher=true;
+
+		// BUILD CELL WALL WITH POINTS FOR SITE 1 OF BOUNDARY
+		// Do we need to switch the bisectHullIntersect[...]'s insertion
+		Boolean switcher = false;
+		if (site1.x > site2.x) {
+			switcher = true;
 		}
 		if (switcher) {
 			cellWallSite1.add(bisectHullIntersect[1]);
-		}
-		else {
+		} else {
 			cellWallSite1.add(bisectHullIntersect[0]);
 		}
-		for (int i=startingIndex;i<c.convexHull.length+startingIndex;i++) {
-			if (GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], c.convexHull[i%c.convexHull.length])==turnSite1) {
-				cellWallSite1.add(c.convexHull[i%c.convexHull.length]);
+		// Add the Hull walls
+		for (int i = startingIndex; i < c.convexHull.length + startingIndex; i++) {
+			if (GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1],
+					c.convexHull[i % c.convexHull.length]) == turnSite1) {
+				cellWallSite1.add(c.convexHull[i % c.convexHull.length]);
 			}
 		}
 		if (switcher) {
 			cellWallSite1.add(bisectHullIntersect[0]);
-		}
-		else {
+		} else {
 			cellWallSite1.add(bisectHullIntersect[1]);
 		}
 
-		//BUILD CELL WALL WITH POINTS FOR SITE 2 OF BOUNDARY
+		// BUILD CELL WALL WITH POINTS FOR SITE 2 OF BOUNDARY
 		if (switcher) {
 			cellWallSite2.add(bisectHullIntersect[0]);
-		}
-		else {
+		} else {
 			cellWallSite2.add(bisectHullIntersect[1]);
 		}
-		for (int i=startingIndex;i<c.convexHull.length+startingIndex;i++) {
-			if (GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], c.convexHull[i%c.convexHull.length])==turnSite2) {
-				cellWallSite2.add(c.convexHull[i%c.convexHull.length]);
+		// Add the hull walls
+		for (int i = startingIndex; i < c.convexHull.length + startingIndex; i++) {
+			if (GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1],
+					c.convexHull[i % c.convexHull.length]) == turnSite2) {
+				cellWallSite2.add(c.convexHull[i % c.convexHull.length]);
 			}
 		}
 		if (switcher) {
 			cellWallSite2.add(bisectHullIntersect[1]);
-		}
-		else {
+		} else {
 			cellWallSite2.add(bisectHullIntersect[0]);
 		}
 
-		//THE BISECTOR IS IN ALLSEGMENT 
+		// THE BISECTOR IS IN ALLSEGMENT
 		// construct PShape polygons
 		ArrayList<Segment> cell1 = new ArrayList<Segment>();
 		ArrayList<Segment> cell2 = new ArrayList<Segment>();
-		for (int i = 0; i < cellWallSite1.size()-1; i++) {
-			if (cellWallSite1.get(i)!=cellWallSite1.get(i+1)){
-				cell1.add(Util.pointsToSeg(cellWallSite1.get(i), cellWallSite1.get(i+1)));
+		for (int i = 0; i < cellWallSite1.size() - 1; i++) {
+			if (cellWallSite1.get(i) != cellWallSite1.get(i + 1)) {
+				cell1.add(Util.pointsToSeg(cellWallSite1.get(i), cellWallSite1.get(i + 1)));
 			}
 		}
-		
-		for (int i = 0; i < cellWallSite2.size()-1; i++) {
-			if (cellWallSite2.get(i)!=cellWallSite2.get(i+1)){
-				cell2.add(Util.pointsToSeg(cellWallSite2.get(i), cellWallSite2.get(i+1)));
+
+		for (int i = 0; i < cellWallSite2.size() - 1; i++) {
+			if (cellWallSite2.get(i) != cellWallSite2.get(i + 1)) {
+				cell2.add(Util.pointsToSeg(cellWallSite2.get(i), cellWallSite2.get(i + 1)));
 			}
 		}
-		
-		for (Segment seg: allSegments) {
+
+		for (Segment seg : allSegments) {
 			cell1.add(seg);
 			cell2.add(seg);
 		}
 		System.out.println("-------------------------------------------------");
-		for (Segment seg : cell2 ) {
-			if (seg.getRightPoint().y<=seg.getLeftPoint().y) {
-				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
-						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getRightPoint().y+" \\le y \\le "+seg.getLeftPoint().y+" \\right\\} ");
-			}
-			else {
-				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
-						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getLeftPoint().y+" \\le y \\le "+seg.getRightPoint().y+" \\right\\} ");
+		for (Segment seg : cell2) {
+			if (seg.getRightPoint().y <= seg.getLeftPoint().y) {
+				System.out.println(
+						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+								+ seg.getRightPoint().y + " \\le y \\le " + seg.getLeftPoint().y + " \\right\\} ");
+			} else {
+				System.out.println(
+						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+								+ seg.getLeftPoint().y + " \\le y \\le " + seg.getRightPoint().y + " \\right\\} ");
 			}
 		}
 		System.out.println("-------------------------------------------------");
-		for (Segment seg : cell1 ) {
-			if (seg.getRightPoint().y<=seg.getLeftPoint().y) {
-				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
-						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getRightPoint().y+" \\le y \\le "+seg.getLeftPoint().y+" \\right\\} ");
-			}
-			else {
-				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
-						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getLeftPoint().y+" \\le y \\le "+seg.getRightPoint().y+" \\right\\} ");
+		for (Segment seg : cell1) {
+			if (seg.getRightPoint().y <= seg.getLeftPoint().y) {
+				System.out.println(
+						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+								+ seg.getRightPoint().y + " \\le y \\le " + seg.getLeftPoint().y + " \\right\\} ");
+			} else {
+				System.out.println(
+						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+								+ seg.getLeftPoint().y + " \\le y \\le " + seg.getRightPoint().y + " \\right\\} ");
 			}
 		}
 		System.out.println("-------------------------------------------------");
 		// construct trapmap
-		TrapMap site1TP = new TrapMap(cell1);
-		TrapMap site2TP = new TrapMap(cell2);
-//		for (Trapezoid Trap : site1TP.getAllTrapezoids()) {
-//			System.out.println("{"+Trap.toString()+"}");
-//		}
-		// VoronoiCell cellSite1
+//		ArrayList<Point2D> vertices = new ArrayList<Point2D>();
+//		for (Segment seg : cell1){
+//			Point2D.Double additionL = new Point2D.Double(seg.getLeftPoint().x,seg.getLeftPoint().y);
+//			Point2D.Double additionR = new Point2D.Double(seg.getRightPoint().x,seg.getRightPoint().y);
+//			vertices.add(additionL);
+//			vertices.add(additionR);
+//			}
+//		PShape shape = new PShape(vertices);
+//		
+//		TrapMap site1TP = new TrapMap(cell1);
+//		TrapMap site2TP = new TrapMap(cell2);
+//		site1TP.findFaceTrapezoids(site1.x,site1.y);
+
+//		ArrayList<TrapMap> trapMaps= new ArrayList<TrapMap>();
+//		trapMaps.add(site1TP);
+//		trapMaps.add(site2TP);
+
+		// TURN THE SEGMENT LISTS INTO VORONOI CELLS
+		ArrayList<Point2D.Double> vertices1 = new ArrayList<Point2D.Double>();
+		for (int i = 0; i < cell1.size(); i++) {
+			Segment seg = cell1.get(i);
+			Point2D.Double newPoint1 = new Point2D.Double(seg.getRightPoint().x, seg.getRightPoint().y);
+			vertices1.add(newPoint1);
+			Point2D.Double newPoint2 = new Point2D.Double(seg.getLeftPoint().x, seg.getLeftPoint().y);
+			vertices1.add(newPoint2);
+		}
+		VoronoiCell cellSite1 = new VoronoiCell(site1, vertices1);
+		ArrayList<Point2D.Double> vertices2 = new ArrayList<Point2D.Double>();
+		for (int i = 0; i < cell2.size(); i++) {
+			Segment seg = cell2.get(i);
+			Point2D.Double newPoint1 = new Point2D.Double(seg.getRightPoint().x, seg.getRightPoint().y);
+			vertices2.add(newPoint1);
+			Point2D.Double newPoint2 = new Point2D.Double(seg.getLeftPoint().x, seg.getLeftPoint().y);
+			vertices2.add(newPoint2);
+		}
+		VoronoiCell cellSite2 = new VoronoiCell(site2, vertices2);
 		// return Bisector
-		return bisectors;
+		// return bisectors;
+		ArrayList<VoronoiCell> cells = new ArrayList<VoronoiCell>();
+		cells.add(cellSite1);
+		cells.add(cellSite2);
+		return cells;
 	}
-	
+
 	/**
 	 * Given a convex hull and two sites, this method a construct the graph whose
 	 * nodes are either the sites or intersection points between a spoke and another

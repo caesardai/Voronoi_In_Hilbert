@@ -106,7 +106,7 @@ public class StarIntersect {
 	public static String findCrossing(Double[][] U) {
 
 		// Let's sort U by angle!
-		java.util.Arrays.sort(U, Comparator.comparingDouble(a -> getAngle(a)));
+		Arrays.sort(U, Comparator.comparingDouble(a -> getAngle(a)));
 
 		// for (int u=0;u<U.length;u++ ) {System.out.println(Arrays.toString(U[u]));}
 
