@@ -78,26 +78,26 @@ public final class Trapezoid {
 		neighborLR = null;
 		owner = null;
 		
-		if(topSeg.getSite1() != null && botSeg.getSite1() != null) {
-			if(topSeg.getSite1().equals(botSeg.getSite1()))
-				this.site = topSeg.getSite1();
-
-			else if(topSeg.getSite2() != null) {
-				if(topSeg.getSite2().equals(botSeg.getSite1())) 
-					this.site = topSeg.getSite2();
-			}
-			
-			else if(botSeg.getSite2() != null) {
-				if(topSeg.getSite1().equals(botSeg.getSite2()))
-					this.site = topSeg.getSite1();
-				
-			}
-			
-			else if(topSeg.getSite2() != null && botSeg.getSite2() != null) {
-				if(topSeg.getSite2().equals(botSeg.getSite2())) 
-					this.site = topSeg.getSite2();
-			}
-		}
+//		if(topSeg.getSite1() != null && botSeg.getSite1() != null) {
+//			if(topSeg.getSite1().equals(botSeg.getSite1()))
+//				this.site = topSeg.getSite1();
+//
+//			else if(topSeg.getSite2() != null) {
+//				if(topSeg.getSite2().equals(botSeg.getSite1())) 
+//					this.site = topSeg.getSite2();
+//			}
+//			
+//			else if(botSeg.getSite2() != null) {
+//				if(topSeg.getSite1().equals(botSeg.getSite2()))
+//					this.site = topSeg.getSite1();
+//				
+//			}
+//			
+//			else if(topSeg.getSite2() != null && botSeg.getSite2() != null) {
+//				if(topSeg.getSite2().equals(botSeg.getSite2())) 
+//					this.site = topSeg.getSite2();
+//			}
+//		}
 	}
 
 	/**

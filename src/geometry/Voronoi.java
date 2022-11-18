@@ -683,7 +683,6 @@ public class Voronoi {
 			incrementX = (leftX - rightX) / 5;
 		}
 
-		voronoiCellVertices.add(leftPoint);
 		Double increment = leftX;
 		// Keep approximating bisector until we're out of range
 		while (increment <= rightX + .0000001) {
@@ -733,7 +732,7 @@ public class Voronoi {
 
 		// construct sectors
 		KdTree<KdTree.XYZPoint> graph = this.constructGraph(site1, site2);
-
+ 
 		// get site1 neighbor - arraylist
 		KdTree.XYZPoint s1XYZ = KdTree.getNode(graph, Util.toXYZPoint(site1)).getID();
 		ArrayList<EdgeData> s1Neighbors = s1XYZ.getNeighbors();
@@ -935,14 +934,129 @@ public class Voronoi {
 			}
 			
 			// constrcut VoronoiCell Object
+			
 		}
 		System.out.println(c.isBisectOnConvexBoundary(bisectHullIntersect[0]));
+		System.out.println(c.isBisectOnConvexBoundary(bisectHullIntersect[1]));
 		System.out.println("hull inter pt:" + Util.printCoordinate(bisectHullIntersect[0]) + "," + Util.printCoordinate(bisectHullIntersect[1]));
+		//Let's make the cell wall for site 1.
+		//We first locate site 1 side of the cell
+		Segment hullSeg1 = c.isBisectOnConvexBoundary(bisectHullIntersect[0]);
+		Segment hullSeg2 = c.isBisectOnConvexBoundary(bisectHullIntersect[1]);
+
+		ArrayList<Point2D.Double> cellWallSite1 = new ArrayList<Point2D.Double>();
+		ArrayList<Point2D.Double> cellWallSite2 = new ArrayList<Point2D.Double>();
 		
+		//we get which side of the bisector our sites are on
+		GrahamScan.Turn turnSite1 = GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], site1);
+		GrahamScan.Turn turnSite2 = GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], site2);
+		//VoronoiCell vorCell = new VoronoiCell(site1, allSegments);
+
+		int startingIndex = 0;
+		for (int i=0;i<c.convexHull.length;i++)
+			if (c.convexHull[i].x==hullSeg1.getRightPoint().x && c.convexHull[i].y==hullSeg1.getRightPoint().y) {
+				startingIndex=i;
+			}
+		
+		//BUILD CELL WALL WITH POINTS FOR SITE 1 OF BOUNDARY
+		System.out.println("++++++++++" + c.convexHull[startingIndex] + "++++++++++");
+		
+		//Do we need to switch the bisectHullIntersect[...]'s insertion
+		Boolean switcher=false;
+		if (site1.x>site2.x) {
+			switcher=true;
+		}
+		if (switcher) {
+			cellWallSite1.add(bisectHullIntersect[1]);
+		}
+		else {
+			cellWallSite1.add(bisectHullIntersect[0]);
+		}
+		for (int i=startingIndex;i<c.convexHull.length+startingIndex;i++) {
+			if (GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], c.convexHull[i%c.convexHull.length])==turnSite1) {
+				cellWallSite1.add(c.convexHull[i%c.convexHull.length]);
+			}
+		}
+		if (switcher) {
+			cellWallSite1.add(bisectHullIntersect[0]);
+		}
+		else {
+			cellWallSite1.add(bisectHullIntersect[1]);
+		}
+
+		//BUILD CELL WALL WITH POINTS FOR SITE 2 OF BOUNDARY
+		if (switcher) {
+			cellWallSite2.add(bisectHullIntersect[0]);
+		}
+		else {
+			cellWallSite2.add(bisectHullIntersect[1]);
+		}
+		for (int i=startingIndex;i<c.convexHull.length+startingIndex;i++) {
+			if (GrahamScan.getTurn(bisectHullIntersect[0], bisectHullIntersect[1], c.convexHull[i%c.convexHull.length])==turnSite2) {
+				cellWallSite2.add(c.convexHull[i%c.convexHull.length]);
+			}
+		}
+		if (switcher) {
+			cellWallSite2.add(bisectHullIntersect[1]);
+		}
+		else {
+			cellWallSite2.add(bisectHullIntersect[0]);
+		}
+
+		//THE BISECTOR IS IN ALLSEGMENT 
+		// construct PShape polygons
+		ArrayList<Segment> cell1 = new ArrayList<Segment>();
+		ArrayList<Segment> cell2 = new ArrayList<Segment>();
+		for (int i = 0; i < cellWallSite1.size()-1; i++) {
+			if (cellWallSite1.get(i)!=cellWallSite1.get(i+1)){
+				cell1.add(Util.pointsToSeg(cellWallSite1.get(i), cellWallSite1.get(i+1)));
+			}
+		}
+		
+		for (int i = 0; i < cellWallSite2.size()-1; i++) {
+			if (cellWallSite2.get(i)!=cellWallSite2.get(i+1)){
+				cell2.add(Util.pointsToSeg(cellWallSite2.get(i), cellWallSite2.get(i+1)));
+			}
+		}
+		
+		for (Segment seg: allSegments) {
+			cell1.add(seg);
+			cell2.add(seg);
+		}
+		System.out.println("-------------------------------------------------");
+		for (Segment seg : cell2 ) {
+			if (seg.getRightPoint().y<=seg.getLeftPoint().y) {
+				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
+						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getRightPoint().y+" \\le y \\le "+seg.getLeftPoint().y+" \\right\\} ");
+			}
+			else {
+				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
+						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getLeftPoint().y+" \\le y \\le "+seg.getRightPoint().y+" \\right\\} ");
+			}
+		}
+		System.out.println("-------------------------------------------------");
+		for (Segment seg : cell1 ) {
+			if (seg.getRightPoint().y<=seg.getLeftPoint().y) {
+				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
+						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getRightPoint().y+" \\le y \\le "+seg.getLeftPoint().y+" \\right\\} ");
+			}
+			else {
+				System.out.println("y="+"M("+seg.getLeftPoint().x+","+seg.getLeftPoint().y+","+seg.getRightPoint().x+","+seg.getRightPoint().y+",x)"
+						+ "\\left\\{ "+seg.getLeftPoint().x+" \\le x \\le "+seg.getRightPoint().x+" \\right\\} "+ " \\left\\{ "+seg.getLeftPoint().y+" \\le y \\le "+seg.getRightPoint().y+" \\right\\} ");
+			}
+		}
+		System.out.println("-------------------------------------------------");
+		// construct trapmap
+		TrapMap site1TP = new TrapMap(cell1);
+		TrapMap site2TP = new TrapMap(cell2);
+//		for (Trapezoid Trap : site1TP.getAllTrapezoids()) {
+//			System.out.println("{"+Trap.toString()+"}");
+//		}
+		// VoronoiCell cellSite1
 		// return Bisector
 		return bisectors;
 	}
-
+	
 	/**
 	 * Given a convex hull and two sites, this method a construct the graph whose
 	 * nodes are either the sites or intersection points between a spoke and another
