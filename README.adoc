@@ -7,9 +7,10 @@
 :tags: javascript,ecmasscript,js
 
 # Dynamic Voronoi Diagrams in the Hilbert Metric
+
 A dynamic visualization software for Voronoi diagrams in the Hilbert metric on user specified convex polygons.
 
-resources::voronoi.png
+image::voronoi.png[front pic]
 
 ## Overview
 
@@ -29,6 +30,9 @@ Download the source code and run the software on your local machine you need lin
 git clone https://github.com/caesardai/Voronoi_In_Hilbert.git
 ```
 
+## Run
+
+
 ## Acknowledgement
 
 We would like to thank Frank Nielsen and Laëtitia Shao for sharing their Hilbert Ball source code with us.
@@ -41,6 +45,6 @@ Bumpus, M*., Dai, X *., Munoz, S*., Santhoshkumar, R*., Ye, S*., Gezalyan, A*., 
 
 ## License
 
-[MIT](https://choosealicense.com/licenses/mit/)
+https://choosealicense.com/licenses/mit/[MIT]
 
 
