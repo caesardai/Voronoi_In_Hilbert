@@ -9,7 +9,7 @@
 # Dynamic Voronoi Diagrams in the Hilbert Metric
 A dynamic visualization software for Voronoi diagrams in the Hilbert metric on user specified convex polygons.
 
-image::voronoi.png
+resources::voronoi.png
 
 ## Overview
 
