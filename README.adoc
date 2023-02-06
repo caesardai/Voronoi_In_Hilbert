@@ -1,0 +1,33 @@
+:imagesdir: images
+:couchbase_version: current
+:toc:
+:project_id: gs-intro-to-js
+:icons: font
+:source-highlighter: prettify
+:tags: javascript,ecmasscript,js
+
+= Dynamic Voronoi Diagrams in the Hilbert Metric
+A dynamic visualization software for Voronoi diagrams in the Hilbert metric on user specified convex polygons.
+image::voronoi.pngg[voronoi pic]
+
+==Overview
+The Hilbert metric is a projective metric defined on a convex body which generalizes the Cayley-Klein model of hyperbolic geometry to any convex set, and it is relevant to many other fields of study such as quantum information theory, real analysis, optimization, and network analysis. As a part of the paper (link), we built this software to visualize .
+
+To read the full paper, please check out our arXiv page: link:/https://arxiv.org/abs/2112.03056[paper]
+
+
+== Installation 
+Download the source code and run the software on your local machine you need Java8 and link:https://processing.org/download[processing2.2.1]
+
+=== https://github.com/caesardai/Voronoi_In_Hilbert.git
+
+
+== Acknowledgement
+
+We would like to thank Frank Nielsen and Laëtitia Shao for sharing their source code with us. We would also like to thank Professor David Mount for his insightful thoughts and advices. 
+
+
+== Citing this Work
+=== Bumpus, M*., Dai, X *., Munoz, S*., Santhoshkumar, R*., Ye, S*., Gezalyan, A*., Mount, D. Voronoi Diagram in the Hilbert Metric in International Symposium on Computational Geometry (SoCG 2023) *Equal Contribution
+
+
