@@ -28,6 +28,6 @@ We would like to thank Frank Nielsen and Laëtitia Shao for sharing their source
 
 
 == Citing this Work
-=== Bumpus, M*., Dai, X *., Munoz, S*., Santhoshkumar, R*., Ye, S*., Gezalyan, A*., Mount, D. Voronoi Diagram in the Hilbert Metric in International Symposium on Computational Geometry (SoCG 2023) *Equal Contribution
+Bumpus, M*., Dai, X *., Munoz, S*., Santhoshkumar, R*., Ye, S*., Gezalyan, A*., Mount, D. Voronoi Diagram in the Hilbert Metric in International Symposium on Computational Geometry (SoCG 2023) *Equal Contribution
 
 
