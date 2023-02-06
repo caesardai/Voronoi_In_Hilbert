@@ -40,7 +40,13 @@ We would like to thank Frank Nielsen and Laëtitia Shao for sharing their Hilber
 ## Citing this Work
 
 ```
-Bumpus, M*., Dai, X *., Munoz, S*., Santhoshkumar, R*., Ye, S*., Gezalyan, A*., Mount, D. Voronoi Diagram in the Hilbert Metric *Equal Contribution
+@article{Gezalyan2021VoronoiDI,
+  title={Voronoi Diagrams in the Hilbert Metric},
+  author={Auguste H. Gezalyan and David M. Mount},
+  journal={ArXiv},
+  year={2021},
+  volume={abs/2112.03056}
+}
 ```
 
 ## License
