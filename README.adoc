@@ -20,7 +20,7 @@ Hilbert geometry is particularly valuable in the field of convex approximation. 
 
 As a part of the paper, we built this software to help visualize Voronoi diagrams in the Hilbert metric on user specified convex polygons.
 
-To read the full paper, please check out our arXiv: link:/https://arxiv.org/abs/2112.03056[paper]
+To read our full paper, please check out our arXiv: link:https://arxiv.org/abs/2112.03056[paper]
 
 
 ## Installation 
