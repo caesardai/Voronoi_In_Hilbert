@@ -24,14 +24,21 @@ To read the full paper, please check out our arXiv: link:/https://arxiv.org/abs/
 
 
 ## Installation 
-Download the source code and run the software on your local machine you need link:https://www.oracle.com/java/technologies/javase/javase8-archive-downloads.html[Java8] and link:https://processing.org/download[processing2.2.1]
+Download the latest release through the release tab
 
-```bash
-git clone https://github.com/caesardai/Voronoi_In_Hilbert.git
-```
+To edit the source code on your local machine you need link:https://www.oracle.com/java/technologies/javase/javase8-archive-downloads.html[Java8] and link:https://processing.org/download[processing2.2.1]
+
+image::release.png[front pic]
 
 ## Run
+Simply double click the "HilbertVoronoi.jar" icon or navigate to the directory that contains the jar file and run the below command
 
+```bash
+java -jar HilbertVoronoi.jar
+```
+You should see below window when launched successfully
+
+image::launch.png[front pic]
 
 ## Acknowledgement
 
