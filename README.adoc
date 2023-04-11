@@ -34,7 +34,7 @@ image::release.png[front pic]
 Simply double click the "HilbertVoronoi.jar" icon or navigate to the directory that contains the jar file and run the below command
 
 ```bash
-java -jar HilbertVoronoi.jar
+java -jar HilbertVoronoiv0.1.0-alpha.jar
 ```
 You should see below window when launched successfully
 
