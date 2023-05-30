@@ -4,11 +4,14 @@ import geometry.Convex;
 import geometry.HilbertGeometry;
 import geometry.Util;
 import geometry.Voronoi;
+import geometry.VoronoiCell;
 import geometry.Point3d;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Set;
 
 /*
  * Class to handle operations in a Hilbert Geometry.
@@ -96,6 +99,31 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 			}
 		}
 	}
+	
+	public void drawHilbertVoronoi(Set<Point2D.Double> pts) {
+		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
+//		Point2D.Double beginPoint = pts.get(0);
+//		Point2D.Double endPoint;
+		LinkedList<Point2D.Double> points = new LinkedList<Point2D.Double>();
+		for (Point2D.Double p : pts) {
+			points.add(p);
+		}
+		ConvexDraw hilbertBall = new ConvexDraw(this.frame, new Convex(points));
+		hilbertBall.drawControlPolygon();
+		
+		Point2D.Double beginPoint = points.get(0);
+		Point2D.Double endPoint;
+		for (int i = 1; i < pts.size(); i++) {
+			endPoint = points.get(i);
+//			System.out.println("line1" + Util.printCoordinate(beginPoint));
+			DrawUtil.drawPoint(beginPoint, this.frame);
+//			DrawUtil.drawSegment(beginPoint, endPoint, this.frame);
+//			System.out.println("line2" + Util.printCoordinate(endPoint));
+			beginPoint = endPoint;
+			
+		}
+	}
+
 
 	/*
 	 * Draws the HilbertBall of center p.
@@ -182,54 +210,9 @@ public class HilbertGeometryDraw extends HilbertGeometry {
 //				DrawUtil.drawSegment(r.get(0), r.get(1), this.frame);
 //			}
 //		}
-		
+
 //		DrawUtil.changeColor(this.frame, DrawUtil.DEFAULT);
 		}
 	}
 }
 
-// MAYBE UNNECESSARY SOURCE CODE
-		/*
-		 * Approximating Hilbert Voronoi bisector
-		 */
-
-//	  	// to be placed in VoronoiDraw later
-//		DrawUtil.changeColor(this.frame, DrawUtil.GREY);
-//		LinkedList<Point2D.Double> bisectorPoints = new LinkedList<Point2D.Double>();
-//		
-//		for (Point2D.Double q : this.convex.convexHull) {
-//			int n = 180;
-//			Double[][] results = Voronoi.thetaRays(p, n);
-//			for(int row = 0; row < results.length; row++) {
-//				LinkedList<Point2D.Double> newPoints = this.frame.voronoi.thetaRayTrace(this.frame, results[row], p);
-//				for(Point2D.Double pi : newPoints) {
-//					if(!bisectorPoints.contains(pi))
-//						bisectorPoints.add((Point2D.Double) pi.clone());
-//				}
-//			}
-//
-//			// Double theta = Voronoi.spokeAngle(p, q);
-//			// int unit = (int) (theta / (2 * Math.PI / n));
-//			
-//			// System.out.println("bisector size: " + bisectorPoints.size());
-//			for(Point2D.Double bisect : bisectorPoints) {
-//				DrawUtil.changeColor(this.frame, DrawUtil.GREEN);
-//				DrawUtil.drawPoint(bisect, this.frame);
-//				// System.out.print(Util.printCoordinate(bisect) + ", ");
-//			}
-//			// System.out.println();
-//			
-//			// find intersection between lines PQ and bp[unit]-bp[unit+1]
-//			Point3d pqLine = this.toHomogeneous(p).crossProduct(this.toHomogeneous(q));
-//			Point2D.Double endPoint1 = bisectorPoints.get(unit);
-//			Point2D.Double bp1 = new Point2D.Double(endPoint1.x, endPoint1.y);
-//			Point2D.Double endPoint2 = bisectorPoints.get(unit + 1);
-//			Point2D.Double bp2 = new Point2D.Double(endPoint2.x, endPoint2.y);
-//			Point3d bisectorLine = this.toHomogeneous(bp1).crossProduct(this.toHomogeneous(bp2));
-//			
-//			Point2D.Double intersection = this.toCartesian(pqLine.crossProduct(bisectorLine));
-//			
-//			// draw line between hull and intersection point
-//			DrawUtil.drawSegment(q, intersection, this.frame);
-//			
-//		}

@@ -3,12 +3,15 @@ package drawing;
 import geometry.KdTree;
 import geometry.Point3d;
 import geometry.Voronoi;
+import geometry.VoronoiCell;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Set;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 
@@ -84,7 +87,15 @@ public class VoronoiDraw {
 	public void computeVoronoi() {
 		this.voronoi.computeVoronoi();
 	}
-
+	
+	public Set<Point2D.Double> computeHilbertVoronoi(Point2D.Double p1, Point2D.Double p2) {
+		return this.voronoi.computeHilbertVoronoi(p1, p2);
+	}
+	
+	public ArrayList<VoronoiCell> realAugusteAlgo(Point2D.Double p1, Point2D.Double p2) {
+		return this.voronoi.realAugusteAlgo(p1, p2);
+	}
+	
 	public void drawRays(Point2D.Double p) {
 
 	}
@@ -139,6 +150,8 @@ public class VoronoiDraw {
 		int nearestPoint = this.voronoi.nearestPoint(p);
 		this.voronoi.voronoiPoints.put(p, nearestPoint);
 	}
+
+	
 	
 	/**
 	 * Given a convex hull and two sites, this method a construct the graph whose nodes are either the sites or intersection points between a spoke and another spoke or edge. Two points are connected in the graph if the line segment between the two points is contained in either spoke or edge. The line segment cannot contain another intersection point from another spoke/edge

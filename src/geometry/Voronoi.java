@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import processing.core.PVector;
 public class Voronoi {
 	/* HG where we compute voronoi diagram */
 	protected HilbertGeometry geometry;
+	protected int max_X = Integer.MIN_VALUE, max_Y = Integer.MIN_VALUE, min_X = Integer.MAX_VALUE, min_Y = Integer.MAX_VALUE;
 	/* List of center points for the Voronoi diagram */
 	public LinkedList<Point2D.Double> centerPoints = new LinkedList<Point2D.Double>();
 	/*
@@ -29,6 +31,7 @@ public class Voronoi {
 	 * closest to it.
 	 */
 	public HashMap<Point2D.Double, Integer> voronoiPoints = new HashMap<Point2D.Double, Integer>();
+//	public HashMap<Point2D.Double, Integer> hilbertVoronoiPoints = new HashMap<Point2D.Double, Integer>();
 
 	/* Variable storing all the segment that's inserted */
 	public ArrayList<Segment> allSegments = new ArrayList<Segment>();
@@ -135,6 +138,60 @@ public class Voronoi {
 				}
 			}
 		}
+	}
+	
+	public Set<Point2D.Double> computeHilbertVoronoi(Point2D.Double p1, Point2D.Double p2) {
+		this.voronoiPoints.clear();
+		Set<Point2D.Double> pts = new HashSet<Point2D.Double>();
+		ArrayList<VoronoiCell> cells = realAugusteAlgo(p1, p2);
+		for (VoronoiCell c : cells) {
+			for (Point2D.Double v : c.getVertices()) {
+				if (this.geometry.convex.isOnConvexBoundary(v)) {
+					continue;
+				} else {
+					pts.add(v);
+				}
+			}
+		}
+		return pts;
+	}
+//	ArrayList<Segment> cellSegs = new ArrayList<Segment>();
+	
+//	Point2D.Double endPoint;
+//	Point2D.Double beginPoint = c.getVertexIndex(0);
+//	for (int i = 1; i < c.getVertices().size(); i++) {
+//		endPoint = c.getVertexIndex(i);
+//		cellSegs.add(Util.pointsToSeg(beginPoint, endPoint));
+//	}
+//	Convex con = new Convex();
+//	con.spokeSegments = cellSegs;
+//	
+//	this.hilbertExtremePoints(con);
+//	for (int x = this.geometry.min_X; x < this.geometry.max_X; x += 2) {
+//		for (int y = this.geometry.min_Y; y < this.geometry.max_Y; y += 2) {
+//			Point2D.Double p = new Point2D.Double(x, y);
+//			if (this.geometry.convex.isInConvex(p)) {
+//				this.voronoiPoints.put(p, nearestPoint(p));
+//			}
+//		}
+//	}
+	
+	protected void hilbertExtremePoints(Convex c) {
+		int N = c.convexHull.length;
+	    for (int i = 0; i < N; i++) {
+	      if (max_X < c.convexHull[i].x) {
+	        max_X = (int)c.convexHull[i].x;
+	      }
+	      if (max_Y < c.convexHull[i].y) {
+	        max_Y = (int)c.convexHull[i].y;
+	      }
+	      if (min_X > c.convexHull[i].x) {
+	        min_X = (int)c.convexHull[i].x;
+	      }
+	      if (min_Y > c.convexHull[i].y) {
+	        min_Y = (int)c.convexHull[i].y;
+	      }
+	    }
 	}
 
 	/*
@@ -743,7 +800,7 @@ public class Voronoi {
 
 		// find site1, site2 segment angular coordinates
 		Double toAngle = Voronoi.spokeAngle(site1, site2);
-
+		
 		// find the immediate left spokes
 		int counter = s1Neighbors.size() - 1;
 		for (int i = 0; i < s1Neighbors.size(); i++) {
@@ -770,11 +827,11 @@ public class Voronoi {
 
 		// Print statement
 		// ************************************************************************************
-		if (indexOfCenterSector == 0) {
-			System.out.println("We are printing out sector[" + indexOfCenterSector + "]\n");
-		} else {
-			System.out.println("We are printing out sector[" + indexOfCenterSector + "]\n");
-		}
+//		if (indexOfCenterSector == 0) {
+//			System.out.println("We are printing out sector[" + indexOfCenterSector + "]\n");
+//		} else {
+//			System.out.println("We are printing out sector[" + indexOfCenterSector + "]\n");
+//		}
 		// ************************************************************************************
 
 		// finding sector that contains equidistant point
@@ -799,9 +856,9 @@ public class Voronoi {
 		// ************************************************************************************
 		Point2D.Double biLeftPt = b.getLeftEndPoint();
 		Point2D.Double biRightPt = b.getRightEndPoint();
-		System.out.println("Bisector in the Current Sector");
-		System.out.println("Left Endpoint: " + Util.printCoordinate(biLeftPt));
-		System.out.println("Right Endpoint: " + Util.printCoordinate(biRightPt) + "\n");
+//		System.out.println("Bisector in the Current Sector");
+//		System.out.println("Left Endpoint: " + Util.printCoordinate(biLeftPt));
+//		System.out.println("Right Endpoint: " + Util.printCoordinate(biRightPt) + "\n");
 		// ************************************************************************************
 
 		// while it isn't the convex hull edge keep going
@@ -886,16 +943,27 @@ public class Voronoi {
 		// if we are updating to a segment on the convex hull; stop move in current
 		// direction and
 		// move in the opposite direction
-		System.out.print("++++++++++++++++++++++++++++++\n");
+//		System.out.print("++++++++++++++++++++++++++++++\n");
 		if (c.isOnConvexBoundary(b.getLeftEndPoint()) || c.isOnConvexBoundary(b.getRightEndPoint())) {
 			// store convex hull intersection points
 			if (++currSegIndex > 1) {
 //				 System.out.println("bk2: " + Util.printCoordinate(b.getLeftEndPoint()) + ", " + 
 //						 Util.printCoordinate(b.getRightEndPoint()));
 				if (c.isOnConvexBoundary(b.getLeftEndPoint())) {
-					bisectHullIntersect[0] = b.getLeftEndPoint();
-				} else {
-					bisectHullIntersect[1] = b.getRightEndPoint();
+					if (bisectHullIntersect[0]==null) {
+						bisectHullIntersect[0] = b.getLeftEndPoint();
+					}
+					else {
+						bisectHullIntersect[1] = b.getLeftEndPoint();
+					}
+				} 
+				else {
+					if (bisectHullIntersect[1]==null) {
+						bisectHullIntersect[1] = b.getRightEndPoint();
+						}
+					else {
+						bisectHullIntersect[0] = b.getRightEndPoint();
+					}
 				}
 				completedBisector = true;
 			} else {
@@ -913,19 +981,19 @@ public class Voronoi {
 				PVector lpt = aprox.get(i).getLeftPoint();
 				PVector rpt = aprox.get(i).getRightPoint();
 				if (aprox.get(i).getRightPoint().y <= aprox.get(i).getLeftPoint().y) {
-					System.out.println("y=" + "M(" + aprox.get(i).getLeftPoint().x + "," + aprox.get(i).getLeftPoint().y
-							+ "," + aprox.get(i).getRightPoint().x + "," + aprox.get(i).getRightPoint().y + ",x)"
-							+ "\\left\\{ " + aprox.get(i).getLeftPoint().x + " \\le x \\le "
-							+ aprox.get(i).getRightPoint().x + " \\right\\} " + " \\left\\{ "
-							+ aprox.get(i).getRightPoint().y + " \\le y \\le " + aprox.get(i).getLeftPoint().y
-							+ " \\right\\} ");
+//					System.out.println("y=" + "M(" + aprox.get(i).getLeftPoint().x + "," + aprox.get(i).getLeftPoint().y
+//							+ "," + aprox.get(i).getRightPoint().x + "," + aprox.get(i).getRightPoint().y + ",x)"
+//							+ "\\left\\{ " + aprox.get(i).getLeftPoint().x + " \\le x \\le "
+//							+ aprox.get(i).getRightPoint().x + " \\right\\} " + " \\left\\{ "
+//							+ aprox.get(i).getRightPoint().y + " \\le y \\le " + aprox.get(i).getLeftPoint().y
+//							+ " \\right\\} ");
 				} else {
-					System.out.println("y=" + "M(" + aprox.get(i).getLeftPoint().x + "," + aprox.get(i).getLeftPoint().y
-							+ "," + aprox.get(i).getRightPoint().x + "," + aprox.get(i).getRightPoint().y + ",x)"
-							+ "\\left\\{ " + aprox.get(i).getLeftPoint().x + " \\le x \\le "
-							+ aprox.get(i).getRightPoint().x + " \\right\\} " + " \\left\\{ "
-							+ aprox.get(i).getLeftPoint().y + " \\le y \\le " + aprox.get(i).getRightPoint().y
-							+ " \\right\\} ");
+//					System.out.println("y=" + "M(" + aprox.get(i).getLeftPoint().x + "," + aprox.get(i).getLeftPoint().y
+//							+ "," + aprox.get(i).getRightPoint().x + "," + aprox.get(i).getRightPoint().y + ",x)"
+//							+ "\\left\\{ " + aprox.get(i).getLeftPoint().x + " \\le x \\le "
+//							+ aprox.get(i).getRightPoint().x + " \\right\\} " + " \\left\\{ "
+//							+ aprox.get(i).getLeftPoint().y + " \\le y \\le " + aprox.get(i).getRightPoint().y
+//							+ " \\right\\} ");
 				}
 				// System.out.println(Util.printCoordinate(Util.toPoint2D(lpt)) + ", " +
 				// Util.printCoordinate(Util.toPoint2D(rpt)));
@@ -1031,36 +1099,36 @@ public class Voronoi {
 		System.out.println("-------------------------------------------------");
 		for (Segment seg : cell2) {
 			if (seg.getRightPoint().y <= seg.getLeftPoint().y) {
-				System.out.println(
-						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
-								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
-								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
-								+ seg.getRightPoint().y + " \\le y \\le " + seg.getLeftPoint().y + " \\right\\} ");
+//				System.out.println(
+//						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+//								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+//								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+//								+ seg.getRightPoint().y + " \\le y \\le " + seg.getLeftPoint().y + " \\right\\} ");
 			} else {
-				System.out.println(
-						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
-								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
-								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
-								+ seg.getLeftPoint().y + " \\le y \\le " + seg.getRightPoint().y + " \\right\\} ");
+//				System.out.println(
+//						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+//								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+//								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+//								+ seg.getLeftPoint().y + " \\le y \\le " + seg.getRightPoint().y + " \\right\\} ");
 			}
 		}
-		System.out.println("-------------------------------------------------");
+//		System.out.println("-------------------------------------------------");
 		for (Segment seg : cell1) {
 			if (seg.getRightPoint().y <= seg.getLeftPoint().y) {
-				System.out.println(
-						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
-								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
-								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
-								+ seg.getRightPoint().y + " \\le y \\le " + seg.getLeftPoint().y + " \\right\\} ");
+//				System.out.println(
+//						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+//								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+//								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+//								+ seg.getRightPoint().y + " \\le y \\le " + seg.getLeftPoint().y + " \\right\\} ");
 			} else {
-				System.out.println(
-						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
-								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
-								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
-								+ seg.getLeftPoint().y + " \\le y \\le " + seg.getRightPoint().y + " \\right\\} ");
+//				System.out.println(
+//						"y=" + "M(" + seg.getLeftPoint().x + "," + seg.getLeftPoint().y + "," + seg.getRightPoint().x
+//								+ "," + seg.getRightPoint().y + ",x)" + "\\left\\{ " + seg.getLeftPoint().x
+//								+ " \\le x \\le " + seg.getRightPoint().x + " \\right\\} " + " \\left\\{ "
+//								+ seg.getLeftPoint().y + " \\le y \\le " + seg.getRightPoint().y + " \\right\\} ");
 			}
 		}
-		System.out.println("-------------------------------------------------");
+//		System.out.println("-------------------------------------------------");
 		// construct trapmap
 //		ArrayList<Point2D> vertices = new ArrayList<Point2D>();
 //		for (Segment seg : cell1){
@@ -1104,7 +1172,9 @@ public class Voronoi {
 		cells.add(cellSite1);
 		cells.add(cellSite2);
 		return cells;
+		
 	}
+	
 
 	/**
 	 * Given a convex hull and two sites, this method a construct the graph whose

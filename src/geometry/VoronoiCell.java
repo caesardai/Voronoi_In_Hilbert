@@ -49,8 +49,12 @@ public class VoronoiCell {
 		System.out.println("]");
 		return null;
 	}
+	
+	public ArrayList<Point2D.Double> getVertices() {
+		return this.cellVertices;
+	}
 
-	public Point2D.Double getVetexIndex(int index) {
+	public Point2D.Double getVertexIndex(int index) {
 		return this.cellVertices.get(index);
 	}
 

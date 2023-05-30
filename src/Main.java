@@ -1,6 +1,6 @@
 import drawing.DrawingApplet;
 
-public class Test2 {
+public class Main {
 	public static void main(String[] argv) {
 		DrawingApplet.main(argv);
 	}

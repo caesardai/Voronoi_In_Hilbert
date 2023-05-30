@@ -241,23 +241,12 @@ public class VoronoiTest {
 		System.out.println("[" + Util.printCoordinate(site1) + ", " + Util.printCoordinate(site2) + "]");
 
 		Voronoi v12 = new Voronoi(g);
-		ArrayList<VoronoiCell> cells12 = new ArrayList<VoronoiCell>();
-		ArrayList<VoronoiCell> cells13 = new ArrayList<VoronoiCell>();
-		ArrayList<VoronoiCell> cells23 = new ArrayList<VoronoiCell>();
-		cells12 = v12.realAugusteAlgo(site1, site2);
-		Point2D.Double site3 = new Point2D.Double(409d, 543d);
-		Voronoi v13 = new Voronoi(g);
-		cells13 = v13.realAugusteAlgo(site1, site3);
-		Voronoi v23 = new Voronoi(g);
-		cells23 = v23.realAugusteAlgo(site2, site3);
-		System.out.println("---------------------------");
-		cells12.get(0).Printer();
-		cells12.get(1).Printer();
-		cells13.get(0).Printer();
-		cells13.get(1).Printer();
-		cells23.get(0).Printer();
-		cells23.get(1).Printer();
-		System.out.println("Break Point Here!");
+        ArrayList<VoronoiCell> cells12 = new ArrayList<VoronoiCell>();
+        cells12 = v12.realAugusteAlgo(site1, site2);
+        System.out.println("---------------------------");
+        cells12.get(0).Printer();
+        cells12.get(1).Printer();
+        System.out.println("Break Point Here!");
 //		ArrayList<TrapMap> trapMaps = v.realAugusteAlgo(site1, site2);
 //		for (Trapezoid Trap : trapMaps.get(0).findFaceTrapezoids(site1.x,site1.y)) {
 //			System.out.println("{"+Trap.toString()+"}");

@@ -13,7 +13,7 @@ public class HilbertGeometry {
   /* Convex defining the domain of the geometry */ 
   public Convex convex;
   /* Center points of Hilbert Balls */
-  protected Point2D.Double[] centerPoints = new Point2D.Double[0];
+  public Point2D.Double[] centerPoints = new Point2D.Double[0];
   /* Radius for the Hilbert Balls */
   protected double[] radiuses = new double[0];
   /* Coordinates of a square encompassing the domain */

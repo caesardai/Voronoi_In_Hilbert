@@ -6,6 +6,7 @@ import geometry.Convex;
 import geometry.EdgeData;
 import geometry.KdTree;
 import geometry.Util;
+import geometry.VoronoiCell;
 import geometry.Sector;
 
 import java.awt.*;
@@ -26,18 +27,20 @@ import java.awt.geom.Point2D.Double;
 import java.util.*;
 import java.util.List;
 
+
+
 public class DrawingApplet extends PApplet implements ActionListener {
 	private static final long serialVersionUID = 1L;
 
 	/* Modes */
 	enum Mode {
-		DRAW_CONVEX, INCONVEXTEST, UNIT_BALL, VORONOI_DEF, VORONOI_FIND
+		DRAW_CONVEX, INCONVEXTEST, UNIT_BALL, VORONOI_DEF, VORONOI_FIND, VORONOI_HILBERT
 	};
 
 	private final static Mode[] MODES = { Mode.DRAW_CONVEX, /* Mode.INCONVEXTEST, */ /* Mode.UNIT_BALL, */
-			Mode.VORONOI_DEF, /* Mode.VORONOI_FIND */ };
+			Mode.VORONOI_DEF, Mode.VORONOI_HILBERT /* Mode.VORONOI_FIND */ };
 	private int currentMode = 0;
-	private final static int NUMBER_MODES = 2;
+	private final static int NUMBER_MODES = 3;
 	private final static String SWITCH_MODE = "Change to mode: ";
 	static String FILENAME_CONVEX;
 	static String FILENAME_VORONOI;
@@ -66,6 +69,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	private Checkbox drawConvex;
 	private Checkbox drawSpokes;
 	private Checkbox drawVoronoi;
+	private Checkbox hilbertVoronoi;
 
 	// DEBUGGING
 	KdTree<KdTree.XYZPoint> tree;
@@ -85,7 +89,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	 * Setting up visualization interface
 	 */
 	public void setup() {
-		size(1000, 1000);
+		size(800, 600);
 		initButton();
 
 		this.geometry = new HilbertGeometryDraw(this, FILENAME_CONVEX);
@@ -93,43 +97,6 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			this.voronoi = new VoronoiDraw(geometry, FILENAME_VORONOI, this);
 		else
 			this.voronoi = new VoronoiDraw(geometry, this);
-
-		/* TEST SECTOR GRAPH */
-		// placing all input parameters to construct tree
-//		Convex c = this.geometry.convex;
-//		c.addPoint(new Point2D.Double(154d, 620d));
-//		c.addPoint(new Point2D.Double(67d, 190d));
-//		c.addPoint(new Point2D.Double(406d, 20d));
-//		c.addPoint(new Point2D.Double(488d, 500d));
-//		Point2D.Double site1 = new Point2D.Double(253d, 170d);
-//		Point2D.Double site2 = new Point2D.Double(343d, 500d);
-//
-//		// construct tree
-//		KdTree<KdTree.XYZPoint> tree = this.voronoi.constructGraph(site1, site2);
-//
-//		 // find node to test on
-//		KdTree.XYZPoint siteNode = KdTree.getNode(tree, Util.toXYZPoint(site1)).getID();
-//		Point2D.Double test = siteNode.getNeighbor(4).otherNode;
-//		KdTree.XYZPoint testNode = KdTree.getNode(tree, Util.toXYZPoint(test)).getID();
-//		Point2D.Double test1 = testNode.getNeighbor(0).otherNode;
-//		Segment s = Util.pointsToSeg(test, test1);
-//		
-////		for(int index = 0; index < siteNode.getNeighbors().size(); index++)
-////			System.out.println(index + ": " + siteNode.getNeighbor(index));
-////			
-////		System.out.println();
-////		for(int index = 0; index < testNode.getNeighbors().size(); index++)
-////			System.out.println(index + ": " + testNode.getNeighbor(index));
-//		
-//		// Constructing sectors
-//		secs = c.constructSector(s, site1, site2, tree);
-
-		/*
-		 * traverse through all sectors for each sector => call all edges => color each
-		 * sector with a random color
-		 */
-
-		/* ----------------- */
 
 		// set starting mode
 		this.currentMode = 0;
@@ -156,7 +123,8 @@ public class DrawingApplet extends PApplet implements ActionListener {
 	public void initButton() {
 		this.drawMode = new CheckboxGroup();
 		this.drawConvex = new Checkbox("Insert Convex", this.drawMode, true);
-		this.drawVoronoi = new Checkbox("Draw Voronoi", this.drawMode, false);
+		this.drawVoronoi = new Checkbox("Brute-force Voronoi", this.drawMode, false);
+		this.hilbertVoronoi = new Checkbox("Fast Voronoi", this.drawMode, false);
 		// this.drawConvex.setBackground(DrawUtil.WHITE);
 		// this.drawSpokes.setBackground(DrawUtil.WHITE);
 		// this.drawSpokes = new Checkbox("Insert Sites", this.drawMode, false);
@@ -165,6 +133,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		this.convexPanel = new Panel();
 		this.convexPanel.add(this.drawConvex);
 		this.convexPanel.add(this.drawVoronoi);
+		this.convexPanel.add(this.hilbertVoronoi);
 		this.convexPanel.add(this.reinit);
 		// this.convexPanel.add(this.drawSpokes);
 		// this.convexPanel.setBackground(DrawUtil.WHITE);
@@ -186,6 +155,13 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			@Override
 			public void itemStateChanged(ItemEvent event) {
 				currentMode = 1;
+			}
+		});
+
+		hilbertVoronoi.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent event) {
+				currentMode = 2;
 			}
 		});
 
@@ -215,90 +191,14 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		textFont(createFont("Arial", 12, true), 12); // font used
 		fill(0); // font color
 
-
-		/* TEST SECTOR GRAPH */
-		// Coloring spokes with different colors
-
-		/* TEST SECTOR GRAPH */
-//		Point2D.Double p1 = this.geometry.convex.convexHull[0];
-//		Point2D.Double p2 = this.geometry.convex.convexHull[1];
-//		Point2D.Double p3 = this.geometry.convex.convexHull[2];
-//		Point2D.Double p4 = this.geometry.convex.convexHull[3];
-//      	
-//		Segment e1 = new Segment((float) p1.x, (float) p1.y, (float) p2.x, (float) p2.y);
-//		Segment e2 = new Segment((float) p2.x, (float) p2.y, (float) p3.x, (float) p3.y);
-//		Segment e3 = new Segment((float) p3.x, (float) p3.y, (float) p4.x, (float) p4.y);
-//		Segment e4 = new Segment((float) p4.x, (float) p4.y, (float) p1.x, (float) p1.y);
-		
-//		ArrayList<KdTree.XYZPoint> endPoints = this.tree.getAllNodes();
-//		for(KdTree.XYZPoint p : endPoints) {
-//			// draw segment from point p to its neighbors
-//			for(int index = 0; index < p.numOfNeighbors(); index++) {
-//				Point2D.Double q = p.getNeighbor(index);
-//				if(p.getSite(index) == null)
-//					DrawUtil.changeColor(this, DrawUtil.BLACK);
-//				else if(p.getEdge(index).equals(e1))
-//					DrawUtil.changeColor(this, DrawUtil.PURPLE);
-//				else if(p.getEdge(index).equals(e2))
-//					DrawUtil.changeColor(this, DrawUtil.GREEN);
-//				else if(p.getEdge(index).equals(e3))
-//					DrawUtil.changeColor(this, DrawUtil.RED);
-//				else if(p.getEdge(index).equals(e4))
-//					DrawUtil.changeColor(this, DrawUtil.BLUE);
-//					
-//				DrawUtil.drawSegment(Util.toPoint2D(p), q, this);
-//			}
-//		}
-
-		/*
-		 * Color sectors
-		 */
-		
-//		for (Sector sec : secs) {
-//			// Find random color
-//			Color c = null;
-//			int colorNum = (int) (Math.random() * 8);
-//			if (colorNum == 0)
-//				c = DrawUtil.DEFAULT;
-//			if (colorNum == 1)
-//				c = DrawUtil.RED;
-//			if (colorNum == 2)
-//				c = DrawUtil.BLUE;
-//			if (colorNum == 3)
-//				c = DrawUtil.GREEN;
-//			if (colorNum == 4)
-//				c = DrawUtil.PURPLE;
-//			if (colorNum == 5)
-//				c = DrawUtil.BLACK;
-//			if (colorNum == 6)
-//				c = DrawUtil.GREY;
-//			if (colorNum == 7)
-//				c = DrawUtil.WHITE;
-//
-//			this.fill((float) c.getRed(), (float) c.getGreen(), (float) c.getBlue());
-//			
-//			int numPoints = sec.sector.convexHull.length - 1;
-//			if (numPoints == 3) {
-//				this.quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
-//						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
-//						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
-//						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y);
-//			}
-//			
-//			if (numPoints == 4) {
-//				quad((float) sec.sector.convexHull[0].x, (float) sec.sector.convexHull[0].y,
-//						(float) sec.sector.convexHull[1].x, (float) sec.sector.convexHull[1].y,
-//						(float) sec.sector.convexHull[2].x, (float) sec.sector.convexHull[2].y,
-//						(float) sec.sector.convexHull[3].x, (float) sec.sector.convexHull[3].y);
-//			}
-//		}
-
-		/* ----------------- */
-
 		if (this.geometry.convex.convexHull.length < 3)
-			return; // no convex Hull to display.
+			voronoi.drawPoints(); // no convex Hull to display.
 		else {
 			this.geometry.draw(false, -1);
+		}
+		if (MODES[currentMode].toString().contains("HILBERT")) { // true
+			voronoi.drawPoints();
+			this.voronoi.hasChanged = false;
 		}
 
 		if (MODES[currentMode].toString().contains("VORONOI")) { // true
@@ -312,7 +212,7 @@ public class DrawingApplet extends PApplet implements ActionListener {
 		}
 		this.indexOfSelectedPoint = -1;
 	}
-	
+
 	/*
 	 * Determines if a point is within EPSILON distance away from some point on a
 	 * list Q: What is the rationale for choosing the value of EPSILON?
@@ -362,18 +262,27 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			} else {
 				System.out.println("Not in convex.");
 			}
-		} else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == LEFT) {
+		}
+		/*
+		 * Brute force Voronoi mode
+		 */
+		else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == LEFT) {
 			// add to HilbertGeometry Object
-			this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
-			if (this.indexOfSelectedPoint == -1) {
-				this.geometry.addCenterPoint(p, radius);
+			if (this.geometry.isInConvex(p)) {
 				this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+				if (this.indexOfSelectedPoint == -1) {
+					this.geometry.addCenterPoint(p, radius);
+					this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+				}
+
+				// add to Voronoi Object
+				this.voronoi.addPoint(p);
+				this.voronoi.computeVoronoi();
+				this.voronoi.hasChanged = true;
+			} else {
+				this.voronoi.removePoint(p);
 			}
 
-			// add to Voronoi Object
-			this.voronoi.addPoint(p);
-			this.voronoi.computeVoronoi();
-			this.voronoi.hasChanged = true;
 		} else if (MODES[currentMode] == Mode.VORONOI_DEF && mouseButton == RIGHT) {
 			// remove point from HilbertGeometry object
 			int removedPoint = this.geometry.findCenterPoint(p);
@@ -384,7 +293,37 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			// remove point from Voronoi object
 			this.voronoi.removePoint(p);
 			this.voronoi.computeVoronoi();
-		} else if (MODES[currentMode] == Mode.VORONOI_FIND && mouseButton == LEFT) {
+		}
+		/*
+		 * Randomize Insertion Voronoi mode
+		 */
+		else if (MODES[currentMode] == Mode.VORONOI_HILBERT && mouseButton == LEFT) {
+			if (this.geometry.isInConvex(p)) {
+				System.out.println("Site added: (" + mouseX + ", " + mouseY + ")");
+				// add to HilbertGeometry Object
+				this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+				if (this.indexOfSelectedPoint == -1) {
+					this.geometry.addCenterPoint(p, radius);
+					this.indexOfSelectedPoint = this.geometry.findCenterPoint(p);
+				}
+				// add to Voronoi Object
+				this.voronoi.addPoint(p);
+				if (this.voronoi.numPoints() < 2) {
+					this.voronoi.computeVoronoi();
+				} else {
+					Point2D.Double p1 = geometry.getCenterPoint(geometry.centerPoints.length - 2);
+					this.geometry.drawHilbertVoronoi(this.voronoi.computeHilbertVoronoi(p1, p));
+					this.voronoi.computeVoronoi();
+				}
+				this.voronoi.hasChanged = true;
+
+			} else {
+				this.voronoi.removePoint(p);
+			}
+
+		}
+
+		else if (MODES[currentMode] == Mode.VORONOI_FIND && mouseButton == LEFT) {
 			this.voronoi.colorPoint(p);
 		}
 	}
@@ -399,6 +338,8 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			indexOfMovingPoint = this.geometry.findCenterPoint(p);
 		} else if (MODES[currentMode] == Mode.VORONOI_DEF) {
 			indexOfMovingPoint = this.voronoi.findPoint(p);
+		} else if (MODES[currentMode] == Mode.VORONOI_HILBERT) {
+			indexOfMovingPoint = this.voronoi.findPoint(p);
 		}
 		if (indexOfMovingPoint > -1) {
 			if (MODES[currentMode] == Mode.DRAW_CONVEX) {
@@ -410,6 +351,10 @@ public class DrawingApplet extends PApplet implements ActionListener {
 				xOffset = mouseX - (float) (double) this.geometry.getCenterPoint(indexOfMovingPoint).x;
 				yOffset = mouseY - (float) (double) this.geometry.getCenterPoint(indexOfMovingPoint).y;
 			} else if (MODES[currentMode] == Mode.VORONOI_DEF) {
+				locked = true;
+				xOffset = mouseX - (float) (double) this.voronoi.getPoint(indexOfMovingPoint).x;
+				yOffset = mouseY - (float) (double) this.voronoi.getPoint(indexOfMovingPoint).y;
+			} else if (MODES[currentMode] == Mode.VORONOI_HILBERT) {
 				locked = true;
 				xOffset = mouseX - (float) (double) this.voronoi.getPoint(indexOfMovingPoint).x;
 				yOffset = mouseY - (float) (double) this.voronoi.getPoint(indexOfMovingPoint).y;
@@ -433,6 +378,10 @@ public class DrawingApplet extends PApplet implements ActionListener {
 			} else if (MODES[currentMode] == Mode.UNIT_BALL) {
 				this.geometry.moveCenterPoint(indexOfMovingPoint, q);
 			} else if (MODES[currentMode] == Mode.VORONOI_DEF) {
+				this.geometry.moveCenterPoint(indexOfMovingPoint, q);
+				this.voronoi.movePoint(indexOfMovingPoint, q);
+				this.voronoi.hasChanged = true;
+			} else if (MODES[currentMode] == Mode.VORONOI_HILBERT) {
 				this.geometry.moveCenterPoint(indexOfMovingPoint, q);
 				this.voronoi.movePoint(indexOfMovingPoint, q);
 				this.voronoi.hasChanged = true;
